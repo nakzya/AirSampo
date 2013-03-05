@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="stylesheets/airsampo.css" />
+    <link rel="stylesheet" href="stylesheets/jquery-ui-1.10.1.custom.min.css" />
+    <link rel="stylesheet" href="stylesheets/bootstrap.min.css" />
+    <link rel="stylesheet" href="stylesheets/bootstrap-responsive.min.css" />
+    <title>エアーさんぽ。</title>
+  </head>
+  <body onload="play_initialize(<%= no %>)">
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="#">Air Sampo</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li><a href="/">Home</a></li>
+              <li><a href="/record">記録する</a></li>
+              <li><a href="#contact">Contact</a></li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">aaa@bbb.cc <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li><a href="#">Setting</a></li>
+                  <li><a href="#">Logout</a></li>
+                  <li><a href="#">Something else here</a></li>
+                  <li class="divider"></li>
+                  <li class="nav-header">Nav header</li>
+                  <li><a href="#">Separated link</a></li>
+                  <li><a href="#">One more separated link</a></li>
+                </ul>
+              </li>
+            </ul>
+            <form class="navbar-form pull-right">
+              <input class="span2" type="text" placeholder="Email">
+              <input class="span2" type="password" placeholder="Password">
+              <button type="submit" class="btn">Sign in</button>
+            </form>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+    
+    <div class="container">
+      <div class="row">
+        <div class="span1"></div>
+      
+        <div class="span9" style="margin-top: 50px">
+          <form class="form-search">
+            <div id="searchDiv" class="input-append">
+              <input type="text" id="txtSearch" class="span2 search-query" placeholder="Search">
+              <button id="btnSearch" class="btn">Search</button>
+            </div>
+          </form>
+          <div style="clear: left"></div>
+
+          <div id="view" class="row">
+            <div class="row">
+            <div id="map_canvas" class="span3"></div>
+            <div id="streetview" class="span6"></div>
+          </div>
+          
+          <div id="control_panel">
+            <div id="control">
+              <!--
+              <div style="float:left;"><input type="button" name="btnSeeAround" id="btnSeeAround" class="btn controlBtn" value="見渡す" /></div>
+              -->
+              <div style="float: left; margin-left: 20%">&nbsp;</div>
+              <div style="float: left"><button name="btnPlay" id="btnPlay" class="btn btn-info controlBtn"><i class="icon-play icon-white" data-original-title="再生"></i></button></div>
+              <div style="float: left"><button name="btnStop" id="btnStop" class="btn btn-primary controlBtn" data-original-title="停止"><i class="icon-stop icon-white"></i></button></div>
+              <span style="margin-top: 10px; float:left">　再生速度: </span>
+              <div style="float: left"><div id="playSpeedSlider"></div></div>
+              <div id="distance" style="float: left"></div>
+              <div><img src="images/running.gif" id="running" style="display: none;"></img></div>
+              <div style="clear: left"></div>
+              <div id="panoramaSlider"></div>
+            </div>
+          </div>
+          <div id="message" class="alert alert-error fade in" style="display:none; margin-top: 20px;">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            再生データがありません。
+          </div>
+        </div>
+      </div>
+        
+      <div class="span2"></div>
+    </div>
+    
+    <br/><hr/>
+    緯度: <input type="text" name="lat" id="lat" />
+    経度: <input type="text" name="lng" id="lng" />
+    <br/>
+    heading: <input type="text" name="heading" id="heading" />
+    pitch: <input type="text" name="pitch" id="pitch" />
+    zoom: <input type="text" name="zoom" id="zoom" />
+
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="javascripts/jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="javascripts/jquery-ui-1.10.1.custom.min.js"></script>
+    <script type="text/javascript" src="javascripts/bootstrap.min.js"></script>
+    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDoj7QWz-XTSo2QhYnj9IMWRXkrlMjYqIU&libraries=geometry&sensor=false"></script>
+    <script type="text/javascript" src="javascripts/airsampo.js"></script>
+  </body>
+</html>
