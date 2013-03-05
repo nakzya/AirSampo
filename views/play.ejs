@@ -17,10 +17,9 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="brand" href="#">Air Sampo</a>
+          <a class="brand" href="/">Air Sampo</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
-              <li><a href="/">Home</a></li>
               <li><a href="/record">記録する</a></li>
               <li><a href="#contact">Contact</a></li>
               <li class="dropdown">
@@ -45,12 +44,12 @@
         </div>
       </div>
     </div>
-    
+
     <div class="container">
       <div class="row">
         <div class="span1"></div>
-      
-        <div class="span9" style="margin-top: 50px">
+
+        <div class="span9" style="margin-top: 50px;">
           <form class="form-search">
             <div id="searchDiv" class="input-append">
               <input type="text" id="txtSearch" class="span2 search-query" placeholder="Search">
@@ -59,38 +58,35 @@
           </form>
           <div style="clear: left"></div>
 
-          <div id="view" class="row">
+          <div id="view">
             <div class="row">
-            <div id="map_canvas" class="span3"></div>
-            <div id="streetview" class="span6"></div>
+              <div id="map_canvas" class="span3"></div>
+              <div id="streetview" class="span6"></div>
+            </div>
           </div>
-          
-          <div id="control_panel">
-            <div id="control">
-              <!--
-              <div style="float:left;"><input type="button" name="btnSeeAround" id="btnSeeAround" class="btn controlBtn" value="見渡す" /></div>
-              -->
-              <div style="float: left; margin-left: 20%">&nbsp;</div>
-              <div style="float: left"><button name="btnPlay" id="btnPlay" class="btn btn-info controlBtn"><i class="icon-play icon-white" data-original-title="再生"></i></button></div>
+
+          <div id="control">
+            <div style="margin-left: 21%; margin-top: 5px">
+              <div style="float: left"><button name="btnPlay" id="btnPlay" class="btn btn-info controlBtn" data-original-title="再生"><i class="icon-play icon-white"></i></button></div>
               <div style="float: left"><button name="btnStop" id="btnStop" class="btn btn-primary controlBtn" data-original-title="停止"><i class="icon-stop icon-white"></i></button></div>
               <span style="margin-top: 10px; float:left">　再生速度: </span>
               <div style="float: left"><div id="playSpeedSlider"></div></div>
               <div id="distance" style="float: left"></div>
               <div><img src="images/running.gif" id="running" style="display: none;"></img></div>
               <div style="clear: left"></div>
-              <div id="panoramaSlider"></div>
             </div>
+            <div id="panoramaSlider"></div>
           </div>
           <div id="message" class="alert alert-error fade in" style="display:none; margin-top: 20px;">
             <button type="button" class="close" data-dismiss="alert">&times;</button>
             再生データがありません。
           </div>
         </div>
+
+        <div class="span2"></div>
       </div>
-        
-      <div class="span2"></div>
     </div>
-    
+
     <br/><hr/>
     緯度: <input type="text" name="lat" id="lat" />
     経度: <input type="text" name="lng" id="lng" />
