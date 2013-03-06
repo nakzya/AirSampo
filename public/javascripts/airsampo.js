@@ -34,7 +34,7 @@ function PanoramaData(panorama) {
     this.pitch = panorama.getPov().pitch;
     this.zoom = panorama.getZoom();
     this.distance = 0;
-  
+
   } else if (arguments.length == 0) {
     this.lat = INIT_LAT;
     this.lng = INIT_LNG;
@@ -48,11 +48,11 @@ function PanoramaData(panorama) {
 // トップ画面 初期処理
 function initialize() {
   // サンプルコースのサムネイル設定
-  for (var i = 1; i <= 6; i++) {
+  for (var i = 1; i <= 4; i++) {
     setCourseThumbnail(i);
   }
-  
-  $("#btnCourse1").bind("click", function(event) {  
+
+  $("#btnCourse1").bind("click", function(event) {
     stop();  // 念のため停止処理
     event.preventDefault();
   });
@@ -71,16 +71,6 @@ function initialize() {
     stop();  // 念のため停止処理
     event.preventDefault();
   });
-  
-  $("#btnCourse5").bind("click", function(event) {
-    stop();  // 念のため停止処理
-    event.preventDefault();
-  });
-
-  $("#btnCourse6").bind("click", function(event) {
-    stop();  // 念のため停止処理
-    event.preventDefault();
-  });
 }
 
 // 共通 初期処理
@@ -92,7 +82,7 @@ function common_initialize() {
     mapTypeId: google.maps.MapTypeId.ROADMAP
   };
   map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
-  
+
   /*
   var marker = new google.maps.Marker({
     position: startPosition,
@@ -103,11 +93,11 @@ function common_initialize() {
   google.maps.event.addListener(marker, "dragend", function() {
     var p = marker.position;
     showPositionInfo(p, null);
-    
+
     movePanorama(p);
   });
 */
-  
+
   var panoramaOptions = {
     position: startPosition,
     pov: {
@@ -120,17 +110,17 @@ function common_initialize() {
   map.setStreetView(panorama);
   google.maps.event.trigger(panorama, 'resize');
   //movePanorama(startPosition);
-  
+
   $("#btnRecord").tooltip();
   $("#btnPlay").tooltip();
   $("#btnStop").tooltip();
-  
+
   // 「Search」ボタン クリックイベント
   $("#btnSearch").bind("click", function(event) {
     if (!geocoder) {
       geocoder = new google.maps.Geocoder();
     }
-  
+
     var address = $("#txtSearch").val();
     geocoder.geocode({'address': address}, function(results, status) {
       if (status == google.maps.GeocoderStatus.OK) {
@@ -141,10 +131,16 @@ function common_initialize() {
         alert(address + "は見つかりませんでした。");
       }
     });
-  
+
     event.preventDefault();
   });
-  
+
+  // 「現在地」ボタン クリックイベント
+  $("#btnHere").bind("click", function(event) {
+    getCurrentPosition();
+    event.preventDefault();
+  });
+
   // 「再生」ボタン クリックイベント
   $("#btnPlay").bind("click", function(event) {
     play();
@@ -156,13 +152,13 @@ function common_initialize() {
     stop();
     event.preventDefault();
   });
-  
+
   // 「見渡す」ボタン クリックイベント
   $("#btnSeeAround").bind("click", function(event) {
     seeAround(0, 45, panorama.getPov().heading);
     event.preventDefault();
   });
-  
+
   // 再生速度スライダーの設定
   $("#playSpeedSlider").slider({
     range: "min",
@@ -185,10 +181,10 @@ function play_initialize(no) {
   // StreetViewイベントハンドラ追加 "position_changed"
   google.maps.event.addListener(panorama, "position_changed", function() {
     showPositionInfo(panorama.getPosition(), panorama.getPov());
-    
+
     map.panTo(panorama.getPosition());
   });
-  
+
   // StreetViewイベントハンドラ追加 "pov_changed"
   google.maps.event.addListener(panorama, "pov_changed", function() {  // zoom_changedイベントを含む
     showPositionInfo(panorama.getPosition(), panorama.getPov());
@@ -201,9 +197,9 @@ function play_initialize(no) {
 function record_initialize() {
   // 共通初期処理
   common_initialize();
-  
+
   map.setZoom(4);
-  
+
   initPanoramaSlider();
 
   // StreetViewイベントハンドラ追加 "position_changed"
@@ -227,10 +223,10 @@ function record_initialize() {
       // 操作を記録
       panoramaDataArray.push(panoData);
     }
-    
+
     map.panTo(panorama.getPosition());
   });
-  
+
   // StreetViewイベントハンドラ追加 "pov_changed"
   google.maps.event.addListener(panorama, "pov_changed", function() {  // zoom_changedイベントを含む
     showPositionInfo(panorama.getPosition(), panorama.getPov());
@@ -243,7 +239,7 @@ function record_initialize() {
       if (panoDataPrevious.heading != panorama.getPov().heading ||
           panoDataPrevious.pitch   != panorama.getPov().pitch ||
           panoDataPrevious.zoom    != panorama.getPov().zoom) {
-    
+
         var panoData = new PanoramaData(panorama);
         panoData.zoom = zoom;  // 何故かzoomだけずれるため再設定
 
@@ -254,13 +250,13 @@ function record_initialize() {
       }
     }
   });
-  
+
   // 「記録」ボタン クリックイベント
   $("#btnRecord").bind("click", function(event) {
     toggleRecord();
     event.preventDefault();
   });
-  
+
   // データ書き込み用InfoWindow作成
   $("#btnWrite").bind("click", function(event) {
     var str = '{"Position":[\n'
@@ -285,18 +281,18 @@ function setCourseThumbnail(num) {
     dataType: "json",
     success: function(json) {
       var selectorStr = "#course" + num + "+div h3";
-    
+
       // タイトル
       if (json.Title) {
         $(selectorStr).text(json.Title);
       }
-      
+
       // 説明
       if (json.Description) {
         selectorStr += "+p";
         $(selectorStr).text(json.Description);
       }
-      
+
       // サムネイル
       if (json.Position) {
         var startPosition = new google.maps.LatLng(json.Position[0].lat, json.Position[0].lng);
@@ -313,9 +309,15 @@ function setCourseThumbnail(num) {
           panControl: false,
           zoomControl: false
         };
-        
+
         var panorama_thumbnail = new google.maps.StreetViewPanorama(document.getElementById("course" + String(num)), panoramaOptions);
-        
+
+        // サムネイルを静止画で表示する場合（こっちのほうが軽い）　※ただし場所によっては画像が取れないことがある しかもその判定は不可
+        /*
+        var thumbnailImg = "<img src=\"http://maps.googleapis.com/maps/api/streetview?size=360x200&location=" + json.Position[0].lat + "," + json.Position[0].lng + "&heading=" + json.Position[0].heading + "&pitch=" + json.Position[0].pitch + "&sensor=false\" />";
+        $("#course" + String(num)).append(thumbnailImg);
+        */
+
         // 初期LatLngがGray表示の場合があるため
         //movePanorama(startPosition, panorama_thumbnail);
       }
@@ -334,12 +336,12 @@ function loadCourseJSON(num) {
       if (json.Title) {
         $("#title").text(json.Title);
       }
-      
+
       // 説明
       if (json.Description) {
         $("#description").text(json.Description);
       }
-    
+
       // 位置情報
       if (json.Position) {
         var retArry = [];
@@ -355,9 +357,9 @@ function loadCourseJSON(num) {
           retArry.push(panoData);
         }
         panoramaDataArray = retArry;
-        
+
         setPanoramaSlider();
-        
+
         var panoDataFirst = panoramaDataArray[0];
         panorama.setPosition(panoData2LatLng(panoDataFirst));
         panorama.setPov({
@@ -392,6 +394,18 @@ function initPanoramaSlider() {
   });
 }
 
+// 「現在地」ボタン
+function getCurrentPosition() {
+  if(navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(position) {
+      movePanorama(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
+    },
+    function() {
+      alert("ご使用のブラウザはGoeLocation（現在地取得機能）に対応していません。");
+    });
+  }
+}
+
 // 「記録する」ボタン
 var recordFlg = 0;  // 0:記録していない 1:記録中
 function toggleRecord() {
@@ -399,7 +413,7 @@ function toggleRecord() {
   if (recordFlg == 0) {  // 初めての記録、または最初から記録し直す場合
     if (panoramaDataArrayIdx == 0) {
       recordFlg = 1;
-      
+
       $("#btnRecord").tooltip("hide").attr("data-original-title", "記録終了").tooltip("fixTitle");
       $("#btnRecord").popover({
         content: "もう一度押すと記録を終了します。",
@@ -408,15 +422,15 @@ function toggleRecord() {
       $("#btnPlay").attr("disabled", "disabled");
       $("#btnStop").attr("disabled", "disabled");
       $("#btnSeeAround").attr("disabled", "disabled");
-      
+
       map.setZoom(15);
-      
+
       deleteLines();        // 一旦Map上の既存の線を全て削除
       deleteMoveMarkers();  // 一旦Map上の既存の開始・終了マーカーを削除
-      
+
       recordDistance = 0;
       $("#distance").html("0m");
-      
+
       // 記録開始地点にマーカーを設置
       var startMarker = new google.maps.Marker({
         position: panorama.getPosition(),
@@ -425,10 +439,10 @@ function toggleRecord() {
         title: "記録開始地点"
       });
       markers.push(startMarker);
-      
+
       panoramaDataArray = [];
       panoramaDataArray.push(new PanoramaData(panorama));  // 記録開始地点を登録
-    
+
     } else {  // 途中から記録し直す場合
       var confirmStr;
       if (panoramaDataArrayIdx == panoramaDataArray.length - 1) {
@@ -447,9 +461,9 @@ function toggleRecord() {
           "OK": function() {
             $(this).dialog("close");
             $("#dialog").remove();
-            
+
             recordFlg = 1;
-            
+
             $("#btnRecord").tooltip("hide").attr("data-original-title", "記録終了").tooltip("fixTitle");
             $("#btnRecord").popover({
               content: "もう一度押すと記録を終了します。",
@@ -458,7 +472,7 @@ function toggleRecord() {
             $("#btnPlay").attr("disabled", "disabled");
             $("#btnStop").attr("disabled", "disabled");
             $("#btnSeeAround").attr("disabled", "disabled");
-            
+
             // 現在の地点以降を削除
             panoramaDataArray.splice(panoramaDataArrayIdx + 1, panoramaDataArray.length - 1);
           },
@@ -466,30 +480,30 @@ function toggleRecord() {
             $(this).dialog("close");
             deleteMoveMarkers();
             $("#dialog").remove();
-            
+
             $("#btnRecord").popover("hide");
             $("#btnPlay").removeAttr("disabled");
             $("#btnStop").removeAttr("disabled");
             $("#btnSeeAround").removeAttr("disabled");
-            
+
             return;
           }
         }
       });
       $("#dialog").dialog("open");
     }
-    
+
   // 記録終了
   } else {
     recordFlg = 0;
-    
+
     $("#btnRecord").tooltip("hide").attr("data-original-title", "記録").tooltip("fixTitle");
     $("#btnPlay").removeAttr("disabled");
     $("#btnPlay").tooltip("hide").attr("data-original-title", "再生").tooltip("fixTitle");
     $("#btnStop").removeAttr("disabled");
     $("#btnStop").tooltip("hide").attr("data-original-title", "停止").tooltip("fixTitle");
     $("#btnSeeAround").removeAttr("disabled");
-  
+
     // 記録終了地点にマーカーを設置
     var endMarker = new google.maps.Marker({
       position: panorama.getPosition(),
@@ -498,7 +512,7 @@ function toggleRecord() {
       title: "記録終了地点"
     });
     markers.push(endMarker);
-    
+
     // 再生スライダーを設定
     setPanoramaSlider();
   }
@@ -511,34 +525,34 @@ function play() {
     deleteMoveMarkers();
     initPanoramaSlider();
     return;
-  
+
   } else {
     $("#message").css("display", "none");
   }
-  
+
   // 停止 → 再生
   if (playMode == 0) {
     playMode = 1;
     $("#btnPlay i").addClass("icon-pause");
     $("#btnPlay i").removeClass("icon-play");
     $("#btnPlay").tooltip("hide").attr("data-original-title", "一時停止").tooltip("fixTitle");
-    
+
     $("#running").css("display", "block");
     $("#panoramaSlider").slider("disable");
 
     //setPanoramaContralEnable(false);
 
     panoramaDataArrayIdx = 0;
-    
+
     $("#btnRecord").attr("disabled", "disabled");
-    
+
     var panoDataFirst = panoramaDataArray[0];
-    
+
     deleteLines();        // 一旦Map上の既存の線を全て削除
     deleteMoveMarkers();  // 一旦Map上の既存の開始・終了マーカーを削除
-    
+
     $("#distance").html("0m");
-    
+
     // スタート地点にマーカーを設置
     var startMarker = new google.maps.Marker({
       position: panoData2LatLng(panoDataFirst),
@@ -547,7 +561,7 @@ function play() {
       title: "スタート地点"
     });
     markers.push(startMarker);
-    
+
     // 位置・向き・角度・ズームを初期化
     panorama.setPosition(panoData2LatLng(panoDataFirst));
     panorama.setPov({
@@ -557,9 +571,9 @@ function play() {
     panorama.setZoom(panoDataFirst.zoom);
 
     $("#panoramaSlider").slider("value", 1);
-    
+
     actionInterval(0);
-  
+
   // 再生 → 一時停止
   } else if (playMode == 1) {
     playMode = 2;
@@ -567,24 +581,24 @@ function play() {
     $("#btnPlay i").addClass("icon-play");
     $("#btnPlay i").removeClass("icon-pause");
     $("#btnPlay").tooltip("hide").attr("data-original-title", "再生").tooltip("fixTitle");
-    
+
     $("#running").css("display", "none");
-    
+
     $("#panoramaSlider").slider("enable");
-    
+
     //setPanoramaContralEnable(true);
-  
+
   // 一時停止 → 再生
   } else if (playMode == 2) {
     playMode = 1;
-    
+
 
     $("#btnPlay i").addClass("icon-pause");
     $("#btnPlay i").removeClass("icon-play");
     $("#btnPlay").tooltip("hide").attr("data-original-title", "一時停止").tooltip("fixTitle");
-    
+
     $("#running").css("display", "block");
-    
+
     //setPanoramaContralEnable(false);
 
     actionInterval(panoramaDataArrayIdx);
@@ -602,7 +616,7 @@ function actionInterval(arryIdx) {
     // 終了処理
     if (arryIdx >= panoramaDataArray.length) {
       playMode = 0;
-      
+
       // ゴール地点にマーカーを設置
       var goalMarker = new google.maps.Marker({
         position: panoData2LatLng(panoData),
@@ -620,7 +634,7 @@ function actionInterval(arryIdx) {
       $("#running").css("display", "none");
       $("#panoramaSlider").slider("value", arryIdx);
       $("#panoramaSlider").slider("enable");
-      
+
       return;
     }
 
@@ -661,20 +675,20 @@ function actionInterval(arryIdx) {
     } else if (panoData.zoom != panoDataNext.zoom) {
       currentTimer = setTimeout(function() {
         panorama.setZoom(panoDataNext.zoom);
-        
+
         actionInterval(arryIdx);
       }, 1000);
     }
 
     $("#panoramaSlider").slider("value", arryIdx);
-  
+
     panoramaDataArrayIdx = arryIdx;
-  
+
   // 「停止」ボタン押下直後
   } else if (playMode == 0) {
     deleteLines();        // 念のためMap上の既存の線を全て削除
     deleteMoveMarkers();  // 念のためMap上の既存の開始・終了マーカーを削除
-    
+
     $("#distance").html("0m");
 
     // 開始地点に戻る
@@ -686,7 +700,7 @@ function actionInterval(arryIdx) {
 // 「停止」ボタン
 function stop() {
   clearTimeout(currentTimer);
-  
+
   // 開始地点に戻る
   var panoData = panoramaDataArray[0];
   panorama.setPosition(panoData2LatLng(panoData));
@@ -695,7 +709,7 @@ function stop() {
     pitch: panoData.pitch
   });
   panorama.setZoom(panoData.zoom);
-  
+
   playMode = 0;
 
   $("#btnRecord").removeAttr("disabled");
@@ -704,14 +718,14 @@ function stop() {
   $("#btnSeeAround").removeAttr("disabled");
   $("#panoramaSlider").slider("enable");
   $("#panoramaSlider").slider("value", 0);
-  
+
   deleteLines();        // Map上の既存の線を全て削除
   deleteMoveMarkers();  // Map上の既存の開始・終了マーカーを削除
-    
+
   $("#distance").html("0m");
-  
+
   $("#running").css("display", "none");
-  
+
   panoramaDataArrayIdx = 0;
 }
 
@@ -767,10 +781,10 @@ function setPanoramaSlider() {
       });
       panorama.setZoom(panoData.zoom);
       $("#distance").html(panoData.distance + "m");
-      
+
       // 一時停止中の場合、再開地点を変更
       panoramaDataArrayIdx = ui.value - 1;
-      
+
       // スライダー変更地点まで線を引き直す
       deleteLines();
       drawPlayLines(ui.value - 1);
@@ -879,7 +893,7 @@ function roundEx(n, keta) {
   // 小数点なし
   if (str.indexOf(".") == -1) {
     return n2;
-    
+
   // 小数点あり
   } else {
     return Number(str.substring(0, str.indexOf(".") + (keta * -1) + 1));

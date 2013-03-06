@@ -2,7 +2,7 @@
 /*
  * GET home page.
  */
- 
+
 var url = require("url");
 
 exports.index = function(req, res) {
@@ -15,4 +15,8 @@ exports.play = function(req, res) {
 
 exports.record = function(req, res) {
   res.render('record', {});
+}
+
+exports.about = function(req, res) {
+  res.render('about', {});
 }

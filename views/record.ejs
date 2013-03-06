@@ -47,27 +47,30 @@
       </div>
     </div>
 
-
     <div class="container">
       <div class="row">
         <div class="span1"></div>
 
-        <div class="span9" style="margin-top: 50px;">
+        <div class="span8" style="margin-top: 50px;">
+          <!-- Search -->
           <form class="form-search">
             <div id="searchDiv" class="input-append">
               <input type="text" id="txtSearch" class="span2 search-query" placeholder="Search">
               <button id="btnSearch" class="btn">Search</button>
             </div>
+            <input type="button" id="btnHere" class="btn" value="現在地"></input>
           </form>
           <div style="clear: left"></div>
 
+          <!-- Map & StreetView -->
           <div id="view">
             <div class="row">
               <div id="map_canvas" class="span3"></div>
-              <div id="streetview" class="span6"></div>
+              <div id="streetview" class="span5"></div>
             </div>
           </div>
 
+          <!-- Control Button -->
           <div id="control">
             <div style="margin-left: 21%; margin-top: 5px">
               <div style="float: left"><button name="btnRecord" id="btnRecord" class="btn btn-danger controlBtn" data-original-title="記録"><i class="icon-facetime-video icon-white"></i></button></div>
@@ -87,7 +90,25 @@
           </div>
         </div>
 
-        <div class="span2"></div>
+        <!-- Side Bar -->
+        <div class="span2" style="margin-top: 90px;">
+          <div class="sbox">
+            <h2 style="text-align:center;">おすすめ動画</h2>
+            <div class="sboxInner">
+              <ul class="unstyled">
+                <li class="clearfix">
+                  あんなとこ
+                </li>
+                <li class="clearfix">
+                  こんなとこ
+                </li>
+              </ul>
+              <div style="text-align: right"><a href="#">&raquo; もっと見る (123)</a></div>
+            </div><!-- /sboxInner -->
+          </div><!-- /sbox -->
+        </div>
+
+        <div class="span1"></div>
       </div>
     </div>
 
@@ -101,11 +122,11 @@
     pitch: <input type="text" name="pitch" id="pitch" />
     zoom: <input type="text" name="zoom" id="zoom" />
 
-    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
-    <script type="text/javascript" src="javascripts/jquery-1.9.1.js"></script>
-    <script type="text/javascript" src="javascripts/jquery-ui-1.10.1.custom.min.js"></script>
-    <script type="text/javascript" src="javascripts/bootstrap.min.js"></script>
-    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDoj7QWz-XTSo2QhYnj9IMWRXkrlMjYqIU&libraries=geometry&sensor=false"></script>
-    <script type="text/javascript" src="javascripts/airsampo.js"></script>
+    <script src="http://www.google.com/jsapi"></script>
+    <script src="javascripts/jquery-1.9.1.js"></script>
+    <script src="javascripts/jquery-ui-1.10.1.custom.min.js"></script>
+    <script src="javascripts/bootstrap.min.js"></script>
+    <script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDoj7QWz-XTSo2QhYnj9IMWRXkrlMjYqIU&libraries=geometry&sensor=true"></script>
+    <script src="javascripts/airsampo.js"></script>
   </body>
 </html>
