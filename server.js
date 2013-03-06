@@ -29,6 +29,9 @@ app.configure('development', function(){
 app.get('/', routes.index);
 app.get('/play', routes.play);
 app.get('/record', routes.record);
+
+app.get('/privacy', routes.privacy);
+app.get('/rules', routes.rules);
 app.get('/about', routes.about);
 
 http.createServer(app).listen(app.get('port'), function(){

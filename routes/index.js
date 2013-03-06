@@ -17,6 +17,14 @@ exports.record = function(req, res) {
   res.render('record', {});
 }
 
+exports.privacy = function(req, res) {
+  res.render('privacy', {});
+}
+
+exports.rules = function(req, res) {
+  res.render('rules', {});
+}
+
 exports.about = function(req, res) {
   res.render('about', {});
 }

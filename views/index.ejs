@@ -6,11 +6,17 @@
     <link rel="stylesheet" href="stylesheets/jquery-ui-1.10.1.custom.min.css" />
     <link rel="stylesheet" href="stylesheets/bootstrap.min.css" />
     <link rel="stylesheet" href="stylesheets/bootstrap-responsive.min.css" />
+    <script src="http://www.google.com/jsapi"></script>
+    <script src="javascripts/jquery-1.9.1.js"></script>
+    <script src="javascripts/jquery-ui-1.10.1.custom.min.js"></script>
+    <script src="javascripts/bootstrap.min.js"></script>
+    <script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDoj7QWz-XTSo2QhYnj9IMWRXkrlMjYqIU&libraries=geometry&sensor=false"></script>
+    <script src="javascripts/airsampo.js"></script>
     <title>エアーさんぽ。</title>
   </head>
   <body onload="initialize()">
 
-    <!-- Footer -->
+    <!-- Navigation Bar -->
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
@@ -23,7 +29,6 @@
           <div class="nav-collapse collapse">
             <ul class="nav">
               <li><a href="/record">記録する</a></li>
-              <li><a href="/about">このサイトについて</a></li>
               <li><a href="#contact">Contact</a></li>
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">aaa@bbb.cc <b class="caret"></b></a>
@@ -107,6 +112,7 @@
           </ul>
         </div><!-- /span8 -->
 
+        <!-- Side Bar -->
         <div class="span2">
           <div class="sbox">
             <h2 style="text-align:center;">このサイトについて</h2>
@@ -119,7 +125,6 @@
           <div class="sbox">
             <h2 style="text-align:center;">新着動画</h2>
             <div class="sboxInner">
-
               <ul class="unstyled">
                 <li class="clearfix">
                   あんなとこ
@@ -128,11 +133,9 @@
                   こんなとこ
                 </li>
               </ul>
-
               <div style="text-align: right"><a href="#">&raquo; もっと見る (123)</a></div>
             </div><!-- /sboxInner -->
           </div><!-- /sbox -->
-
         </div><!-- /span2 -->
 
         <div class="span1"></div>
@@ -149,24 +152,14 @@
 
     </div><!-- /container -->
 
-
-
-
-    <script src="http://www.google.com/jsapi"></script>
-    <script src="javascripts/jquery-1.9.1.js"></script>
-    <script src="javascripts/jquery-ui-1.10.1.custom.min.js"></script>
-    <script src="javascripts/bootstrap.min.js"></script>
-    <script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDoj7QWz-XTSo2QhYnj9IMWRXkrlMjYqIU&libraries=geometry&sensor=false"></script>
-    <script src="javascripts/airsampo.js"></script>
+    <div id="footer" class="container">
+      <ul>
+        <li><a href="/privacy">プライバシーポリシー</a></li>
+        <li>|</li>
+        <li><a href="/rules">利用規約</a></li>
+        <li>|</li>
+        <li><a href="/about">エラーさんぽ。（仮）について</a></li>
+      </ul>
+    </div>
   </body>
 </html>
-
-<pre>
-TODO
- ・経路検索と連動
- ・情報ウィンドウ（panoramaにオーバーレイ、ただしMapとのオーバーレイ共有は無理そう）
- ・Responsiveデザイン
- ・StaticMapAPIで静止画をダウンロード（別ウィンドウで静画を表示）
- ・SNS対応
- ・ランダム表示
-</pre>

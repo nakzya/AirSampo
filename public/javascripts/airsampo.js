@@ -9,8 +9,8 @@ var INIT_LNG = 139.765491;
 
 var INIT_HEADING = 127.70307765233667;
 var INIT_PITCH = 1.9147722283955624;
-var PLAY_SPEED_UNIT = 50;
-var PLAY_SPEDD_SLIDER_INIT_VALUE = 20;
+var PLAY_SPEED_UNIT = 40;
+var PLAY_SPEDD_SLIDER_INIT_VALUE = 50;
 
 var map;
 var sv = new google.maps.StreetViewService();
@@ -150,12 +150,6 @@ function common_initialize() {
   // 「停止」ボタン クリックイベント
   $("#btnStop").bind("click", function(event) {
     stop();
-    event.preventDefault();
-  });
-
-  // 「見渡す」ボタン クリックイベント
-  $("#btnSeeAround").bind("click", function(event) {
-    seeAround(0, 45, panorama.getPov().heading);
     event.preventDefault();
   });
 
@@ -421,7 +415,6 @@ function toggleRecord() {
       }).popover("show");
       $("#btnPlay").attr("disabled", "disabled");
       $("#btnStop").attr("disabled", "disabled");
-      $("#btnSeeAround").attr("disabled", "disabled");
 
       map.setZoom(15);
 
@@ -471,9 +464,8 @@ function toggleRecord() {
             }).popover("show");
             $("#btnPlay").attr("disabled", "disabled");
             $("#btnStop").attr("disabled", "disabled");
-            $("#btnSeeAround").attr("disabled", "disabled");
 
-            // 現在の地点以降を削除
+            // 現在の次の地点以降を削除
             panoramaDataArray.splice(panoramaDataArrayIdx + 1, panoramaDataArray.length - 1);
           },
           "Cancel": function() {
@@ -484,7 +476,6 @@ function toggleRecord() {
             $("#btnRecord").popover("hide");
             $("#btnPlay").removeAttr("disabled");
             $("#btnStop").removeAttr("disabled");
-            $("#btnSeeAround").removeAttr("disabled");
 
             return;
           }
@@ -502,7 +493,6 @@ function toggleRecord() {
     $("#btnPlay").tooltip("hide").attr("data-original-title", "再生").tooltip("fixTitle");
     $("#btnStop").removeAttr("disabled");
     $("#btnStop").tooltip("hide").attr("data-original-title", "停止").tooltip("fixTitle");
-    $("#btnSeeAround").removeAttr("disabled");
 
     // 記録終了地点にマーカーを設置
     var endMarker = new google.maps.Marker({
@@ -626,7 +616,6 @@ function actionInterval(arryIdx) {
       });
       markers.push(goalMarker);
 
-      $("#btnSeeAround").removeAttr("disabled");
       $("#btnRecord").removeAttr("disabled");
       $("#btnPlay i").addClass("icon-play");
       $("#btnPlay i").removeClass("icon-pause");
@@ -669,7 +658,7 @@ function actionInterval(arryIdx) {
         });
 
         actionInterval(arryIdx);
-      }, 100);
+      }, 160);
 
     // ズームの変更
     } else if (panoData.zoom != panoDataNext.zoom) {
@@ -715,7 +704,6 @@ function stop() {
   $("#btnRecord").removeAttr("disabled");
   $("#btnPlay i").addClass("icon-play");
   $("#btnPlay i").removeClass("icon-pause");
-  $("#btnSeeAround").removeAttr("disabled");
   $("#panoramaSlider").slider("enable");
   $("#panoramaSlider").slider("value", 0);
 
