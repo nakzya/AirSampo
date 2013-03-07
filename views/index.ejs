@@ -64,47 +64,54 @@
         <div class="span1"></div>
         <div class="span8">
           <ul class="thumbnails">
-            <li class="span4">
+            <li id="thumbnail1" class="span4">
               <div class="thumbnail">
                 <div id="course1" class="thumbnail_course"></div>
                 <div class="caption">
                   <h3></h3>
                   <p></p>
                   <span class="label label-inverse" style="margin-bottom: 20px">さんぽ回数</span>
-                  <span class="badge badge-important">10</span>
-                  <p><a href="/play?no=1" id="btnCourse1" class="btn btn-primary btn-large">散歩する</a></p>
+                  <span class="badge badge-important" id="playCount1"></span>
+                  <p><a href="/play" id="btnCourse1" class="btn btn-primary btn-large">散歩する</a></p>
+              <!--    <p><input type="button" id="btnCourse1" class="btn btn-primary btn-large" value="散歩する"></input></p> ^-->
                 </div>
               </div>
             </li>
-            <li class="span4">
+            <li id="thumbnail2" class="span4">
               <div class="thumbnail">
                 <div id="course2" class="thumbnail_course"></div>
                 <div class="caption">
                   <h3></h3>
                   <p></p>
-                  <p><a href="/play?no=2" id="btnCourse2" class="btn btn-primary btn-large">散歩する</a></p>
+                  <span class="label label-inverse" style="margin-bottom: 20px">さんぽ回数</span>
+                  <span class="badge badge-important" id="playCount2"></span>
+                  <p><a href="/play" id="btnCourse2" class="btn btn-primary btn-large">散歩する</a></p>
                 </div>
               </div>
             </li>
           </ul>
 
-          <ul class="thumbnails">
+          <ul id="thumbnail3" class="thumbnails">
             <li class="span4">
               <div class="thumbnail">
                 <div id="course3" class="thumbnail_course"></div>
                 <div class="caption">
                   <h3></h3>
                   <p></p>
-                  <p><a href="/play?no=3" id="btnCourse3" class="btn btn-primary btn-large">散歩する</a></p>
+                  <span class="label label-inverse" style="margin-bottom: 20px">さんぽ回数</span>
+                  <span class="badge badge-important" id="playCount3"></span>
+                  <p><a href="/play" id="btnCourse3" class="btn btn-primary btn-large">散歩する</a></p>
                 </div>
               </div>
             </li>
-            <li class="span4">
+            <li id="thumbnail4" class="span4">
               <div class="thumbnail">
                 <div id="course4" class="thumbnail_course"></div>
                 <div class="caption">
                   <h3></h3>
                   <p></p>
+                  <span class="label label-inverse" style="margin-bottom: 20px">さんぽ回数</span>
+                  <span class="badge badge-important" id="playCount4"></span>
                   <p><a href="/play?no=4" id="btnCourse4" class="btn btn-primary btn-large">散歩する</a></p>
                 </div>
               </div>
@@ -123,16 +130,9 @@
           </div><!-- /sbox -->
 
           <div class="sbox">
-            <h2 style="text-align:center;">新着動画</h2>
+            <h2 style="text-align:center;">新着</h2>
             <div class="sboxInner">
-              <ul class="unstyled">
-                <li class="clearfix">
-                  あんなとこ
-                </li>
-                <li class="clearfix">
-                  こんなとこ
-                </li>
-              </ul>
+              <ul class="unstyled" id="newArrivalList"></ul>
               <div style="text-align: right"><a href="#">&raquo; もっと見る (123)</a></div>
             </div><!-- /sboxInner -->
           </div><!-- /sbox -->

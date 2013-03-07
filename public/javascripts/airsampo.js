@@ -47,10 +47,13 @@ function PanoramaData(panorama) {
 
 // トップ画面 初期処理
 function initialize() {
-  // サンプルコースのサムネイル設定
+  // 初期表示コースのサムネイル設定
   for (var i = 1; i <= 4; i++) {
     setCourseThumbnail(i);
   }
+
+  // 新着情報表示
+  showNewArrival();
 
   $("#btnCourse1").bind("click", function(event) {
     stop();  // 念のため停止処理
@@ -168,7 +171,10 @@ function common_initialize() {
 }
 
 // 再生画面 初期処理
-function play_initialize(no) {
+function play_initialize(_id) {
+  // 移動位置情報をDBからロード
+  loadCourse(_id);
+
   // 共通初期処理
   common_initialize();
 
@@ -183,8 +189,6 @@ function play_initialize(no) {
   google.maps.event.addListener(panorama, "pov_changed", function() {  // zoom_changedイベントを含む
     showPositionInfo(panorama.getPosition(), panorama.getPov());
   });
-
-  loadCourseJSON(no);
 }
 
 // 記録画面 初期処理
@@ -251,12 +255,29 @@ function record_initialize() {
     event.preventDefault();
   });
 
+  // 「確定」ボタン クリックイベント
+  $("#btnSave").bind("click", function(event) {
+    // 移動位置情報を文字列として作成 → hiddenでpost
+    var str = "";
+    for (var i = 0; i < panoramaDataArray.length; i++) {
+      var panoData = panoramaDataArray[i];
+      str += ('{"lat":"' + panoData.lat + '","lng":"' + panoData.lng + '","heading":"' + panoData.heading + '","pitch":"' + panoData.pitch + '","zoom":"' + panoData.zoom + '","distance":"' + panoData.distance + '"}');
+      if (i < panoramaDataArray.length - 1) {
+        str += ',';
+      }
+    }
+    $("#saveForm").append("<input type='hidden' name='positions' value='" + str + "'></input>");
+
+    $("#saveForm").submit();
+    event.preventDefault();
+  });
+
   // データ書き込み用InfoWindow作成
   $("#btnWrite").bind("click", function(event) {
     var str = '{"Position":[\n'
     for (var i = 0; i < panoramaDataArray.length; i++) {
       var panoData = panoramaDataArray[i];
-      str += ('  {"lat":"' + panoData.lat + '","lng":"' + panoData.lng + '","heading":"' + panoData.heading + '","pitch":"' + panoData.pitch + '","zoom":"' + panoData.zoom + '","distance":"' + panoData.distance + '"}');
+      str += ('{"lat":"' + panoData.lat + '","lng":"' + panoData.lng + '","heading":"' + panoData.heading + '","pitch":"' + panoData.pitch + '","zoom":"' + panoData.zoom + '","distance":"' + panoData.distance + '"}');
       if (i < panoramaDataArray.length - 1) {
         str += ',';
       }
@@ -267,80 +288,94 @@ function record_initialize() {
   });
 }
 
-// Courseのサムネイル設定
+// サムネイル情報を設定
 function setCourseThumbnail(num) {
   $.ajax({
-    url: "course" + String(num) + ".json",
+    url: "/course?no=" + String(num),
     cache: false,
     dataType: "json",
-    success: function(json) {
-      var selectorStr = "#course" + num + "+div h3";
+    success: function(course) {
+      var selectorStr = "#course" + String(num) + "+div h3";
 
       // タイトル
-      if (json.Title) {
-        $(selectorStr).text(json.Title);
+      if (course.title) {
+        $(selectorStr).text(course.title);
       }
 
       // 説明
-      if (json.Description) {
+      if (course.description) {
         selectorStr += "+p";
-        $(selectorStr).text(json.Description);
+        $(selectorStr).text(course.description);
+      }
+
+      // 再生回数
+      if (course.playCount) {
+        $("#playCount" + String(num)).text(course.playCount);
       }
 
       // サムネイル
-      if (json.Position) {
-        var startPosition = new google.maps.LatLng(json.Position[0].lat, json.Position[0].lng);
+      if (course.position) {
+        var position = JSON.parse(course.position[0]);
+        var startPosition = new google.maps.LatLng(position.lat, position.lng);
         var panoramaOptions = {
           position: startPosition,
           pov: {
             // 最初の位置・POVを表示
-            heading: Number(json.Position[0].heading),
-            pitch: Number(json.Position[0].pitch),
-            zoom: Number(json.Position[0].zoom)
+            heading: Number(position.heading),
+            pitch: Number(position.pitch),
+            zoom: Number(position.zoom)
           },
           addressControl: false,
           linksControl: false,
           panControl: false,
           zoomControl: false
         };
-
         var panorama_thumbnail = new google.maps.StreetViewPanorama(document.getElementById("course" + String(num)), panoramaOptions);
 
-        // サムネイルを静止画で表示する場合（こっちのほうが軽い）　※ただし場所によっては画像が取れないことがある しかもその判定は不可
-        /*
-        var thumbnailImg = "<img src=\"http://maps.googleapis.com/maps/api/streetview?size=360x200&location=" + json.Position[0].lat + "," + json.Position[0].lng + "&heading=" + json.Position[0].heading + "&pitch=" + json.Position[0].pitch + "&sensor=false\" />";
-        $("#course" + String(num)).append(thumbnailImg);
-        */
-
-        // 初期LatLngがGray表示の場合があるため
-        //movePanorama(startPosition, panorama_thumbnail);
+        $("#thumbnail" + String(num)).css("display", "block");
       }
+
+      // データを特定するために_idを飛ばす
+      $("#btnCourse" + String(num)).attr("href", "/play?_id=" + course._id);
+
+      // サムネイルを静止画で表示する場合（こっちのほうが軽い）　※ただし場所によっては画像が取れないことがある しかもその判定は不可
+      /*
+      var thumbnailImg = "<img src=\"http://maps.googleapis.com/maps/api/streetview?size=360x200&location=" + json.Position[0].lat + "," + json.Position[0].lng + "&heading=" + json.Position[0].heading + "&pitch=" + json.Position[0].pitch + "&sensor=false\" />";
+      $("#course" + String(num)).append(thumbnailImg);
+      */
+
+      // 初期LatLngがGray表示の場合があるため
+      //movePanorama(startPosition, panorama_thumbnail);
+    },
+    error: function(xhr, status, err) {
+      // データがない場合もエラーになるため非表示に
+      $("#thumbnail" + String(num)).css("display", "none");
     }
   });
 }
 
-// Courseファイルをロード
-function loadCourseJSON(num) {
+// Course情報をDBから読み込んでクライアントに展開
+function loadCourse(_id) {
   $.ajax({
-    url: "course" + String(num) + ".json",
+    url: "/loadcourse?_id=" + _id,
     cache: false,
     dataType: "json",
-    success: function(json) {
+    success: function(courses) {
       // タイトル
-      if (json.Title) {
-        $("#title").text(json.Title);
+      if (courses.title) {
+        $("#title").text(courses.title);
       }
 
       // 説明
-      if (json.Description) {
-        $("#description").text(json.Description);
+      if (courses.description) {
+        $("#description").text(courses.description);
       }
 
       // 位置情報
-      if (json.Position) {
+      if (courses.position) {
         var retArry = [];
-        for (var i = 0; i < json.Position.length; i++) {
-          var data = json.Position[i];
+        for (var i = 0; i < courses.position.length; i++) {
+          var data = JSON.parse(courses.position[i]);
           var panoData = new PanoramaData();
           panoData.lat = data.lat;
           panoData.lng = data.lng;
@@ -354,6 +389,7 @@ function loadCourseJSON(num) {
 
         setPanoramaSlider();
 
+        // 初期位置の設定
         var panoDataFirst = panoramaDataArray[0];
         panorama.setPosition(panoData2LatLng(panoDataFirst));
         panorama.setPov({
@@ -366,14 +402,34 @@ function loadCourseJSON(num) {
   });
 }
 
-/*
-function smoothScroll(elem) {
-  var href= elem.attr("href");
-  var target = $(href == "#" || href == "" ? 'html' : href);
-  var position = target.offset().top - 50;
-  $('body,html').animate({scrollTop:position}, 500, 'swing');
+// 新着情報を表示
+function showNewArrival() {
+  $.ajax({
+    url: "/newArrival",
+    cache: false,
+    dataType: "json",
+    success: function(courses) {
+      var ul = $("#newArrivalList").append(li);
+      for (var i = 0; i < courses.length; i++) {
+        var course = courses[i];
+        var firstPosition = JSON.parse(course.position[0]);
+        var imgLink = $("<a href='/play?_id=" + course._id + "'></a>");
+        var thumbnailImg = "<img src=\"http://maps.googleapis.com/maps/api/streetview?size=360x200&location=" + firstPosition.lat + "," + firstPosition.lng + "&heading=" + firstPosition.heading + "&pitch=" + firstPosition.pitch + "&sensor=false\" />";
+        imgLink.append(thumbnailImg);
+        ul.append(imgLink);
+
+        var li = $("<li class='clearfix'></li>");
+        var title = $("<a href='/play?_id=" + course._id + "'>" + course.title + "</a>");
+        var descriptionStr = course.description.length > 26 ? course.description.substr(0, 25) + "..." : course.description;
+        var description = $("<p>" + descriptionStr + "</p>");
+        li.append(title);
+        li.append(description);
+        ul.append(li);
+        ul.append($("<hr>"));
+      }
+    }
+  });
 }
-*/
 
 // 再生スライダーを初期化
 function initPanoramaSlider() {
@@ -564,6 +620,8 @@ function play() {
 
     actionInterval(0);
 
+    $.get("/incrementPlayCount?_id=" + $("#_id").val());
+
   // 再生 → 一時停止
   } else if (playMode == 1) {
     playMode = 2;
@@ -692,13 +750,14 @@ function stop() {
 
   // 開始地点に戻る
   var panoData = panoramaDataArray[0];
-  panorama.setPosition(panoData2LatLng(panoData));
-  panorama.setPov({
-    heading: panoData.heading,
-    pitch: panoData.pitch
-  });
-  panorama.setZoom(panoData.zoom);
-
+//  if (panoData) {
+    panorama.setPosition(panoData2LatLng(panoData));
+    panorama.setPov({
+      heading: panoData.heading,
+      pitch: panoData.pitch
+    });
+    panorama.setZoom(panoData.zoom);
+//  }
   playMode = 0;
 
   $("#btnRecord").removeAttr("disabled");
@@ -715,39 +774,6 @@ function stop() {
   $("#running").css("display", "none");
 
   panoramaDataArrayIdx = 0;
-}
-
-// 「見渡す」ボタン
-var heading = 0;
-var seeAroundCnt = 0;
-function seeAround(headingFlg, angle, originalHeading) {
-  var timerId = setInterval(function() {
-    panorama.setPov({
-      heading: originalHeading + heading,
-      pitch: panorama.getPov().pitch
-    });
-    if (headingFlg == 0) {
-      if (heading > angle * -1) {
-        heading--;
-      } else {
-        clearInterval(timerId);
-        seeAroundCnt++;
-        if (seeAroundCnt < 2) {
-          seeAround(1, 45, originalHeading);
-        } else {
-          seeAroundCnt = 0;
-        }
-      }
-    } else if (headingFlg == 1) {
-      if (heading < angle) {
-        heading++;
-      } else {
-        clearInterval(timerId);
-        seeAroundCnt++;
-        seeAround(0, 0, originalHeading);
-      }
-    }
-  }, 50);
 }
 
 // 再生スライダーを現時点のpanoramaDataArrayで初期化
@@ -867,7 +893,9 @@ function movePanorama(latlng, pano) {
 
 // PanoramaData → google.maps.LatLng
 function panoData2LatLng(panoData) {
-  return new google.maps.LatLng(panoData.lat, panoData.lng);
+  if (panoData) {
+    return new google.maps.LatLng(panoData.lat, panoData.lng);
+  }
 }
 
 // 四捨五入
@@ -904,4 +932,134 @@ function showPositionInfo(latlng, pov) {
     $("#pitch").val(pov.pitch);
     $("#zoom").val(pov.zoom);
   }
+}
+
+// Courseのサムネイル設定
+function setCourseThumbnailFromJSON(num) {
+  $.ajax({
+    url: "course" + String(num) + ".json",
+    cache: false,
+    dataType: "json",
+    success: function(json) {
+      var selectorStr = "#course" + num + "+div h3";
+
+      // タイトル
+      if (json.Title) {
+        $(selectorStr).text(json.Title);
+      }
+
+      // 説明
+      if (json.Description) {
+        selectorStr += "+p";
+        $(selectorStr).text(json.Description);
+      }
+
+      // サムネイル
+      if (json.Position) {
+        var startPosition = new google.maps.LatLng(json.Position[0].lat, json.Position[0].lng);
+        var panoramaOptions = {
+          position: startPosition,
+          pov: {
+            // 最初の位置・POVを表示
+            heading: Number(json.Position[0].heading),
+            pitch: Number(json.Position[0].pitch),
+            zoom: Number(json.Position[0].zoom)
+          },
+          addressControl: false,
+          linksControl: false,
+          panControl: false,
+          zoomControl: false
+        };
+
+        var panorama_thumbnail = new google.maps.StreetViewPanorama(document.getElementById("course" + String(num)), panoramaOptions);
+      }
+    }
+  });
+}
+
+// Courseファイルをロード
+function loadCourseFromJSON(num) {
+  $.ajax({
+    url: "course" + String(num) + ".json",
+    cache: false,
+    dataType: "json",
+    success: function(json) {
+      // タイトル
+      if (json.Title) {
+        $("#title").text(json.Title);
+      }
+
+      // 説明
+      if (json.Description) {
+        $("#description").text(json.Description);
+      }
+
+      // 位置情報
+      if (json.Position) {
+        var retArry = [];
+        for (var i = 0; i < json.Position.length; i++) {
+          var data = json.Position[i];
+          var panoData = new PanoramaData();
+          panoData.lat = data.lat;
+          panoData.lng = data.lng;
+          panoData.heading = Number(data.heading);
+          panoData.pitch = Number(data.pitch);
+          panoData.zoom = Number(data.zoom);
+          panoData.distance = data.distance;
+          retArry.push(panoData);
+        }
+        panoramaDataArray = retArry;
+
+        setPanoramaSlider();
+
+        var panoDataFirst = panoramaDataArray[0];
+        panorama.setPosition(panoData2LatLng(panoDataFirst));
+        panorama.setPov({
+          heading: panoDataFirst.heading,
+          pitch: panoDataFirst.pitch
+        });
+        panorama.setZoom(panoDataFirst.zoom);
+      }
+    }
+  });
+}
+
+// 「見渡す」ボタン
+var heading = 0;
+var seeAroundCnt = 0;
+function seeAround(headingFlg, angle, originalHeading) {
+  var timerId = setInterval(function() {
+    panorama.setPov({
+      heading: originalHeading + heading,
+      pitch: panorama.getPov().pitch
+    });
+    if (headingFlg == 0) {
+      if (heading > angle * -1) {
+        heading--;
+      } else {
+        clearInterval(timerId);
+        seeAroundCnt++;
+        if (seeAroundCnt < 2) {
+          seeAround(1, 45, originalHeading);
+        } else {
+          seeAroundCnt = 0;
+        }
+      }
+    } else if (headingFlg == 1) {
+      if (heading < angle) {
+        heading++;
+      } else {
+        clearInterval(timerId);
+        seeAroundCnt++;
+        seeAround(0, 0, originalHeading);
+      }
+    }
+  }, 50);
+}
+
+function smoothScroll(elem) {
+  var href= elem.attr("href");
+  var target = $(href == "#" || href == "" ? 'html' : href);
+  var position = target.offset().top - 50;
+  $('body,html').animate({scrollTop:position}, 500, 'swing');
 }

@@ -10,11 +10,19 @@
     <script src="javascripts/jquery-1.9.1.js"></script>
     <script src="javascripts/jquery-ui-1.10.1.custom.min.js"></script>
     <script src="javascripts/bootstrap.min.js"></script>
-    <script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDoj7QWz-XTSo2QhYnj9IMWRXkrlMjYqIU&libraries=geometry&sensor=false"></script>
+    <script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDoj7QWz-XTSo2QhYnj9IMWRXkrlMjYqIU&libraries=geometry&sensor=true"></script>
     <script src="javascripts/airsampo.js"></script>
     <title>エアーさんぽ。</title>
+    <script>
+      $(document).ready(function() {
+        var _id = "<%= _id %>";
+        play_initialize(_id);
+      });
+    </script>
   </head>
-  <body onload="play_initialize(<%= no %>)">
+  <body>
+    <input type="hidden" id="_id" value="<%= _id %>"></input>
+
     <!-- Navigation Bar -->
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
@@ -56,16 +64,18 @@
       <div class="row">
         <div class="span1"></div>
 
-        <div class="span8" style="margin-top: 50px;">
+        <div class="span8" style="margin-top: 30px;">
+          <h3 id="title"></h1>
+          <p id="description"></p>
+
           <!-- Search -->
           <form class="form-search">
             <div id="searchDiv" class="input-append">
               <input type="text" id="txtSearch" class="span2 search-query" placeholder="Search">
-              <button id="btnSearch" class="btn">Search</button>
+              <button id="btnSearch" class="btn"><i class="icon-search"></i></button>
             </div>
             <input type="button" id="btnHere" class="btn" value="現在地"></input>
           </form>
-          <div style="clear: left"></div>
 
           <!-- Map & StreetView -->
           <div id="view">
@@ -95,7 +105,7 @@
         </div>
 
         <!-- Side Bar -->
-        <div class="span2" style="margin-top: 100px;">
+        <div class="span2" style="margin-top: 90px;">
           <div class="sbox">
             <h2 style="text-align:center;">おすすめ動画</h2>
             <div class="sboxInner">

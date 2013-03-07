@@ -27,11 +27,20 @@ app.configure('development', function(){
 });
 
 app.get('/', routes.index);
+app.get('/course', routes.course);
+app.get('/newArrival', routes.newArrival);
+
 app.get('/play', routes.play);
+app.get('/loadcourse', routes.loadCourse);
+app.get('/incrementPlayCount', routes.incrementPlayCount);
+
 app.get('/record', routes.record);
+app.post('/save', routes.save);
 
 app.get('/privacy', routes.privacy);
+
 app.get('/rules', routes.rules);
+
 app.get('/about', routes.about);
 
 http.createServer(app).listen(app.get('port'), function(){

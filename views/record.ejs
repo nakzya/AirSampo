@@ -62,11 +62,10 @@
           <form class="form-search">
             <div id="searchDiv" class="input-append">
               <input type="text" id="txtSearch" class="span2 search-query" placeholder="Search">
-              <button id="btnSearch" class="btn">Search</button>
+              <button id="btnSearch" class="btn"><i class="icon-search"></i></button>
             </div>
             <input type="button" id="btnHere" class="btn" value="現在地"></input>
           </form>
-          <div style="clear: left"></div>
 
           <!-- Map & StreetView -->
           <div id="view">
@@ -94,6 +93,23 @@
             <button type="button" class="close" data-dismiss="alert">&times;</button>
             再生データがありません。
           </div>
+
+          <form method="POST" action="/save" id="saveForm" class="form-horizontal">
+            <div class="control-group">
+              <label class="control-label">タイトル</label>
+              <div class="controls">
+                <input type="text" id="txtTitle" name="txtTitle" placeholder="Title">
+              </div>
+            </div>
+            <div class="control-group">
+              <label class="control-label">説明</label>
+              <div class="controls">
+                <textarea id="txtDescription" name="txtDescription" placeholder="Description"></textarea>
+              </div>
+            </div>
+            <input type="button" id="btnSave" value="確定"></input>
+          </form>
+
         </div>
 
         <!-- Side Bar -->
@@ -127,6 +143,7 @@
         <li><a href="/about">エラーさんぽ。（仮）について</a></li>
       </ul>
     </div>
+
 <!--
     <br/><hr/>
     緯度: <input type="text" name="lat" id="lat" />
@@ -137,7 +154,6 @@
     pitch: <input type="text" name="pitch" id="pitch" />
     zoom: <input type="text" name="zoom" id="zoom" />
 -->
-
 
   </body>
 </html>

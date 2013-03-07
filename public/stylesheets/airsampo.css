@@ -24,11 +24,18 @@ body {
   margin-bottom: 10px;
 }
 
+#newArrivalList * {
+  font-size: 12px;
+  line-height: 1.8em;
+}
+
 #searchDiv{
+  margin-top: 25px;
   float: left;
 }
 
 #btnHere {
+  margin-top: 25px;
   margin-left: 10px;
   border-radius:         15px;
   -webkit-border-radius: 15px;
@@ -36,7 +43,7 @@ body {
 }
 
 #view {
-  margin-top: 10px;
+  margin-top: 5px;
 }
 
 #streetview {
@@ -72,7 +79,7 @@ body {
 }
 
 /*----------------------------------------------------
-  SidbarBox
+  Footer
 ----------------------------------------------------*/
 #footer {
   background-color: #aaa;
