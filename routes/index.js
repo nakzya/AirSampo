@@ -54,8 +54,12 @@ exports.course = function(req, res) {
 // 新着
 exports.newArrival = function (req, res) {
   Course.find({}, null, {"sort": {"created": -1}, "limit": 5}, function(err, courses) {
-    console.log("newArrival : " + courses);
-    res.json(courses);
+    if (err) {
+      console.log(err);
+      res.redirect('back');
+    } else {
+      res.json(courses);
+    }
   });
 };
 
@@ -75,19 +79,21 @@ exports.loadCourse = function(req, res) {
 // 再生画面 - 再生回数をインクリメント
 exports.incrementPlayCount = function(req, res) {
   var _id = req.query._id;
+console.log("incrementPlayCount");
   Course.findOne({_id: new ObjectId(_id)}, function(err, course) {
     if (err) {
       console.log(err);
       res.redirect('back');
     } else {
-      console.log(course.playCount);
-      console.log(_id);
       Course.update(
         {"_id": new ObjectId(_id)},
         {$set: {playCount: course.playCount + 1}},
         {upsert: false},
-        function (err) {
-          console.log(err);
+        function (err, updateCnt) {
+          if (err){
+            console.log("err : " + err);
+          }
+          console.log("再生回数を : " + String(course.playCount + 1) + "にupdate");
         }
       );
     }
@@ -126,3 +132,14 @@ exports.save = function(req, res) {
   });
 };
 
+// おすすめを表示
+exports.recommend = function(req, res) {
+  Course.find({}, null, {"sort": {"playCount": -1}, "limit": 5}, function(err, courses) {
+    if (err) {
+      console.log(err);
+      res.redirect('back');
+    } else {
+      res.json(courses);
+    }
+  });
+}

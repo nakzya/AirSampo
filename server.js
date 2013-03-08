@@ -30,6 +30,8 @@ app.get('/', routes.index);
 app.get('/course', routes.course);
 app.get('/newArrival', routes.newArrival);
 
+app.get('/recommend', routes.recommend);
+
 app.get('/play', routes.play);
 app.get('/loadcourse', routes.loadCourse);
 app.get('/incrementPlayCount', routes.incrementPlayCount);

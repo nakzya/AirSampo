@@ -78,6 +78,9 @@ function initialize() {
 
 // 共通 初期処理
 function common_initialize() {
+  // おすすめ表示
+  showRecommend();
+
   var startPosition = new google.maps.LatLng(INIT_LAT, INIT_LNG);
   var mapOptions = {
     center: startPosition,
@@ -257,6 +260,23 @@ function record_initialize() {
 
   // 「確定」ボタン クリックイベント
   $("#btnSave").bind("click", function(event) {
+    if (panoramaDataArray.length == 0) {
+      alert("確定するデータがありません。");
+      return;
+    }
+
+    if ($("#txtTitle").val() == "" || $("#txtTitle").val().length == 0) {
+      if (!$("#txtTitle").parent().parent().hasClass("error")) {
+        var errorMsgSpan = $("<span id='msgSpan' class='help-inline'>タイトルを入れて下さい。</span>");
+        $("#txtTitle").parent().parent().addClass("error");
+        $("#txtTitle").parent().append(errorMsgSpan);
+      }
+      return;
+    } else {
+      $("#txtTitle").parent().parent().removeClass("error");
+      $("#msgSpan").remove();
+    }
+
     // 移動位置情報を文字列として作成 → hiddenでpost
     var str = "";
     for (var i = 0; i < panoramaDataArray.length; i++) {
@@ -268,23 +288,24 @@ function record_initialize() {
     }
     $("#saveForm").append("<input type='hidden' name='positions' value='" + str + "'></input>");
 
+    // DBに書き込み
     $("#saveForm").submit();
-    event.preventDefault();
-  });
 
-  // データ書き込み用InfoWindow作成
-  $("#btnWrite").bind("click", function(event) {
-    var str = '{"Position":[\n'
-    for (var i = 0; i < panoramaDataArray.length; i++) {
-      var panoData = panoramaDataArray[i];
-      str += ('{"lat":"' + panoData.lat + '","lng":"' + panoData.lng + '","heading":"' + panoData.heading + '","pitch":"' + panoData.pitch + '","zoom":"' + panoData.zoom + '","distance":"' + panoData.distance + '"}');
-      if (i < panoramaDataArray.length - 1) {
-        str += ',';
-      }
-      str += '\n';
-    }
-    str += ']}';
-    $("#outputArea").text(str);
+    alert("確定しました！");
+
+    // 初期位置に戻す
+    var firstPosition = panoramaDataArray[0];
+    var startPosition = new google.maps.LatLng(firstPosition.lat, firstPosition.lng);
+    movePanorama(startPosition);
+
+    panorama.setPosition(startPosition);
+    panorama.setPov({
+      heading: firstPosition.heading,
+      pitch: firstPosition.pitch,
+      zoom: firstPosition.zoom
+    });
+
+    event.preventDefault();
   });
 }
 
@@ -409,26 +430,44 @@ function showNewArrival() {
     cache: false,
     dataType: "json",
     success: function(courses) {
-      var ul = $("#newArrivalList").append(li);
-      for (var i = 0; i < courses.length; i++) {
-        var course = courses[i];
-        var firstPosition = JSON.parse(course.position[0]);
-        var imgLink = $("<a href='/play?_id=" + course._id + "'></a>");
-        var thumbnailImg = "<img src=\"http://maps.googleapis.com/maps/api/streetview?size=360x200&location=" + firstPosition.lat + "," + firstPosition.lng + "&heading=" + firstPosition.heading + "&pitch=" + firstPosition.pitch + "&sensor=false\" />";
-        imgLink.append(thumbnailImg);
-        ul.append(imgLink);
-
-        var li = $("<li class='clearfix'></li>");
-        var title = $("<a href='/play?_id=" + course._id + "'>" + course.title + "</a>");
-        var descriptionStr = course.description.length > 26 ? course.description.substr(0, 25) + "..." : course.description;
-        var description = $("<p>" + descriptionStr + "</p>");
-        li.append(title);
-        li.append(description);
-        ul.append(li);
-        ul.append($("<hr>"));
-      }
+      var ul = $("#newArrivalList");
+      setSideBarCourse(ul, courses);
     }
   });
+}
+
+// おすすめを表示
+function showRecommend() {
+  $.ajax({
+    url: "/recommend",
+    cache: false,
+    dataType: "json",
+    success: function(courses) {
+      var ul = $("#recommendList");
+      setSideBarCourse(ul, courses);
+    }
+  });
+}
+
+// サイドバーのコース情報を設定
+function setSideBarCourse(ul, courses) {
+  for (var i = 0; i < courses.length; i++) {
+    var course = courses[i];
+    var firstPosition = JSON.parse(course.position[0]);
+    var imgLink = $("<a href='/play?_id=" + course._id + "'></a>");
+    var thumbnailImg = "<img src=\"http://maps.googleapis.com/maps/api/streetview?size=360x200&location=" + firstPosition.lat + "," + firstPosition.lng + "&heading=" + firstPosition.heading + "&pitch=" + firstPosition.pitch + "&sensor=false\" />";
+    imgLink.append(thumbnailImg);
+    ul.append(imgLink);
+
+    var li = $("<li class='clearfix'></li>");
+    var title = $("<a href='/play?_id=" + course._id + "'>" + course.title + "</a>");
+    var descriptionStr = course.description.length > 26 ? course.description.substr(0, 25) + "..." : course.description;
+    var description = $("<p>" + descriptionStr + "</p>");
+    li.append(title);
+    li.append(description);
+    ul.append(li);
+    ul.append($("<hr>"));
+  }
 }
 
 // 再生スライダーを初期化
@@ -571,7 +610,6 @@ function play() {
     deleteMoveMarkers();
     initPanoramaSlider();
     return;
-
   } else {
     $("#message").css("display", "none");
   }
@@ -579,6 +617,13 @@ function play() {
   // 停止 → 再生
   if (playMode == 0) {
     playMode = 1;
+
+    // 再生回数をインクリメント
+    $.ajax({
+      url: "/incrementPlayCount?_id=" + $("#_id").val(),
+      cache: false
+    });
+
     $("#btnPlay i").addClass("icon-pause");
     $("#btnPlay i").removeClass("icon-play");
     $("#btnPlay").tooltip("hide").attr("data-original-title", "一時停止").tooltip("fixTitle");
@@ -620,8 +665,6 @@ function play() {
 
     actionInterval(0);
 
-    $.get("/incrementPlayCount?_id=" + $("#_id").val());
-
   // 再生 → 一時停止
   } else if (playMode == 1) {
     playMode = 2;
@@ -639,7 +682,6 @@ function play() {
   // 一時停止 → 再生
   } else if (playMode == 2) {
     playMode = 1;
-
 
     $("#btnPlay i").addClass("icon-pause");
     $("#btnPlay i").removeClass("icon-play");
@@ -748,6 +790,8 @@ function actionInterval(arryIdx) {
 function stop() {
   clearTimeout(currentTimer);
 
+  playMode = 0;
+
   // 開始地点に戻る
   var panoData = panoramaDataArray[0];
 //  if (panoData) {
@@ -758,7 +802,6 @@ function stop() {
     });
     panorama.setZoom(panoData.zoom);
 //  }
-  playMode = 0;
 
   $("#btnRecord").removeAttr("disabled");
   $("#btnPlay i").addClass("icon-play");
