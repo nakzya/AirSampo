@@ -39,6 +39,10 @@ app.get('/incrementPlayCount', routes.incrementPlayCount);
 app.get('/record', routes.record);
 app.post('/save', routes.save);
 
+app.get('/login', routes.login);
+
+app.post('/search', routes.search);
+
 app.get('/privacy', routes.privacy);
 
 app.get('/rules', routes.rules);

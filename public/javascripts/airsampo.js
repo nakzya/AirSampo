@@ -45,6 +45,15 @@ function PanoramaData(panorama) {
   }
 }
 
+// ナビゲーションバー 初期処理
+function navInitialize() {
+  $("#btnNavSearch").bind("click", function(req, res){
+    // 単純に<input type="submit"… にすると、なぜかボタンのアイコンが指定されないため、
+    // やむなく<button … で代用
+    $("#navSearchForm").submit();
+  })
+}
+
 // トップ画面 初期処理
 function initialize() {
   // 初期表示コースのサムネイル設定
@@ -54,6 +63,9 @@ function initialize() {
 
   // 新着情報表示
   showNewArrival();
+
+  // ナビゲーションバー初期処理
+  navInitialize()
 
   $("#btnCourse1").bind("click", function(event) {
     stop();  // 念のため停止処理
@@ -76,8 +88,8 @@ function initialize() {
   });
 }
 
-// 共通 初期処理
-function common_initialize() {
+// 再生・記録画面 共通 初期処理
+function commonInitialize() {
   // おすすめ表示
   showRecommend();
 
@@ -174,12 +186,12 @@ function common_initialize() {
 }
 
 // 再生画面 初期処理
-function play_initialize(_id) {
+function playInitialize(_id) {
   // 移動位置情報をDBからロード
   loadCourse(_id);
 
   // 共通初期処理
-  common_initialize();
+  commonInitialize();
 
   // StreetViewイベントハンドラ追加 "position_changed"
   google.maps.event.addListener(panorama, "position_changed", function() {
@@ -195,13 +207,22 @@ function play_initialize(_id) {
 }
 
 // 記録画面 初期処理
-function record_initialize() {
+function recordInitialize(_id) {
   // 共通初期処理
-  common_initialize();
+  commonInitialize();
 
-  map.setZoom(4);
+  // 記録確定後、再表示する場合
+  if (_id != "") {
+    // 移動位置情報をDBからロード
+    loadCourse(_id);
 
-  initPanoramaSlider();
+    $("#btnPlay").removeAttr("disabled");
+    $("#btnStop").removeAttr("disabled");
+
+  } else {
+     map.setZoom(4);
+     initPanoramaSlider();
+  }
 
   // StreetViewイベントハンドラ追加 "position_changed"
   google.maps.event.addListener(panorama, "position_changed", function() {
@@ -461,7 +482,7 @@ function setSideBarCourse(ul, courses) {
 
     var li = $("<li class='clearfix'></li>");
     var title = $("<a href='/play?_id=" + course._id + "'>" + course.title + "</a>");
-    var descriptionStr = course.description.length > 26 ? course.description.substr(0, 25) + "..." : course.description;
+    var descriptionStr = course.description.length > 26 ? course.description.substr(0, 24) + "..." : course.description;
     var description = $("<p>" + descriptionStr + "</p>");
     li.append(title);
     li.append(description);

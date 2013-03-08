@@ -9,6 +9,11 @@ body {
   padding-bottom: 40px;
 }
 
+#login {
+  float: left;
+  margin-right: 20px;
+}
+
 .thumbnail_course {
   width: 100%;
   height: 200px;

@@ -12,10 +12,16 @@
     <script src="javascripts/bootstrap.min.js"></script>
     <script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDoj7QWz-XTSo2QhYnj9IMWRXkrlMjYqIU&libraries=geometry&sensor=true"></script>
     <script src="javascripts/airsampo.js"></script>
+    <script>
+      $(document).ready(function() {
+        var _id = "<%= _id %>";
+        recordInitialize(_id);
+      });
+    </script>
     <title>エアーさんぽ。</title>
   </head>
-  <body onload="record_initialize()">
 
+  <body>
     <!-- Navigation Bar -->
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
@@ -27,7 +33,7 @@
           </button>
           <a class="brand" href="/">Air Sampo</a>
           <div class="nav-collapse collapse">
-            <ul class="nav">
+            <ul class="nav" style="width: 85%">
               <li class="active"><a href="/record">記録する</a></li>
               <li><a href="#contact">Contact</a></li>
               <li class="dropdown">
@@ -42,12 +48,8 @@
                   <li><a href="#">One more separated link</a></li>
                 </ul>
               </li>
+              <li style="float: right"><a href="/login">ログイン</a></li>
             </ul>
-            <form class="navbar-form pull-right">
-              <input class="span2" type="text" placeholder="Email">
-              <input class="span2" type="password" placeholder="Password">
-              <button type="submit" class="btn">Sign in</button>
-            </form>
           </div><!--/.nav-collapse -->
         </div>
       </div>
@@ -94,7 +96,7 @@
             再生データがありません。
           </div>
 
-          <form method="POST" action="/save" id="saveForm" class="form-horizontal">
+          <form method="post" action="/save" id="saveForm" class="form-horizontal">
             <div class="control-group">
               <label class="control-label">タイトル</label>
               <div class="controls">
@@ -131,6 +133,7 @@
       </div>
     </div>
 
+    <!-- Footer -->
     <div id="footer" class="container">
       <ul>
         <li><a href="/privacy">プライバシーポリシー</a></li>

@@ -10,32 +10,46 @@ var Course = model.Course;
 
 // トップ画面表示
 exports.index = function(req, res) {
-  res.render('index', {});
+  res.render("index", {});
 };
 
 // 再生画面表示
 exports.play = function(req, res) {
-  res.render('play', {_id: req.query._id});
+  res.render("play", {_id: req.query._id});
 };
 
 // 記録画面表示
 exports.record = function(req, res) {
-  res.render('record', {});
+  var _id = req.query._id;
+  if (!_id) {
+    _id = "";
+  }
+  res.render("record", {_id: _id});
 };
+
+// ログイン画面表示
+exports.login = function(req, res) {
+  res.render("login", {});
+}
+
+// 検索画面表示
+exports.search = function(req, res) {
+  res.render("searchResult", {word: req.body.txtNavSearch});
+}
 
 // プライバシーポリシー画面表示
 exports.privacy = function(req, res) {
-  res.render('privacy', {});
+  res.render("privacy", {});
 };
 
 // 利用規約画面表示
 exports.rules = function(req, res) {
-  res.render('rules', {});
+  res.render("rules", {});
 };
 
 // 「◯◯」について画面表示
 exports.about = function(req, res) {
-  res.render('about', {});
+  res.render("about", {});
 };
 
 // トップ画面 - コースのサムネイル表示
@@ -122,12 +136,12 @@ exports.save = function(req, res) {
     position   : positionArray
   });
 
-  course.save(function(err) {
+  course.save(function(err, course) {
     if (err) {
       console.log(err);
       res.redirect('back');
     } else {
-      res.redirect('/record');
+      res.redirect('/record?_id=' + course._id);
     }
   });
 };
