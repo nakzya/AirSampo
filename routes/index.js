@@ -15,7 +15,8 @@ exports.index = function(req, res) {
 
 // 再生画面表示
 exports.play = function(req, res) {
-  res.render("play", {_id: req.query._id});
+  var _id = req.query._id;
+  res.render("play", {_id: _id});
 };
 
 // 記録画面表示
@@ -52,17 +53,38 @@ exports.about = function(req, res) {
   res.render("about", {});
 };
 
+// トップ画面 - ページネーションのための件数取得
+exports.paginationTop = function(req, res) {
+  Course.count(
+    {},  // 暫定的に全件の件数を取得
+    function(err, count) {
+      if (err) {
+        console.log(err);
+        res.redirect('back');
+      } else {
+        res.json({"count": count});
+      }
+    }
+  );
+}
+
 // トップ画面 - コースのサムネイル表示
 exports.course = function(req, res) {
-  Course.find({}, function(err, courses) {
-    if (err) {
-      console.log(err);
-      res.redirect('back');
-    } else {
-      var no = req.query.no;
-      res.json(courses[no - 1]);  // 暫定的に取得した順に返すようにしている
+  var page = req.query.page;
+  var skip = (page - 1) * 4;
+  Course.find(
+    {},  // 暫定的に全件（再生回数の多い順）に取得している
+    null,
+    {sort: {playCount: -1}, skip: skip, limit: 4},
+    function(err, courses) {
+      if (err) {
+        console.log(err);
+        res.redirect('back');
+      } else {
+        res.json(courses);
+      }
     }
-  });
+  );
 }
 
 // 新着
@@ -93,7 +115,7 @@ exports.loadCourse = function(req, res) {
 // 再生画面 - 再生回数をインクリメント
 exports.incrementPlayCount = function(req, res) {
   var _id = req.query._id;
-console.log("incrementPlayCount");
+console.log("incrementPlayCount" + _id);
   Course.findOne({_id: new ObjectId(_id)}, function(err, course) {
     if (err) {
       console.log(err);
@@ -118,7 +140,7 @@ console.log("incrementPlayCount");
 exports.save = function(req, res) {
   // 移動位置情報を配列に分解
   var positionArray = [];
-  var positions = req.body["positions"];
+  var positions = req.body.positions;
   var startPos = 0;
   for (var i = 1; i < positions.length - 1; i++) {
     if (positions.charAt(i - 1) == "}" && positions.charAt(i) == "," && positions.charAt(i + 1) == "{") {
@@ -128,12 +150,16 @@ exports.save = function(req, res) {
   }
   positionArray.push(positions.substr(startPos, positions.length));  // 最後の要素をpush
 
+  // link情報
+  var linkArray = req.body.links.split(",");
+
   var course = new Course({
     owner      : "owner",
     title      : req.body["txtTitle"],
     description: req.body["txtDescription"],
     playCount  : 0,
-    position   : positionArray
+    position   : positionArray,
+    link       : linkArray
   });
 
   course.save(function(err, course) {

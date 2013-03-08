@@ -22,6 +22,8 @@
   </head>
 
   <body>
+    <input type="hidden" id="_id" value="<%= _id %>"></input>
+
     <!-- Navigation Bar -->
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
@@ -96,25 +98,27 @@
             再生データがありません。
           </div>
 
-          <form method="post" action="/save" id="saveForm" class="form-horizontal">
-            <div class="control-group">
-              <label class="control-label">タイトル</label>
-              <div class="controls">
-                <input type="text" id="txtTitle" name="txtTitle" class="span4" placeholder="Title"></input>
+          <div style="border: solid 1px;margin-top: 10px">
+            <form method="post" action="/save" id="saveForm" class="form-horizontal">
+              <div class="control-group">
+                <label class="control-label">タイトル</label>
+                <div class="controls">
+                  <input type="text" id="txtTitle" name="txtTitle" class="span4" placeholder="Title"></input>
+                </div>
               </div>
-            </div>
-            <div class="control-group">
-              <label class="control-label">説明文とか</label>
-              <div class="controls">
-                <textarea id="txtDescription" name="txtDescription" class="span5" rows="3" placeholder="Description"></textarea>
+              <div class="control-group">
+                <label class="control-label">説明文とか</label>
+                <div class="controls">
+                  <textarea id="txtDescription" name="txtDescription" class="span5" rows="3" placeholder="Description"></textarea>
+                </div>
               </div>
-            </div>
-            <div class="control-group">
-              <div class="controls">
-                <input type="button" id="btnSave" class="btn btn-inverse" value="確定"></input>
+              <div class="control-group">
+                <div class="controls">
+                  <input type="button" id="btnSave" class="btn btn-inverse" value="確定"></input>
+                </div>
               </div>
-            </div>
-          </form>
+            </form>
+          </div>
 
         </div>
 
