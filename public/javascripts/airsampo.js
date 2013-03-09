@@ -63,7 +63,7 @@ function navInitialize() {
 function setTopPagination(page, url) {
   $.ajax({
     url: url,   // 件数を引数として受け取るようにすると、再帰的に呼び出す際に不都合がある（件数の増減に対応できない）
-    cache: false,
+    cache: true,
     dataType: "json",
     success: function(data) {
       var count = data.count;
@@ -85,6 +85,7 @@ function setTopPagination(page, url) {
       }
       ul.append(prevLi);
 
+      // ページNo
       var lastPage = Math.floor((count - 1) / 4) + 1;
       for (var i = 1; i <= lastPage; i++) {
         var li = $("<li><a href=javascript:void(0)'>" + String(i) + "</a></li>");
@@ -92,7 +93,7 @@ function setTopPagination(page, url) {
           li.addClass("active");
           li.removeAttr("onclick");
         } else {
-          li.attr("onclick", "setCourseThumbnail(" + String(i) + "); setTopPagination(" + String(i) + ", '" + url + "')");
+          li.attr("onclick", "setCourseThumbnail(" + i + "); setTopPagination(" + i + ", '" + url + "')");
         }
         ul.append(li);
       }
@@ -486,8 +487,8 @@ function setCourseThumbnail(page) {
   $(".loading").css("display", "block");
 
   $.ajax({
-    url: "/course?page=" + String(page),
-    cache: false,
+    url: "/course?page=" + page,
+    cache: true,
     dataType: "json",
     success: function(courses) {
       for (var i = 0; i < courses.length; i++) {
@@ -526,8 +527,13 @@ function setCourseThumbnail(page) {
             addressControl: false,
             linksControl: false,
             panControl: false,
-            zoomControl: false
+            clickToGo: false,
+            zoomControl: false,
+            imageDateControl: false,
+            scrollwheel: false
           };
+
+        $("#thumbnail" + String(i + 1)).css("display", "block");
 
           var panorama_thumbnail =
             new google.maps.StreetViewPanorama(document.getElementById("course" + String(i + 1)), panoramaOptions);
@@ -535,7 +541,7 @@ function setCourseThumbnail(page) {
         // データを特定するために_idを飛ばす
         $("#btnCourse" + String(i + 1)).attr("href", "/play?_id=" + course._id);
 
-        $("#thumbnail" + String(i + 1)).css("display", "block");
+
       }
 
       $(".loading").css("display", "none");
@@ -1102,7 +1108,9 @@ function setPanoramaContralEnable(flg) {
     clickToGo: flg,
     addressControl: flg,
     panControl: flg,
-    linksControl: flg
+    clickToGo: flg,
+    linksControl: flg,
+    imageDateControl: false
   };
   panorama = new  google.maps.StreetViewPanorama(document.getElementById("streetview"), panoramaOptions);
   map.setStreetView(panorama);
@@ -1258,7 +1266,9 @@ function setCourseThumbnailFromJSON(num) {
           addressControl: false,
           linksControl: false,
           panControl: false,
-          zoomControl: false
+          clickToGo: false,
+          zoomControl: false,
+          scrollwheel: false
         };
 
         var panorama_thumbnail = new google.maps.StreetViewPanorama(document.getElementById("course" + String(num)), panoramaOptions);
