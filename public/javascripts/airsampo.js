@@ -160,6 +160,7 @@ function setSearchPagination(page, url, searchWord) {
 
 // トップ画面 初期処理
 function initialize() {
+  // laodingアイコン表示
   $(".loading").css("display", "block");
 
   // 初期表示コースのサムネイル設定
