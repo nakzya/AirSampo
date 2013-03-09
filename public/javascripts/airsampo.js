@@ -533,7 +533,7 @@ function setCourseThumbnail(page) {
             scrollwheel: false
           };
 
-        $("#thumbnail" + String(i + 1)).css("display", "block");
+          $("#thumbnail" + String(i + 1)).css("display", "block");
 
           var panorama_thumbnail =
             new google.maps.StreetViewPanorama(document.getElementById("course" + String(i + 1)), panoramaOptions);
