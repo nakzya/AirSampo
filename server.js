@@ -43,6 +43,7 @@ app.post('/save', routes.save);
 app.get('/login', routes.login);
 
 app.post('/search', routes.search);
+app.get('/searchResult', routes.searchResult);
 
 app.get('/privacy', routes.privacy);
 

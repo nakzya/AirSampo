@@ -51,7 +51,7 @@ function PanoramaData(panorama) {
 function navInitialize() {
   $("#btnNavSearch").bind("click", function(req, res){
     // 単純に<input type="submit"… にすると、なぜかボタンのアイコンが表示されないため、
-    // やむなく<button … で代用
+    // やむなく <button … で代用
     $("#navSearchForm").submit();
   })
 }
@@ -63,6 +63,11 @@ function setPagination(page, url) {
     cache: false,
     dataType: "json",
     success: function(data) {
+      var count = data.count;
+      if (data.count > 4 * 10) {   // とりあえず最大10ページ
+        count = 4 * 10;
+      }
+
       $("#pagination ul *").remove();  // 一旦ページネーションを全て削除
 
       var ul = $("#pagination ul");
@@ -77,7 +82,7 @@ function setPagination(page, url) {
       }
       ul.append(prevLi);
 
-      var lastPage = Math.floor((data.count - 1) / 4) + 1;
+      var lastPage = Math.floor((count - 1) / 4) + 1;
       for (var i = 1; i <= lastPage; i++) {
         var li = $("<li><a href=javascript:void(0)'>" + String(i) + "</a></li>");
         if (i == page) {
@@ -103,13 +108,9 @@ function setPagination(page, url) {
 }
 
 // トップ画面 初期処理
-function initialize(page) {
-  if (!page) {
-    page = 1;
-  }
-
+function initialize() {
   // 初期表示コースのサムネイル設定
-  setCourseThumbnail(page);
+  setCourseThumbnail(1);
 
   // 新着情報表示
   showNewArrival();
@@ -118,7 +119,7 @@ function initialize(page) {
   navInitialize()
 
   // ページネーションの設定
-  setPagination(page, "/pagination/top");
+  setPagination(1, "/pagination/top");
 
   $("#btnCourse1").bind("click", function(event) {
     stop();  // 念のため停止処理
@@ -279,6 +280,9 @@ function recordInitialize(_id) {
 
   links = [];
 
+  // タグ 初期処理
+  $("#tagList").tagit();
+
   // StreetViewイベントハンドラ追加 "position_changed"
   google.maps.event.addListener(panorama, "position_changed", function() {
     showPositionInfo(panorama.getPosition(), panorama.getPov());
@@ -349,6 +353,7 @@ function recordInitialize(_id) {
       return;
     }
 
+    // 「タイトル」 必須チェック
     if ($("#txtTitle").val() == "" || $("#txtTitle").val().length == 0) {
       if (!$("#txtTitle").parent().parent().hasClass("error")) {
         var errorMsgSpan = $("<span id='msgSpan' class='help-inline'>タイトルを入れて下さい。</span>");
@@ -361,8 +366,19 @@ function recordInitialize(_id) {
       $("#msgSpan").remove();
     }
 
-    // 移動位置情報を文字列として作成 → hiddenでpost
+    // タグ情報をhiddenでpost
+    var tagArray = $("#tagList li").text().split("×");
     var str = "";
+    if (tagArray[0] != "") {
+      str += tagArray[0];
+      for (var i = 1; i < tagArray.length - 1; i++) {
+        str += ("," + tagArray[i]);
+      }
+    }
+    $("#saveForm").append("<input type='hidden' name='tags' value='" + str + "'></input>");
+
+    // 移動位置情報を文字列として作成 → hiddenでpost
+    str = "";
     for (var i = 0; i < panoramaDataArray.length; i++) {
       var panoData = panoramaDataArray[i];
       str += ('{"lat":"' + panoData.lat + '","lng":"' + panoData.lng + '","heading":"' + panoData.heading + '","pitch":"' + panoData.pitch + '","zoom":"' + panoData.zoom + '","distance":"' + panoData.distance + '"}');
@@ -401,11 +417,78 @@ function recordInitialize(_id) {
   });
 }
 
+// 検索結果画面 初期処理
+function searchResultInitialize(searchWord) {
+  // 一旦全て非表示に
+  $("ul.thumbnails li").css("display", "none");
+
+  $.ajax({
+    url: "/searchResult?searchWord=" + searchWord,
+    cache: false,
+    dataType: "json",
+    success: function(courses) {
+      var searchResultDiv = $("#searchResult");
+      for (var i = 1; i <= 5; i++) {
+        var ul = $("<ul class='thumbnails'>");
+
+        for (var j = 1; j <= 4; j++) {
+          var idx = (i - 1) * 4 + j;  // 1（≠0）～カウント
+          var course = courses[idx - 1];
+          if (!course) { break; }
+
+          var li = $("<li id='thumbnail" + idx + "' class='span2'></li>");
+          var div1 = $("<div class='thumbnail'></div>");
+
+          // サムネイル
+          var div2 = $("<div id='course" + idx + "'></div>");
+          var firstPosition = JSON.parse(course.position[0]);
+          var imgLink = $("<a href='/play?_id=" + course._id + "'></a>");
+          var thumbnailImg = "<img src='http://maps.googleapis.com/maps/api/streetview?size=250x200&location=" + firstPosition.lat + "," + firstPosition.lng + "&heading=" + firstPosition.heading + "&pitch=" + firstPosition.pitch + "&sensor=false'\"' />";
+          imgLink.append(thumbnailImg);
+          div2.append(imgLink);
+
+          var div3 = $("<div class='caption'></div>");
+
+          // タイトル
+          var h4 = $("<h4></h4>");
+          var title = $("<a href='/play?_id=" + course._id + "'>" + course.title + "</a>");
+          h4.append(title);
+          div3.append(h4);
+
+          // 説明文
+          var p = $("<p></p>");
+          var descriptionStr = course.description.length > 22 ? course.description.substr(0, 20) + "..." : course.description;
+          p.text(descriptionStr);
+          div3.append(p);
+
+          // さんぽ回数（ラベル）
+          var span1 = $("<span class='label label-inverse' style='margin-bottom: 20px'>さんぽ回数</span>");
+          div3.append(span1);
+
+          // さんぽ回数
+          var span2 = $("<span class='badge badge-important' id='playCount" + idx + "'></span>");
+          span2.text(course.playCount);
+          div3.append(span2);
+
+          div1.append(div2);
+          div1.append(div3);
+          li.append(div1);
+          ul.append(li);
+          li.css("display", "block");
+        }
+        searchResultDiv.append(ul);
+      }
+
+      // TODO ■■■■■■■■■ pagination ■■■■■■■■■
+
+    }
+  });
+}
+
 // サムネイル情報を設定
 function setCourseThumbnail(page) {
-  for (var i = 1; i <= 4; i++) {
-    $("#thumbnail" + String(i)).css("display", "none");
-  }
+  // 一旦全て非表示に
+  $("ul.thumbnails li").css("display", "none");
 
   $.ajax({
     url: "/course?page=" + String(page),

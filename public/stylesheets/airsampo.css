@@ -20,7 +20,7 @@ ul.thumbnails li {
 
 .thumbnail_course {
   width: 100%;
-  height: 200px;
+  height: 250px;
 }
 
 #title {
@@ -93,6 +93,10 @@ ul.thumbnails li {
 
 #saveForm input:text {
   width: 200px;
+}
+
+#searchResultContainer {
+  margin-top: 50px;
 }
 
 /*----------------------------------------------------

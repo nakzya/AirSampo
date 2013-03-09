@@ -22,10 +22,18 @@ exports.play = function(req, res) {
 // 記録画面表示
 exports.record = function(req, res) {
   var _id = req.query._id;
+  var title = req.query.title;
+  var description = req.query.description;
   if (!_id) {
     _id = "";
   }
-  res.render("record", {_id: _id});
+  if (!title) {
+    title = "";
+  }
+  if (!description) {
+    description = "";
+  }
+  res.render("record", {_id: _id, title: title, description: description});
 };
 
 // ログイン画面表示
@@ -35,7 +43,29 @@ exports.login = function(req, res) {
 
 // 検索画面表示
 exports.search = function(req, res) {
-  res.render("searchResult", {word: req.body.txtNavSearch});
+  res.render("searchResult", {searchWord: req.body.txtNavSearch});
+}
+
+// 検索処理
+exports.searchResult = function(req, res) {
+  var searchWord = req.query.searchWord;
+  //var searchWord = req.body.txtNavSearch;
+  console.log("searchWord : " * searchWord);
+  Course.find({$or: [{title      : new RegExp('.*' + searchWord + '.*', "i")},  // タイトルと中間一致、または
+                     {description: new RegExp('.*' + searchWord + '.*', "i")},  // 説明文と中間一致、または
+                     {tag        : {$all: searchWord}},                         // タグに含まれる、または
+                     {link       : {$all: searchWord}}                          // リンクに含まれる
+                    ]},
+              null,
+              {sort: {playCount: -1}},
+              function(err, courses) {
+    if (err) {
+      console.log(err);
+      res.redirect('back');
+    } else {
+      res.json(courses);
+    }
+  });
 }
 
 // プライバシーポリシー画面表示
@@ -115,7 +145,6 @@ exports.loadCourse = function(req, res) {
 // 再生画面 - 再生回数をインクリメント
 exports.incrementPlayCount = function(req, res) {
   var _id = req.query._id;
-console.log("incrementPlayCount" + _id);
   Course.findOne({_id: new ObjectId(_id)}, function(err, course) {
     if (err) {
       console.log(err);
@@ -129,7 +158,6 @@ console.log("incrementPlayCount" + _id);
           if (err){
             console.log("err : " + err);
           }
-          console.log("再生回数を : " + String(course.playCount + 1) + "にupdate");
         }
       );
     }
@@ -138,6 +166,15 @@ console.log("incrementPlayCount" + _id);
 
 // 記録画面 - DBへ格納
 exports.save = function(req, res) {
+  // タグ情報を配列に分解
+  var tagArray
+  if (req.body.tags.length == 0) {
+    tagArray = [];
+  } else {
+    req.body.tags.splice(req.body.tags.length - 1, 1);
+    var tagArray = String(req.body.tags).split(",");
+  }
+
   // 移動位置情報を配列に分解
   var positionArray = [];
   var positions = req.body.positions;
@@ -157,9 +194,10 @@ exports.save = function(req, res) {
     owner      : "owner",
     title      : req.body["txtTitle"],
     description: req.body["txtDescription"],
-    playCount  : 0,
     position   : positionArray,
-    link       : linkArray
+    tag        : tagArray,
+    link       : linkArray,
+    playCount  : 0
   });
 
   course.save(function(err, course) {
@@ -167,7 +205,7 @@ exports.save = function(req, res) {
       console.log(err);
       res.redirect('back');
     } else {
-      res.redirect('/record?_id=' + course._id);
+      res.redirect('/record?_id=' + course._id + "&title=" + course.title + "&description=" + course.description);
     }
   });
 };

@@ -10,6 +10,7 @@ var Course = new mongoose.Schema({
   title       : {type: String, required: true},
   description : {type: String, required: false, default: ""},
   position    : {type: [Position]},
+  tag         : {type: [String]},
   link        : {type: [String]},
   playCount   : {type: Number, min: 0, default: 0},
   created     : {type: Date, default: Date.now}

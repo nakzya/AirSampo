@@ -6,9 +6,20 @@
     <link rel="stylesheet" href="stylesheets/jquery-ui-1.10.1.custom.min.css" />
     <link rel="stylesheet" href="stylesheets/bootstrap.min.css" />
     <link rel="stylesheet" href="stylesheets/bootstrap-responsive.min.css" />
+    <script src="http://www.google.com/jsapi"></script>
+    <script src="javascripts/jquery-1.9.1.js"></script>
+    <script src="javascripts/jquery-ui-1.10.1.custom.min.js"></script>
+    <script src="javascripts/bootstrap.min.js"></script>
+    <script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDoj7QWz-XTSo2QhYnj9IMWRXkrlMjYqIU&libraries=geometry&sensor=false"></script>
+    <script src="javascripts/airsampo.js"></script>
+    <script>
+      $(document).ready(function() {
+        searchResultInitialize("<%= searchWord %>");
+      });
+    </script>
     <title>エアーさんぽ。</title>
   </head>
-  <body onload="initialize()">
+  <body>
 
     <!-- Footer -->
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -37,6 +48,14 @@
                   <li><a href="#">One more separated link</a></li>
                 </ul>
               </li>
+              <li style="float: right">
+                <form method="post" action="/search" id="navSearchForm" class="form-search navbar-form pull-right">
+                  <div id="navSearch" class="input-append">
+                    <input type="text" id="txtNavSearch" name="txtNavSearch" class="span2 search-query" placeholder="Search"></input>
+                    <button id="btnNavSearch" class="btn"><i class="icon-search"></i></button>
+                  </div>
+                </form>
+              </li>
               <li style="float: right"><a href="/login">ログイン</a></li>
             </ul>
           </div><!--/.nav-collapse -->
@@ -44,9 +63,17 @@
       </div>
     </div>
 
-    <div class="container">
-      <p style="margin-top: 60px">検索結果</p>
-      <%= word %>
+    <div id="searchResultContainer" class="container">
+      検索結果
+      <div class="row">
+        <div class="span2"></div>
+        <div id="searchResult" class="span8">
+          <div id="pagination" class="pagination">
+            <ul></ul>
+          </div>
+        </div>
+        <div class="span2"></div>
+      </div>
     </div><!-- /container -->
 
     <!-- Footer -->
@@ -60,13 +87,6 @@
       </ul>
     </div>
 
-
-    <script src="http://www.google.com/jsapi"></script>
-    <script src="javascripts/jquery-1.9.1.js"></script>
-    <script src="javascripts/jquery-ui-1.10.1.custom.min.js"></script>
-    <script src="javascripts/bootstrap.min.js"></script>
-    <script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDoj7QWz-XTSo2QhYnj9IMWRXkrlMjYqIU&libraries=geometry&sensor=false"></script>
-    <script src="javascripts/airsampo.js"></script>
   </body>
 </html>
 
