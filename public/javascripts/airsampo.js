@@ -12,6 +12,9 @@ var INIT_PITCH = 1.9147722283955624;
 var PLAY_SPEED_UNIT = 40;
 var PLAY_SPEDD_SLIDER_INIT_VALUE = 50;
 
+var SEARCH_RESULT_MAX_ROW = 5;
+var SEARCH_RESULT_MAX_COL = 4;
+
 var map;
 var sv = new google.maps.StreetViewService();
 var geocoder;
@@ -56,10 +59,10 @@ function navInitialize() {
   })
 }
 
-// ページネーションの設定
-function setPagination(page, url) {
+// トップ画面のページネーションの設定
+function setTopPagination(page, url) {
   $.ajax({
-    url: url,
+    url: url,   // 件数を引数として受け取るようにすると、再帰的に呼び出す際に不都合がある（件数の増減に対応できない）
     cache: false,
     dataType: "json",
     success: function(data) {
@@ -78,7 +81,7 @@ function setPagination(page, url) {
         prevLi.addClass("disabled");
         prevLi.removeAttr("onclick");
       } else {
-        prevLi.attr("onclick", "setCourseThumbnail(" + (page - 1) + "); setPagination(" + (page - 1) + ", '" + url + "')");
+        prevLi.attr("onclick", "setCourseThumbnail(" + (page - 1) + "); setTopPagination(" + (page - 1) + ", '" + url + "')");
       }
       ul.append(prevLi);
 
@@ -89,7 +92,7 @@ function setPagination(page, url) {
           li.addClass("active");
           li.removeAttr("onclick");
         } else {
-          li.attr("onclick", "setCourseThumbnail(" + String(i) + "); setPagination(" + String(i) + ", '" + url + "')");
+          li.attr("onclick", "setCourseThumbnail(" + String(i) + "); setTopPagination(" + String(i) + ", '" + url + "')");
         }
         ul.append(li);
       }
@@ -100,7 +103,55 @@ function setPagination(page, url) {
         nextLi.addClass("disabled");
         nextLi.removeAttr("onclick");
       } else {
-        nextLi.attr("onclick", "setCourseThumbnail(" + (page + 1) + "); setPagination(" + (page + 1) + ", '" + url + "')");
+        nextLi.attr("onclick", "setCourseThumbnail(" + (page + 1) + "); setTopPagination(" + (page + 1) + ", '" + url + "')");
+      }
+      ul.append(nextLi);
+    }
+  });
+}
+
+// 検索結果画面のページネーションの設定
+function setSearchPagination(page, url, searchWord) {
+  $.ajax({
+    url: url,   // 件数を引数として受け取るようにすると、再帰的に呼び出す際に不都合がある（件数の増減に対応できない）
+    cache: false,
+    dataType: "json",
+    success: function(data) {
+      var count = data.count;
+
+      $("#pagination ul *").remove();  // 一旦ページネーションを全て削除
+
+      var ul = $("#pagination ul");
+
+      // Prev
+      var prevLi = $("<li><a href='javascript:void(0)'>Prev</a></li>");
+      if (page == 1) {   // 最初のページの場合、disabled
+        prevLi.addClass("disabled");
+        prevLi.removeAttr("onclick");
+      } else {
+        prevLi.attr("onclick", "search('" + searchWord + "', " + (page - 1) + "); setSearchPagination(" + (page - 1) + ", '" + url + "', '" + searchWord + "')");
+      }
+      ul.append(prevLi);
+
+      var lastPage = Math.floor((count - 1) / (SEARCH_RESULT_MAX_ROW * SEARCH_RESULT_MAX_COL)) + 1;
+      for (var i = 1; i <= lastPage; i++) {
+        var li = $("<li><a href=javascript:void(0)'>" + String(i) + "</a></li>");
+        if (i == page) {
+          li.addClass("active");
+          li.removeAttr("onclick");
+        } else {
+          li.attr("onclick", "search('" + searchWord + "', " + String(i) + "); setSearchPagination(" + String(i) + ", '" + url + "', '" + searchWord + "')");
+        }
+        ul.append(li);
+      }
+
+      // Next
+      var nextLi = $("<li><a href='javascript:void(0)'>Next</a></li>");
+      if (page == lastPage) {  // 最終ページの場合、disabled
+        nextLi.addClass("disabled");
+        nextLi.removeAttr("onclick");
+      } else {
+        nextLi.attr("onclick", "search('" + searchWord + "', " + (page + 1) + "); setSearchPagination(" + (page + 1) + ", '" + url + "', '" + searchWord + "')");
       }
       ul.append(nextLi);
     }
@@ -119,7 +170,7 @@ function initialize() {
   navInitialize()
 
   // ページネーションの設定
-  setPagination(1, "/pagination/top");
+  setTopPagination(1, "/pagination/top");
 
   $("#btnCourse1").bind("click", function(event) {
     stop();  // 念のため停止処理
@@ -167,8 +218,7 @@ function commonInitialize() {
     showPositionInfo(p, null);
 
     movePanorama(p);
-  });
-*/
+  });*/
 
   var panoramaOptions = {
     position: startPosition,
@@ -419,70 +469,11 @@ function recordInitialize(_id) {
 
 // 検索結果画面 初期処理
 function searchResultInitialize(searchWord) {
-  // 一旦全て非表示に
-  $("ul.thumbnails li").css("display", "none");
+  // 検索結果を表示
+  search(searchWord, 1);
 
-  $.ajax({
-    url: "/searchResult?searchWord=" + searchWord,
-    cache: false,
-    dataType: "json",
-    success: function(courses) {
-      var searchResultDiv = $("#searchResult");
-      for (var i = 1; i <= 5; i++) {
-        var ul = $("<ul class='thumbnails'>");
-
-        for (var j = 1; j <= 4; j++) {
-          var idx = (i - 1) * 4 + j;  // 1（≠0）～カウント
-          var course = courses[idx - 1];
-          if (!course) { break; }
-
-          var li = $("<li id='thumbnail" + idx + "' class='span2'></li>");
-          var div1 = $("<div class='thumbnail'></div>");
-
-          // サムネイル
-          var div2 = $("<div id='course" + idx + "'></div>");
-          var firstPosition = JSON.parse(course.position[0]);
-          var imgLink = $("<a href='/play?_id=" + course._id + "'></a>");
-          var thumbnailImg = "<img src='http://maps.googleapis.com/maps/api/streetview?size=250x200&location=" + firstPosition.lat + "," + firstPosition.lng + "&heading=" + firstPosition.heading + "&pitch=" + firstPosition.pitch + "&sensor=false'\"' />";
-          imgLink.append(thumbnailImg);
-          div2.append(imgLink);
-
-          var div3 = $("<div class='caption'></div>");
-
-          // タイトル
-          var h4 = $("<h4></h4>");
-          var title = $("<a href='/play?_id=" + course._id + "'>" + course.title + "</a>");
-          h4.append(title);
-          div3.append(h4);
-
-          // 説明文
-          var p = $("<p></p>");
-          var descriptionStr = course.description.length > 22 ? course.description.substr(0, 20) + "..." : course.description;
-          p.text(descriptionStr);
-          div3.append(p);
-
-          // さんぽ回数（ラベル）
-          var span1 = $("<span class='label label-inverse' style='margin-bottom: 20px'>さんぽ回数</span>");
-          div3.append(span1);
-
-          // さんぽ回数
-          var span2 = $("<span class='badge badge-important' id='playCount" + idx + "'></span>");
-          span2.text(course.playCount);
-          div3.append(span2);
-
-          div1.append(div2);
-          div1.append(div3);
-          li.append(div1);
-          ul.append(li);
-          li.css("display", "block");
-        }
-        searchResultDiv.append(ul);
-      }
-
-      // TODO ■■■■■■■■■ pagination ■■■■■■■■■
-
-    }
-  });
+  // ページネーションの設定
+  setSearchPagination(1, "/pagination/search?searchWord=" + searchWord, searchWord);
 }
 
 // サムネイル情報を設定
@@ -598,6 +589,71 @@ function loadCourse(_id) {
           pitch: panoDataFirst.pitch
         });
         panorama.setZoom(panoDataFirst.zoom);
+      }
+    }
+  });
+}
+
+// 検索結果を表示
+function search(searchWord, page) {
+  // 一旦全て非表示に
+  $("ul.thumbnails li").css("display", "none");
+
+  $.ajax({
+    url: "/searchResult?searchWord=" + searchWord + "&page=" + page,
+    cache: false,
+    dataType: "json",
+    success: function(courses) {
+      var searchResultDiv = $("#searchResult");
+      for (var i = 1; i <= SEARCH_RESULT_MAX_ROW; i++) {
+        var ul = $("<ul class='thumbnails'>");
+
+        for (var j = 1; j <= SEARCH_RESULT_MAX_COL; j++) {
+          var idx = (i - 1) * SEARCH_RESULT_MAX_COL + j;  // 1（≠0）～カウント
+          var course = courses[idx - 1];
+          if (!course) { break; }
+
+          var li = $("<li id='thumbnail" + idx + "' class='span2'></li>");
+          var div1 = $("<div class='thumbnail'></div>");
+
+          // サムネイル
+          var div2 = $("<div id='course" + idx + "'></div>");
+          var firstPosition = JSON.parse(course.position[0]);
+          var imgLink = $("<a href='/play?_id=" + course._id + "'></a>");
+          var thumbnailImg = "<img src='http://maps.googleapis.com/maps/api/streetview?size=250x200&location=" + firstPosition.lat + "," + firstPosition.lng + "&heading=" + firstPosition.heading + "&pitch=" + firstPosition.pitch + "&sensor=false'\"' />";
+          imgLink.append(thumbnailImg);
+          div2.append(imgLink);
+
+          var div3 = $("<div class='caption'></div>");
+
+          // タイトル
+          var h4 = $("<h4></h4>");
+          var title = $("<a href='/play?_id=" + course._id + "'>" + course.title + "</a>");
+          h4.append(title);
+          div3.append(h4);
+
+          // 説明文
+          var p = $("<p></p>");
+          var descriptionStr = course.description.length > 22 ? course.description.substr(0, 20) + "..." : course.description;
+          p.text(descriptionStr);
+          div3.append(p);
+
+          // さんぽ回数（ラベル）
+          var span1 = $("<span class='label label-inverse' style='margin-bottom: 20px'>さんぽ回数</span>");
+          div3.append(span1);
+
+          // さんぽ回数
+          var span2 = $("<span class='badge badge-important'></span>");
+          span2.text(course.playCount);
+          div3.append(span2);
+
+          div1.append(div2);
+          div1.append(div3);
+          li.append(div1);
+          ul.append(li);
+          li.css("display", "block");
+        }
+        searchResultDiv.append(ul);
       }
     }
   });

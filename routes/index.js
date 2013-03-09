@@ -49,15 +49,15 @@ exports.search = function(req, res) {
 // 検索処理
 exports.searchResult = function(req, res) {
   var searchWord = req.query.searchWord;
-  //var searchWord = req.body.txtNavSearch;
-  console.log("searchWord : " * searchWord);
+  var page = req.query.page;
+  var skip = (page - 1) * 20;
   Course.find({$or: [{title      : new RegExp('.*' + searchWord + '.*', "i")},  // タイトルと中間一致、または
                      {description: new RegExp('.*' + searchWord + '.*', "i")},  // 説明文と中間一致、または
                      {tag        : {$all: searchWord}},                         // タグに含まれる、または
                      {link       : {$all: searchWord}}                          // リンクに含まれる
                     ]},
               null,
-              {sort: {playCount: -1}},
+              {sort: {playCount: -1}, skip: skip, limit: 20},
               function(err, courses) {
     if (err) {
       console.log(err);
@@ -66,6 +66,25 @@ exports.searchResult = function(req, res) {
       res.json(courses);
     }
   });
+}
+
+// 検索結果画面 - ページネーションのための件数取得
+exports.paginationSearch = function(req, res) {
+  var searchWord = req.query.searchWord;
+  Course.count({$or: [{title      : new RegExp('.*' + searchWord + '.*', "i")},  // タイトルと中間一致、または
+                      {description: new RegExp('.*' + searchWord + '.*', "i")},  // 説明文と中間一致、または
+                      {tag        : {$all: searchWord}},                         // タグに含まれる、または
+                      {link       : {$all: searchWord}}                          // リンクに含まれる
+                     ]},
+    function(err, count) {
+      if (err) {
+        console.log(err);
+        res.redirect("back");
+      } else {
+        res.json({"count": count});
+      }
+    }
+  );
 }
 
 // プライバシーポリシー画面表示

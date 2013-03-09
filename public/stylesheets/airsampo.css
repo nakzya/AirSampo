@@ -43,6 +43,10 @@ ul.thumbnails li {
   float: left;
 }
 
+#searchResult {
+  margin-top: 40px;
+}
+
 #btnHere {
   margin-top: 25px;
   margin-left: 10px;

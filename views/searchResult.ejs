@@ -21,7 +21,7 @@
   </head>
   <body>
 
-    <!-- Footer -->
+    <!-- Navigation Bar -->
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
@@ -64,10 +64,12 @@
     </div>
 
     <div id="searchResultContainer" class="container">
-      検索結果
       <div class="row">
         <div class="span2"></div>
-        <div id="searchResult" class="span8">
+        <div class="span8">
+          <h3>検索結果</h3>
+          <p>検索ワード ： <%= searchWord %></p>
+          <div id="searchResult"></div>
           <div id="pagination" class="pagination">
             <ul></ul>
           </div>
