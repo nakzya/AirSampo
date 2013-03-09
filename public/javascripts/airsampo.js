@@ -160,8 +160,7 @@ function setSearchPagination(page, url, searchWord) {
 
 // トップ画面 初期処理
 function initialize() {
-  // laodingアイコン表示
-  $(".loading").css("display", "block");
+  $(".loading").css("display", "none");
 
   // 初期表示コースのサムネイル設定
   setCourseThumbnail(1);
@@ -493,8 +492,7 @@ function setCourseThumbnail(page) {
     success: function(courses) {
       for (var i = 0; i < courses.length; i++) {
         var course = courses[i];
-
-        $("#thumbnail" + String(i + 1)).css("display", "block");
+        var selectorStr = "#course" + String(i + 1) + "+div h3";
 
         // タイトル
         if (course.title) {
@@ -530,13 +528,14 @@ function setCourseThumbnail(page) {
             panControl: false,
             zoomControl: false
           };
+
           var panorama_thumbnail =
             new google.maps.StreetViewPanorama(document.getElementById("course" + String(i + 1)), panoramaOptions);
-
-          var selectorStr = "#course" + String(i + 1) + "+div h3";
         }
         // データを特定するために_idを飛ばす
         $("#btnCourse" + String(i + 1)).attr("href", "/play?_id=" + course._id);
+
+        $("#thumbnail" + String(i + 1)).css("display", "block");
       }
 
       $(".loading").css("display", "none");
