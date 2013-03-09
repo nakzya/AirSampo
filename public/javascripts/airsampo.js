@@ -147,7 +147,7 @@ function setSearchPagination(page, url, searchWord) {
 
       // Next
       var nextLi = $("<li><a href='javascript:void(0)'>Next</a></li>");
-      if (page == lastPage) {  // 最終ページの場合、disabled
+      if (page == lastPage || count == 0) {  // 最終ページの場合、disabled
         nextLi.addClass("disabled");
         nextLi.removeAttr("onclick");
       } else {
@@ -481,6 +481,8 @@ function setCourseThumbnail(page) {
   // 一旦全て非表示に
   $("ul.thumbnails li").css("display", "none");
 
+  $(".loading").css("display", "block");
+
   $.ajax({
     url: "/course?page=" + String(page),
     cache: false,
@@ -491,7 +493,7 @@ function setCourseThumbnail(page) {
 
         $("#thumbnail" + String(i + 1)).css("display", "block");
 
-        var selectorStr = "#course" + String(i + 1) + "+div h3";
+
 
         // タイトル
         if (course.title) {
@@ -529,19 +531,23 @@ function setCourseThumbnail(page) {
           };
           var panorama_thumbnail =
             new google.maps.StreetViewPanorama(document.getElementById("course" + String(i + 1)), panoramaOptions);
+
+          var selectorStr = "#course" + String(i + 1) + "+div h3";
         }
         // データを特定するために_idを飛ばす
         $("#btnCourse" + String(i + 1)).attr("href", "/play?_id=" + course._id);
       }
 
-      // サムネイルを静止画で表示する場合（こっちのほうが軽い）　※ただし場所によっては画像が取れないことがある しかもその判定は不可
-      /*
-      var thumbnailImg = "<img src=\"http://maps.googleapis.com/maps/api/streetview?size=360x200&location=" + json.Position[0].lat + "," + json.Position[0].lng + "&heading=" + json.Position[0].heading + "&pitch=" + json.Position[0].pitch + "&sensor=false\" />";
-      $("#course" + String(num)).append(thumbnailImg);
-      */
+      $(".loading").css("display", "none");
 
-      // 初期LatLngがGray表示の場合があるため
-      //movePanorama(startPosition, panorama_thumbnail);
+    // サムネイルを静止画で表示する場合（こっちのほうが軽い）　※ただし場所によっては画像が取れないことがある しかもその判定は不可
+    /*
+    var thumbnailImg = "<img src=\"http://maps.googleapis.com/maps/api/streetview?size=360x200&location=" + json.Position[0].lat + "," + json.Position[0].lng + "&heading=" + json.Position[0].heading + "&pitch=" + json.Position[0].pitch + "&sensor=false\" />";
+    $("#course" + String(num)).append(thumbnailImg);
+    */
+
+    // 初期LatLngがGray表示の場合があるため
+    //movePanorama(startPosition, panorama_thumbnail);
     }
   });
 }
@@ -654,6 +660,9 @@ function search(searchWord, page) {
           li.css("display", "block");
         }
         searchResultDiv.append(ul);
+
+        // 検索件数
+        $("#searchResultCount").text(courses.length);
       }
     }
   });
