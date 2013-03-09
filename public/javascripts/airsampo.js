@@ -160,6 +160,8 @@ function setSearchPagination(page, url, searchWord) {
 
 // トップ画面 初期処理
 function initialize() {
+  $(".loading").css("display", "block");
+
   // 初期表示コースのサムネイル設定
   setCourseThumbnail(1);
 
@@ -492,8 +494,6 @@ function setCourseThumbnail(page) {
         var course = courses[i];
 
         $("#thumbnail" + String(i + 1)).css("display", "block");
-
-
 
         // タイトル
         if (course.title) {
