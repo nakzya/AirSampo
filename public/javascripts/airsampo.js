@@ -24,6 +24,7 @@ var panoramaDataArrayIdx = 0;
 var playMode = 0;  // 0:初期状態、停止  1:再生中  2:一時停止中
 var lines = [];
 var markers = [];
+var InfoWindows = [];
 var playSpeed = PLAY_SPEED_UNIT * PLAY_SPEDD_SLIDER_INIT_VALUE; // 再生速度(ms)
 var distance = 0;
 var links = [];
@@ -540,8 +541,6 @@ function setCourseThumbnail(page) {
         }
         // データを特定するために_idを飛ばす
         $("#btnCourse" + String(i + 1)).attr("href", "/play?_id=" + course._id);
-
-
       }
 
       $(".loading").css("display", "none");
@@ -766,18 +765,32 @@ function toggleRecord() {
 
       deleteLines();        // 一旦Map上の既存の線を全て削除
       deleteMoveMarkers();  // 一旦Map上の既存の開始・終了マーカーを削除
+      deleteInfoWindows();  //  一旦panorama上の既存のinfoWindowを削除
 
       distance = 0;
       $("#distance").html("0m");
 
-      // 記録開始地点にマーカーを設置
+      // スタート地点マーカー
       var startMarker = new google.maps.Marker({
         position: panorama.getPosition(),
         map: map,
         animation: google.maps.Animation.DROP,
-        title: "記録開始地点"
+        title: "スタート地点"
       });
       markers.push(startMarker);
+
+      // パノラマ表示用スタート地点マーカー
+      var startMarker2 = new google.maps.Marker({
+        position: panorama.getPosition(),
+        map: panorama,
+        title: "スタート地点"
+      });
+      markers.push(startMarker2);
+      var infowindow = new google.maps.InfoWindow({
+        content: "<p style='font-weight: bold'>スタート地点　<img src='../images/running.gif'/></p><p>張り切って行きましょう!</p>"
+      });
+      infowindow.open(panorama, startMarker2);
+      InfoWindows.push(infowindow);
 
       links = [];
 
@@ -819,6 +832,7 @@ function toggleRecord() {
           "Cancel": function() {
             $(this).dialog("close");
             deleteMoveMarkers();
+            deleteInfoWindows();
             $("#dialog").remove();
 
             $("#btnRecord").popover("hide");
@@ -842,14 +856,27 @@ function toggleRecord() {
     $("#btnStop").removeAttr("disabled");
     $("#btnStop").tooltip("hide").attr("data-original-title", "停止").tooltip("fixTitle");
 
-    // 記録終了地点にマーカーを設置
-    var endMarker = new google.maps.Marker({
+    // ゴールマーカー
+    var goalMarker = new google.maps.Marker({
       position: panorama.getPosition(),
       map: map,
       animation: google.maps.Animation.DROP,
       title: "記録終了地点"
     });
-    markers.push(endMarker);
+    markers.push(goalMarker);
+
+    // パノラマ表示用スゴールマーカー
+    var goalMarker2 = new google.maps.Marker({
+      position: panorama.getPosition(),
+      map: panorama,
+      title: "ゴール地点"
+    });
+    markers.push(goalMarker2);
+    var infowindow = new google.maps.InfoWindow({
+      content: "<p style='font-weight: bold'>ゴール地点</p><p>お疲れ様でした。</p>"
+    });
+    infowindow.open(panorama, goalMarker2);
+    InfoWindows.push(infowindow);
 
     // 再生スライダーを設定
     setPanoramaSlider();
@@ -861,6 +888,7 @@ function play() {
   if (panoramaDataArray.length < 2) {
     $("#message").css("display", "block");  // エラー表示
     deleteMoveMarkers();
+    deleteInfoWindows();
     initPanoramaSlider();
     return;
   } else {
@@ -894,6 +922,7 @@ function play() {
 
     deleteLines();        // 一旦Map上の既存の線を全て削除
     deleteMoveMarkers();  // 一旦Map上の既存の開始・終了マーカーを削除
+    deleteInfoWindows();  //  一旦panorama上の既存のinfoWindowを削除
 
     $("#distance").html("0m");
 
@@ -905,6 +934,19 @@ function play() {
       title: "スタート地点"
     });
     markers.push(startMarker);
+
+    // パノラマ表示用スタート地点マーカー
+    var startMarker2 = new google.maps.Marker({
+      position: panorama.getPosition(),
+      map: panorama,
+      title: "スタート地点"
+    });
+    markers.push(startMarker2);
+    var infowindow = new google.maps.InfoWindow({
+      content: "<p style='font-weight: bold'>スタート地点　<img src='../images/running.gif'/></p><p>張り切って行きましょう!</p>"
+    });
+    infowindow.open(panorama, startMarker2);
+    InfoWindows.push(infowindow);
 
     // 位置・向き・角度・ズームを初期化
     panorama.setPosition(panoData2LatLng(panoDataFirst));
@@ -969,6 +1011,19 @@ function actionInterval(arryIdx) {
       });
       markers.push(goalMarker);
 
+      // パノラマ表示用スゴールマーカー
+      var goalMarker2 = new google.maps.Marker({
+        position: panorama.getPosition(),
+        map: panorama,
+        title: "ゴール地点"
+      });
+      markers.push(goalMarker2);
+      var infowindow = new google.maps.InfoWindow({
+        content: "<p style='font-weight: bold'>ゴール地点</p><p>お疲れ様でした。</p>"
+      });
+      infowindow.open(panorama, goalMarker2);
+      InfoWindows.push(infowindow);
+
       $("#btnRecord").removeAttr("disabled");
       $("#btnPlay i").addClass("icon-play");
       $("#btnPlay i").removeClass("icon-pause");
@@ -1030,6 +1085,7 @@ function actionInterval(arryIdx) {
   } else if (playMode == 0) {
     deleteLines();        // 念のためMap上の既存の線を全て削除
     deleteMoveMarkers();  // 念のためMap上の既存の開始・終了マーカーを削除
+    deleteInfoWindows();  //  一旦panorama上の既存のinfoWindowを削除
 
     $("#distance").html("0m");
 
@@ -1064,6 +1120,7 @@ function stop() {
 
   deleteLines();        // Map上の既存の線を全て削除
   deleteMoveMarkers();  // Map上の既存の開始・終了マーカーを削除
+  deleteInfoWindows();  //  一旦panorama上の既存のinfoWindowを削除
 
   $("#distance").html("0m");
 
@@ -1167,6 +1224,13 @@ function deleteLines() {
 function deleteMoveMarkers() {
   for (var i = 0; i < markers.length; i++) {
     markers[i].setMap(null);
+  }
+}
+
+// Panorama上のinfoWindowを削除
+function deleteInfoWindows() {
+  for (var i = 0; i < InfoWindows.length; i++) {
+    InfoWindows[i].setMap(null);
   }
 }
 
