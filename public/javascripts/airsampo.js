@@ -13,7 +13,7 @@ var PLAY_SPEED_UNIT = 40;
 var PLAY_SPEDD_SLIDER_INIT_VALUE = 50;
 
 var SEARCH_RESULT_MAX_ROW = 5;
-var SEARCH_RESULT_MAX_COL = 4;
+var SEARCH_RESULT_MAX_COL = 2;
 
 var map;
 var sv = new google.maps.StreetViewService();
@@ -480,6 +480,13 @@ function searchResultInitialize(searchWord) {
   setSearchPagination(1, "/pagination/search?searchWord=" + searchWord, searchWord);
 }
 
+// ランキング画面 初期処理
+function rankingInitialize() {
+  // ランキングデータを表示
+  setRanking(1);
+}
+
+
 // サムネイル情報を設定
 function setCourseThumbnail(page) {
   // 一旦全て非表示に
@@ -624,14 +631,14 @@ function search(searchWord, page) {
           var course = courses[idx - 1];
           if (!course) { break; }
 
-          var li = $("<li id='thumbnail" + idx + "' class='span2'></li>");
+          var li = $("<li id='thumbnail" + idx + "' class='span4'></li>");
           var div1 = $("<div class='thumbnail'></div>");
 
           // サムネイル
           var div2 = $("<div id='course" + idx + "'></div>");
           var firstPosition = JSON.parse(course.position[0]);
           var imgLink = $("<a href='/play?_id=" + course._id + "'></a>");
-          var thumbnailImg = "<img src='http://maps.googleapis.com/maps/api/streetview?size=250x200&location=" + firstPosition.lat + "," + firstPosition.lng + "&heading=" + firstPosition.heading + "&pitch=" + firstPosition.pitch + "&sensor=false'\"' />";
+          var thumbnailImg = "<img src='http://maps.googleapis.com/maps/api/streetview?size=360x250&location=" + firstPosition.lat + "," + firstPosition.lng + "&heading=" + firstPosition.heading + "&pitch=" + firstPosition.pitch + "&sensor=false'\"' />";
           imgLink.append(thumbnailImg);
           div2.append(imgLink);
 
@@ -645,7 +652,8 @@ function search(searchWord, page) {
 
           // 説明文
           var p = $("<p></p>");
-          var descriptionStr = course.description.length > 22 ? course.description.substr(0, 20) + "..." : course.description;
+          var descriptionStr = course.description;
+          //var descriptionStr = course.description.length > 22 ? course.description.substr(0, 20) + "..." : course.description;
           p.text(descriptionStr);
           div3.append(p);
 
@@ -669,6 +677,79 @@ function search(searchWord, page) {
         // 検索件数
         $("#searchResultCount").text(courses.length);
       }
+    }
+  });
+}
+
+// ランキングデータを表示
+function setRanking(page) {
+  // 一旦全て非表示に
+  $("ul.thumbnails li").css("display", "none");
+
+  $.ajax({
+    url: "/ranking/select?page=" + page,
+    cache: false,
+    dataType: "json",
+    success: function(courses) {
+      var rankingDiv = $("#ranking");
+      var ul = $("<ul class='thumbnails'>");
+      for (var i = 0; i < courses.length; i++) {
+        var course = courses[i];
+        if (!course) { break; }
+
+        var li = $("<li id='thumbnail" + (i + 1) + "' class='span8'></li>");
+        var div1 = $("<div class='row' style='border: none; margin-bottom: 50px'></div>");
+
+        // サムネイル
+        var div2 = $("<div id='course" + (i + 1) + "' class='span4'></div>");
+        var firstPosition = JSON.parse(course.position[0]);
+        var imgLink = $("<a href='/play?_id=" + course._id + "'></a>");
+        var thumbnailImg = "<img src='http://maps.googleapis.com/maps/api/streetview?size=360x250&location=" + firstPosition.lat + "," + firstPosition.lng + "&heading=" + firstPosition.heading + "&pitch=" + firstPosition.pitch + "&sensor=false'\"' />";
+        imgLink.append(thumbnailImg);
+        div2.append(imgLink);
+
+        var div3 = $("<div class='caption span4'></div>");
+
+        // メダル・順位
+        var ranking;
+        if ((i + 1) == 1 || (i + 1) == 2 || (i + 1) == 3) {
+          var medalImg = $("<img src='images/rank" + (i + 1) + ".gif' style='display: inline; float:left;' />&nbsp;");
+          div3.append(medalImg);
+          ranking = $("<span style='font-size: xx-large;'>&nbsp;" + (i + 1) + "位</span>");
+        } else {
+          ranking = $("<span style='font-size: xx-large;'>" + (i + 1) + "位</span>");
+        }
+        div3.append(ranking);
+
+        // タイトル
+        var h4 = $("<h4 style='margin-top: 20px'></h4>");
+        var title = $("<a href='/play?_id=" + course._id + "'>" + course.title + "</a>");
+        h4.append(title);
+        div3.append(h4);
+
+        // 説明文
+        var p = $("<p></p>");
+        var descriptionStr = course.description;
+        //var descriptionStr = course.description.length > 22 ? course.description.substr(0, 20) + "..." : course.description;
+        p.text(descriptionStr);
+        div3.append(p);
+
+        // さんぽ回数（ラベル）
+        var span1 = $("<span class='label label-inverse' style='margin-bottom: 20px'>さんぽ回数</span>");
+        div3.append(span1);
+
+        // さんぽ回数
+        var span2 = $("<span class='badge badge-important'></span>");
+        span2.text(course.playCount);
+        div3.append(span2);
+
+        div1.append(div2);
+        div1.append(div3);
+        li.append(div1);
+        ul.append(li);
+        li.css("display", "block");
+      }
+      rankingDiv.append(ul);
     }
   });
 }

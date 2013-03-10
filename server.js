@@ -46,6 +46,9 @@ app.post('/search', routes.search);
 app.get('/searchResult', routes.searchResult);
 app.get('/pagination/search', routes.paginationSearch);
 
+app.get('/ranking', routes.ranking);
+app.get('/ranking/select', routes.selectRanking);
+
 app.get('/privacy', routes.privacy);
 
 app.get('/rules', routes.rules);

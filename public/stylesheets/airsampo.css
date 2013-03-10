@@ -99,8 +99,14 @@ ul.thumbnails li {
   width: 200px;
 }
 
-#searchResultContainer {
+#searchResultContainer, #rankingContainer {
   margin-top: 50px;
+}
+
+#rules-box {
+  margin-top: 50px;
+  padding: 15px;
+  border: solid 1px;
 }
 
 /*----------------------------------------------------

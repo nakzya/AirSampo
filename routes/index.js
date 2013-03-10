@@ -36,72 +36,6 @@ exports.record = function(req, res) {
   res.render("record", {_id: _id, title: title, description: description});
 };
 
-// ログイン画面表示
-exports.login = function(req, res) {
-  res.render("login", {});
-}
-
-// 検索画面表示
-exports.search = function(req, res) {
-  res.render("searchResult", {searchWord: req.body.txtNavSearch});
-}
-
-// 検索処理
-exports.searchResult = function(req, res) {
-  var searchWord = req.query.searchWord;
-  var page = req.query.page;
-  var skip = (page - 1) * 20;
-  Course.find({$or: [{title      : new RegExp('.*' + searchWord + '.*', "i")},  // タイトルと中間一致、または
-                     {description: new RegExp('.*' + searchWord + '.*', "i")},  // 説明文と中間一致、または
-                     {tag        : {$all: searchWord}},                         // タグに含まれる、または
-                     {link       : {$all: searchWord}}                          // リンクに含まれる
-                    ]},
-              null,
-              {sort: {playCount: -1}, skip: skip, limit: 20},
-              function(err, courses) {
-    if (err) {
-      console.log(err);
-      res.redirect('back');
-    } else {
-      res.json(courses);
-    }
-  });
-}
-
-// 検索結果画面 - ページネーションのための件数取得
-exports.paginationSearch = function(req, res) {
-  var searchWord = req.query.searchWord;
-  Course.count({$or: [{title      : new RegExp('.*' + searchWord + '.*', "i")},  // タイトルと中間一致、または
-                      {description: new RegExp('.*' + searchWord + '.*', "i")},  // 説明文と中間一致、または
-                      {tag        : {$all: searchWord}},                         // タグに含まれる、または
-                      {link       : {$all: searchWord}}                          // リンクに含まれる
-                     ]},
-    function(err, count) {
-      if (err) {
-        console.log(err);
-        res.redirect("back");
-      } else {
-        res.json({"count": count});
-      }
-    }
-  );
-}
-
-// プライバシーポリシー画面表示
-exports.privacy = function(req, res) {
-  res.render("privacy", {});
-};
-
-// 利用規約画面表示
-exports.rules = function(req, res) {
-  res.render("rules", {});
-};
-
-// 「◯◯」について画面表示
-exports.about = function(req, res) {
-  res.render("about", {});
-};
-
 // トップ画面 - ページネーションのための件数取得
 exports.paginationTop = function(req, res) {
   Course.count(
@@ -240,3 +174,89 @@ exports.recommend = function(req, res) {
     }
   });
 }
+
+// ログイン画面表示
+exports.login = function(req, res) {
+  res.render("login", {});
+}
+
+// 検索画面表示
+exports.search = function(req, res) {
+  res.render("searchResult", {searchWord: req.body.txtNavSearch});
+}
+
+// 検索処理
+exports.searchResult = function(req, res) {
+  var searchWord = req.query.searchWord;
+  var page = req.query.page;
+  var skip = (page - 1) * 10;
+  Course.find({$or: [{title      : new RegExp('.*' + searchWord + '.*', "i")},  // タイトルと中間一致、または
+                     {description: new RegExp('.*' + searchWord + '.*', "i")},  // 説明文と中間一致、または
+                     {tag        : {$all: searchWord}},                         // タグに含まれる、または
+                     {link       : {$all: searchWord}}                          // リンクに含まれる
+                    ]},
+              null,
+              {sort: {playCount: -1}, skip: skip, limit: 10},
+              function(err, courses) {
+    if (err) {
+      console.log(err);
+      res.redirect('back');
+    } else {
+      res.json(courses);
+    }
+  });
+}
+
+// 検索結果画面 - ページネーションのための件数取得
+exports.paginationSearch = function(req, res) {
+  var searchWord = req.query.searchWord;
+  Course.count({$or: [{title      : new RegExp('.*' + searchWord + '.*', "i")},  // タイトルと中間一致、または
+                      {description: new RegExp('.*' + searchWord + '.*', "i")},  // 説明文と中間一致、または
+                      {tag        : {$all: searchWord}},                         // タグに含まれる、または
+                      {link       : {$all: searchWord}}                          // リンクに含まれる
+                     ]},
+    function(err, count) {
+      if (err) {
+        console.log(err);
+        res.redirect("back");
+      } else {
+        res.json({"count": count});
+      }
+    }
+  );
+}
+
+// ランキング画面表示
+exports.ranking = function(req, res) {
+  res.render("ranking", {});
+}
+
+// ランキング画面 - ランキングデータ取得
+exports.selectRanking = function(req, res) {
+  var page = req.query.page;
+  if (!page) page = 1;
+  var skip = (page - 1) * 10;
+  Course.find({}, null, {"sort": {"playCount": -1}, skip: skip, "limit": 10}, function(err, courses) {
+    if (err) {
+      console.log(err);
+      res.redirect('back');
+    } else {
+      res.json(courses);
+    }
+  });
+}
+
+// プライバシーポリシー画面表示
+exports.privacy = function(req, res) {
+  res.render("privacy", {});
+};
+
+// 利用規約画面表示
+exports.rules = function(req, res) {
+  res.render("rules", {});
+};
+
+// 「◯◯」について画面表示
+exports.about = function(req, res) {
+  res.render("about", {});
+};

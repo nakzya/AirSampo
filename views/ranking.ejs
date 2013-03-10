@@ -6,10 +6,20 @@
     <link rel="stylesheet" href="stylesheets/jquery-ui-1.10.1.custom.min.css" />
     <link rel="stylesheet" href="stylesheets/bootstrap.min.css" />
     <link rel="stylesheet" href="stylesheets/bootstrap-responsive.min.css" />
+    <script src="http://www.google.com/jsapi"></script>
+    <script src="javascripts/jquery-1.9.1.js"></script>
+    <script src="javascripts/jquery-ui-1.10.1.custom.min.js"></script>
+    <script src="javascripts/bootstrap.min.js"></script>
+    <script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDoj7QWz-XTSo2QhYnj9IMWRXkrlMjYqIU&libraries=geometry&sensor=false"></script>
+    <script src="javascripts/airsampo.js"></script>
+    <script>
+      $(document).ready(function() {
+        rankingInitialize();
+      });
+    </script>
     <title>エアーさんぽ。</title>
   </head>
-  <body onload="initialize()">
-
+  <body>
     <!-- Navigation Bar -->
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
@@ -45,15 +55,25 @@
                   </div>
                 </form>
               </li>
-              <li id="login" style="float: right"><a href="/login">ログイン</a></li>
+              <li style="float: right"><a href="/login">ログイン</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
       </div>
     </div>
 
-    <div class="container">
-      <p style="margin-top: 60px">このサイトについて</p>
+    <div id="rankingContainer" class="container">
+      <div class="row">
+        <div class="span2"></div>
+        <div class="span8">
+          <h3>ランキング（工事中）</h3>
+          <div id="ranking"></div>
+          <div id="pagination" class="pagination">
+            <ul></ul>
+          </div>
+        </div>
+        <div class="span2"></div>
+      </div>
     </div><!-- /container -->
 
     <!-- Footer -->
@@ -67,13 +87,6 @@
       </ul>
     </div>
 
-
-    <script src="http://www.google.com/jsapi"></script>
-    <script src="javascripts/jquery-1.9.1.js"></script>
-    <script src="javascripts/jquery-ui-1.10.1.custom.min.js"></script>
-    <script src="javascripts/bootstrap.min.js"></script>
-    <script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDoj7QWz-XTSo2QhYnj9IMWRXkrlMjYqIU&libraries=geometry&sensor=false"></script>
-    <script src="javascripts/airsampo.js"></script>
   </body>
 </html>
 
