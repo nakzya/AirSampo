@@ -160,8 +160,69 @@ function setSearchPagination(page, url, searchWord) {
   });
 }
 
-// トップ画面 初期処理
+// ナビゲーションバー表示処理
+function setNavigationBar(mode) {
+  $.ajax({
+    url: "./navigationBar.html",
+    success: function(html) {
+      $("#navigationBar").html(html);
+
+      switch(mode) {
+        case "record":
+          $("#recordLink").attr("class", "active");
+          break;
+        case "ranking":
+          $("#rankingLink").attr("class", "active");
+          break;
+        case "about":
+          $("#aboutLink").attr("class", "active");
+          break;
+      }
+    }
+  });
+}
+
+// フッタ表示処理
+function setFooter() {
+  $.ajax({
+    url: "./footer.html",
+    success: function(html) {
+      $("#footer").html(html);
+    }
+  });
+}
+
+// 画面共通 初期処理
 function initialize() {
+  switch(arguments[0]) {
+    case "top":
+      topInitialize(arguments);
+      break;
+    case "play":
+      commonInitialize(arguments);
+      playInitialize(arguments);
+      break;
+    case "record":
+      commonInitialize(arguments);
+      recordInitialize(arguments);
+      break;
+    case "ranking":
+      rankingInitialize(arguments);
+      break;
+    case "search":
+      searchResultInitialize(arguments);
+      break;
+  }
+
+  // ナビゲーションバー設定
+  setNavigationBar(arguments[0]);
+
+  // フッタ設定
+  setFooter();
+}
+
+// トップ画面 初期処理
+function topInitialize() {
   $(".loading").css("display", "none");
 
   // 初期表示コースのサムネイル設定
@@ -294,9 +355,11 @@ function commonInitialize() {
 }
 
 // 再生画面 初期処理
-function playInitialize(id) {
+function playInitialize() {
+  var _id = arguments[0][1];
+
   // 移動位置情報をDBからロード
-  loadCourse(id);
+  loadCourse(_id);
 
   // 共通初期処理
   commonInitialize();
@@ -315,7 +378,9 @@ function playInitialize(id) {
 }
 
 // 記録画面 初期処理
-function recordInitialize(_id) {
+function recordInitialize() {
+  var _id = arguments[0][1];
+
   // 共通初期処理
   commonInitialize();
 
@@ -471,21 +536,22 @@ function recordInitialize(_id) {
   });
 }
 
-// 検索結果画面 初期処理
-function searchResultInitialize(searchWord) {
-  // 検索結果を表示
-  search(searchWord, 1);
-
-  // ページネーションの設定
-  setSearchPagination(1, "/pagination/search?searchWord=" + searchWord, searchWord);
-}
-
 // ランキング画面 初期処理
 function rankingInitialize() {
   // ランキングデータを表示
   setRanking(1);
 }
 
+// 検索結果画面 初期処理
+function searchResultInitialize() {
+  var searchWord = arguments[0][1];
+
+  // 検索結果を表示
+  search(searchWord, 1);
+
+  // ページネーションの設定
+  setSearchPagination(1, "/pagination/search?searchWord=" + searchWord, searchWord);
+}
 
 // サムネイル情報を設定
 function setCourseThumbnail(page) {

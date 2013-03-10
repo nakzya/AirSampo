@@ -11,13 +11,13 @@
     <script src="javascripts/jquery-1.9.1.js"></script>
     <script src="javascripts/jquery-ui-1.10.1.custom.min.js"></script>
     <script src="javascripts/bootstrap.min.js"></script>
-    <script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDoj7QWz-XTSo2QhYnj9IMWRXkrlMjYqIU&libraries=geometry&sensor=true"></script>
+    <script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDoj7QWz-XTSo2QhYnj9IMWRXkrlMjYqIU&libraries=geometry&sensor=false"></script>
     <script src="javascripts/tag-it.min.js"></script>
     <script src="javascripts/airsampo.js"></script>
     <script>
       $(document).ready(function() {
         var _id = "<%= _id %>";
-        recordInitialize(_id);
+        initialize("record", _id);
       });
     </script>
     <title>エアーさんぽ。</title>
@@ -27,46 +27,7 @@
     <input type="hidden" id="_id" value="<%= _id %>"></input>
 
     <!-- Navigation Bar -->
-    <div class="navbar navbar-inverse navbar-fixed-top">
-      <div class="navbar-inner">
-        <div class="container">
-          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="brand" href="/">Air Sampo</a>
-          <div class="nav-collapse collapse">
-            <ul class="nav" style="width: 85%">
-              <li class="active"><a href="/record">記録する</a></li>
-              <li><a href="/ranking">ランキング</a></li>
-              <li><a href="#contact">Contact</a></li>
-              <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">aaa@bbb.cc <b class="caret"></b></a>
-                <ul class="dropdown-menu">
-                  <li><a href="#">Action</a></li>
-                  <li><a href="#">Another action</a></li>
-                  <li><a href="#">Something else here</a></li>
-                  <li class="divider"></li>
-                  <li class="nav-header">Nav header</li>
-                  <li><a href="#">Separated link</a></li>
-                  <li><a href="#">One more separated link</a></li>
-                </ul>
-              </li>
-              <li style="float: right">
-                <form method="post" action="/search" id="navSearchForm" class="form-search navbar-form pull-right">
-                  <div id="navSearch" class="input-append">
-                    <input type="text" id="txtNavSearch" name="txtNavSearch" class="span2 search-query" placeholder="Search"></input>
-                    <button id="btnNavSearch" class="btn"><i class="icon-search"></i></button>
-                  </div>
-                </form>
-              </li>
-              <li style="float: right"><a href="/login">ログイン</a></li>
-            </ul>
-          </div><!--/.nav-collapse -->
-        </div>
-      </div>
-    </div>
+    <div id="navigationBar"></div>
 
     <div class="container">
       <div class="row">
@@ -79,7 +40,8 @@
               <input type="text" id="txtSearch" class="span2 search-query" placeholder="Search">
               <button id="btnSearch" class="btn"><i class="icon-search"></i></button>
             </div>
-            <input type="button" id="btnHere" class="btn" value="現在地"></input>
+            <button id="btnHere" class="btn" data-original-title="現在地">現在地</button>
+
           </form>
 
           <!-- Map & StreetView -->
@@ -132,7 +94,7 @@
               </div>
               <div class="control-group">
                 <div class="controls">
-                  <input type="button" id="btnSave" class="btn-large btn-inverse" value="確定"></input>
+                  <button id="btnSave" id="btnSave" class="btn-large btn-inverse" data-original-title="確定"><i class="icon-thumbs-up icon-white"></i>&nbsp;確定</button>
                 </div>
               </div>
             </form>
@@ -156,15 +118,7 @@
     </div>
 
     <!-- Footer -->
-    <div id="footer" class="container">
-      <ul>
-        <li><a href="/privacy">プライバシーポリシー</a></li>
-        <li>|</li>
-        <li><a href="/rules">利用規約</a></li>
-        <li>|</li>
-        <li><a href="/about">エアーさんぽ。（仮）について</a></li>
-      </ul>
-    </div>
+    <div id="footer" class="container"></div>
 
 <!--
     <br/><hr/>
