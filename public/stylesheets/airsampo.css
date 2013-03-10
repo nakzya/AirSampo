@@ -67,6 +67,11 @@ ul.thumbnails li {
   height: 350px;
 }
 
+a[id^="btnCourse"] {
+  margin: 0 auto 0 auto;
+  width: 85%;
+}
+
 #control {
   height: 75px;
   overflow: hidden;

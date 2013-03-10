@@ -361,9 +361,6 @@ function playInitialize() {
   // 移動位置情報をDBからロード
   loadCourse(_id);
 
-  // 共通初期処理
-  commonInitialize();
-
   // StreetViewイベントハンドラ追加 "position_changed"
   google.maps.event.addListener(panorama, "position_changed", function() {
     showPositionInfo(panorama.getPosition(), panorama.getPov());
@@ -380,9 +377,6 @@ function playInitialize() {
 // 記録画面 初期処理
 function recordInitialize() {
   var _id = arguments[0][1];
-
-  // 共通初期処理
-  commonInitialize();
 
   // 記録確定後、再表示する場合
   if (_id != "") {
@@ -858,7 +852,7 @@ function setSideBarCourse(ul, courses) {
 
     var li = $("<li class='clearfix'></li>");
     var title = $("<a href='/play?_id=" + course._id + "'>" + course.title + "</a>");
-    var descriptionStr = course.description.length > 26 ? course.description.substr(0, 24) + "..." : course.description;
+    var descriptionStr = course.description.length > 39 ? course.description.substr(0, 37) + "..." : course.description;
     var description = $("<p>" + descriptionStr + "</p>");
     li.append(title);
     li.append(description);
