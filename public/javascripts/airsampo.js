@@ -890,17 +890,20 @@ function getCurrentPosition() {
 var recordFlg = 0;  // 0:記録していない 1:記録中
 function toggleRecord() {
   // 記録開始
-  if (recordFlg == 0) {  // 初めての記録、または最初から記録し直す場合
-    if (panoramaDataArrayIdx == 0) {
+  if (recordFlg == 0) {
+    if (panoramaDataArrayIdx == 0) {  // 初めての記録、または最初から記録し直す場合
       recordFlg = 1;
 
       $("#btnRecord").tooltip("hide").attr("data-original-title", "記録終了").tooltip("fixTitle");
+      /*
       $("#btnRecord").popover({
         content: "もう一度押すと記録を終了します。",
         placement: "bottom"
       }).popover("show");
+      */
       $("#btnPlay").attr("disabled", "disabled");
       $("#btnStop").attr("disabled", "disabled");
+      $("#arrowRecordBtn").css("display", "none");
 
       map.setZoom(15);
 
@@ -992,10 +995,13 @@ function toggleRecord() {
     recordFlg = 0;
 
     $("#btnRecord").tooltip("hide").attr("data-original-title", "記録").tooltip("fixTitle");
-    $("#btnPlay").removeAttr("disabled");
+
+    if (panoramaDataArray.length == 1) {
+      $("#arrowRecordBtn").css("display", "block");
+    } else {
+      $("#btnPlay").removeAttr("disabled");
+    }
     $("#btnPlay").tooltip("hide").attr("data-original-title", "再生").tooltip("fixTitle");
-    $("#btnStop").removeAttr("disabled");
-    $("#btnStop").tooltip("hide").attr("data-original-title", "停止").tooltip("fixTitle");
 
     // ゴールマーカー
     var goalMarker = new google.maps.Marker({
@@ -1049,6 +1055,7 @@ function play() {
     $("#btnPlay i").addClass("icon-pause");
     $("#btnPlay i").removeClass("icon-play");
     $("#btnPlay").tooltip("hide").attr("data-original-title", "一時停止").tooltip("fixTitle");
+    $("#btnStop").removeAttr("disabled");
 
     $("#running").css("display", "block");
     $("#panoramaSlider").slider("disable");
@@ -1256,8 +1263,16 @@ function stop() {
   $("#btnRecord").removeAttr("disabled");
   $("#btnPlay i").addClass("icon-play");
   $("#btnPlay i").removeClass("icon-pause");
+  $("#btnStop").attr("disabled", "disabled");
   $("#panoramaSlider").slider("enable");
   $("#panoramaSlider").slider("value", 0);
+
+  if (panoramaDataArray.length == 1) {
+    $("#arrowRecordBtn").css("display", "block");
+  } else {
+    $("#btnPlay").removeAttr("disabled");
+    $("#btnPlay").tooltip("hide").attr("data-original-title", "再生").tooltip("fixTitle");
+  }
 
   deleteLines();        // Map上の既存の線を全て削除
   deleteMoveMarkers();  // Map上の既存の開始・終了マーカーを削除

@@ -70,6 +70,18 @@ ul.thumbnails li {
 a[id^="btnCourse"] {
   margin: 0 auto 0 auto;
   width: 85%;
+  -webkit-transition:all 0.1s ease-in-out;
+  -moz-transition:all 0.1s ease-in-out;
+  -o-transition:all 0.1s ease-in-out;
+  transition:all 0.1s ease-in-out;
+}
+
+a[id^="btnCourse"]:hover {
+  -webkit-transform:scale(1.02);
+  -moz-transform:scale(1.02);
+  -ms-transform:scale(1.02);
+  -o-transform:scale(1.02);
+  transform:scale(1.02);
 }
 
 #control {
@@ -80,6 +92,21 @@ a[id^="btnCourse"] {
 
 .controlBtn {
   margin: 5px 0px 5px 5px;
+}
+
+.controlBtn:hover {
+  -webkit-transform:scale(1.05);
+  -moz-transform:scale(1.05);
+  -ms-transform:scale(1.05);
+  -o-transform:scale(1.05);
+  transform:scale(1.05);
+}
+
+#arrowRecordBtn {
+  height: 30px;
+  width: 70px;
+  margin-top: 5px;
+  margin-right: 3px
 }
 
 #playSpeedSlider {
@@ -231,4 +258,107 @@ a[id^="btnCourse"] {
 .sboxInner p {
   font-size: 12px;
   font-weight: normal;
+}
+
+
+/*----------------------------------------------------
+  Animation
+----------------------------------------------------*/
+.animated {
+  -webkit-animation-duration: 1.4s;
+  -moz-animation-duration   : 1.4s;
+  -o-animation-duration     : 1.4s;
+  animation-duration        : 1.4s;
+  -webkit-animation-fill-mode: both;
+  -moz-animation-fill-mode   : both;
+  -o-animation-fill-mode     : both;
+  animation-fill-mode        : both;
+}
+@-webkit-keyframes shake {
+  0%, 100% {-webkit-transform: translateX(0);}
+  10%, 30%, 50%, 70%, 90% {-webkit-transform: translateX(-10px);}
+  20%, 40%, 60%, 80% {-webkit-transform: translateX(10px);}
+}
+
+@-moz-keyframes shake {
+  0%, 100% {-moz-transform: translateX(0);}
+  10%, 30%, 50%, 70%, 90% {-moz-transform: translateX(-10px);}
+  20%, 40%, 60%, 80% {-moz-transform: translateX(10px);}
+}
+
+@-o-keyframes shake {
+  0%, 100% {-o-transform: translateX(0);}
+  10%, 30%, 50%, 70%, 90% {-o-transform: translateX(-10px);}
+  20%, 40%, 60%, 80% {-o-transform: translateX(10px);}
+}
+
+@keyframes shake {
+  0%, 100% {transform: translateX(0);}
+  10%, 30%, 50%, 70%, 90% {transform: translateX(-10px);}
+  20%, 40%, 60%, 80% {transform: translateX(10px);}
+}
+
+.shake {
+  -webkit-animation-name: shake;
+  -moz-animation-name: shake;
+  -o-animation-name: shake;
+  animation-name: shake;
+}
+
+@-webkit-keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {-webkit-transform: translateY(0);}
+  40% {-webkit-transform: translateY(-30px);}
+  60% {-webkit-transform: translateY(-15px);}
+}
+
+@-moz-keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {-moz-transform: translateY(0);}
+  40% {-moz-transform: translateY(-30px);}
+  60% {-moz-transform: translateY(-15px);}
+}
+
+@-o-keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {-o-transform: translateY(0);}
+  40% {-o-transform: translateY(-30px);}
+  60% {-o-transform: translateY(-15px);}
+}
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+  40% {transform: translateY(-30px);}
+  60% {transform: translateY(-15px);}
+}
+
+.bounce {
+  -webkit-animation-name: bounce;
+  -moz-animation-name: bounce;
+  -o-animation-name: bounce;
+  animation-name: bounce;
+}
+
+@-webkit-keyframes pulse {
+    0% { -webkit-transform: scale(1); }
+  50% { -webkit-transform: scale(1.1); }
+    100% { -webkit-transform: scale(1); }
+}
+@-moz-keyframes pulse {
+    0% { -moz-transform: scale(1); }
+  50% { -moz-transform: scale(1.1); }
+    100% { -moz-transform: scale(1); }
+}
+@-o-keyframes pulse {
+    0% { -o-transform: scale(1); }
+  50% { -o-transform: scale(1.1); }
+    100% { -o-transform: scale(1); }
+}
+@keyframes pulse {
+    0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.pulse {
+  -webkit-animation-name: pulse;
+  -moz-animation-name: pulse;
+  -o-animation-name: pulse;
+  animation-name: pulse;
 }
