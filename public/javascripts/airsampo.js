@@ -693,7 +693,7 @@ function search(searchWord, page) {
           var course = courses[idx - 1];
           if (!course) { break; }
 
-          var li = $("<li id='thumbnail" + idx + "' class='span4'></li>");
+          var li = $("<li id='thumbnail" + idx + "' class='span6'></li>");
           var div1 = $("<div class='thumbnail'></div>");
 
           // サムネイル
@@ -759,18 +759,18 @@ function setRanking(page) {
         var course = courses[i];
         if (!course) { break; }
 
-        var li = $("<li id='thumbnail" + (i + 1) + "' class='span8'></li>");
+        var li = $("<li id='thumbnail" + (i + 1) + "' class='span12'></li>");
         var div1 = $("<div class='row' style='border: none; margin-bottom: 50px'></div>");
 
         // サムネイル
-        var div2 = $("<div id='course" + (i + 1) + "' class='span4'></div>");
+        var div2 = $("<div id='course" + (i + 1) + "' class='span6'></div>");
         var firstPosition = JSON.parse(course.position[0]);
         var imgLink = $("<a href='/play?_id=" + course._id + "'></a>");
         var thumbnailImg = "<img src='http://maps.googleapis.com/maps/api/streetview?size=360x250&location=" + firstPosition.lat + "," + firstPosition.lng + "&heading=" + firstPosition.heading + "&pitch=" + firstPosition.pitch + "&sensor=false'\"' />";
         imgLink.append(thumbnailImg);
         div2.append(imgLink);
 
-        var div3 = $("<div class='caption span4'></div>");
+        var div3 = $("<div class='caption span6'></div>");
 
         // メダル・順位
         var ranking;

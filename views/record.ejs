@@ -30,7 +30,7 @@
     <div id="navigationBar"></div>
 
     <div class="container">
-      <div class="row">
+      <div class="row-fluid">
         <div class="span1"></div>
 
         <div class="span8" style="margin-top: 50px;">
@@ -55,7 +55,7 @@
           <!-- Search -->
           <form class="form-search">
             <div id="searchDiv" class="input-append">
-              <input type="text" id="txtSearch" class="span2 search-query" placeholder="Search">
+              <input type="text" id="txtSearch" class="span10 search-query" placeholder="Search">
               <button id="btnSearch" class="btn"><i class="icon-search"></i></button>
             </div>
             <button id="btnHere" class="btn" data-original-title="現在地">現在地</button>
@@ -64,9 +64,9 @@
 
           <!-- Map & StreetView -->
           <div id="view">
-            <div class="row">
-              <div id="streetview" class="span5"></div>
-              <div id="map_canvas" class="span3"></div>
+            <div class="row-fluid">
+              <div id="streetview" class="span8"></div>
+              <div id="map_canvas" class="span4"></div>
             </div>
           </div>
 
@@ -90,25 +90,25 @@
             再生データがありません。
           </div>
 
-          <div style="border: solid 1px;margin-top: 10px">
+          <div class="row-fluid" style="border: solid 1px;margin-top: 10px">
             <form method="post" action="/saveCourse" id="saveForm" class="form-horizontal">
               <div class="control-group">
                 <label class="control-label">タイトル</label>
                 <div class="controls">
-                  <input type="text" id="txtTitle" name="txtTitle" value="<%= title %>" class="span4" placeholder="Title"></input>
+                  <input type="text" id="txtTitle" name="txtTitle" value="<%= title %>" class="span10" placeholder="Title"></input>
                 </div>
               </div>
               <div class="control-group">
                 <label class="control-label">説明文とか</label>
                 <div class="controls">
-                  <textarea id="txtDescription" name="txtDescription" class="span5" rows="3" placeholder="Description"><%= description %></textarea>
+                  <textarea id="txtDescription" name="txtDescription" class="span10" rows="3" placeholder="Description"><%= description %></textarea>
                 </div>
               </div>
               <div class="control-group">
                 <label class="control-label">タグ</label>
                 <div class="controls">
                   <!-- <input type="text" id="txtTag" name="txtTag" value="" class="span4" placeholder="Tag"></input> -->
-                  <ul id="tagList" style="margin-left: 0;" class="span4"></ul>
+                  <ul id="tagList" style="margin-left: 0;" class="span10"></ul>
                 </div>
               </div>
               <div class="control-group">
