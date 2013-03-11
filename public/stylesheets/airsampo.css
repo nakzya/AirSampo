@@ -9,6 +9,19 @@ body {
   padding-bottom: 40px;
 }
 
+div.hero-unit {
+  padding: 40px;
+}
+
+.hero-unit h1 {
+  padding: 15px 0 0 30px;
+  font-size: 60px;
+}
+
+.hero-unit p {
+  padding: 15px 0 0 30px;
+}
+
 #login {
   float: left;
   margin-right: 20px;
