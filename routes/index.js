@@ -7,6 +7,7 @@ var url = require("url");
 var ObjectId = require('mongoose').Types.ObjectId;
 var model = require('../model');
 var Course = model.Course;
+var PlayHistory = model.PlayHistory;
 
 // トップ画面表示
 exports.index = function(req, res) {
@@ -117,8 +118,26 @@ exports.incrementPlayCount = function(req, res) {
   });
 }
 
+// 再生履歴を登録
+exports.playHistory = function(req, res) {
+  var _id = req.query._id;
+  if (_id) {  // 記録確定前の場合、undefinedのため再生履歴を登録しない
+    var playHistory = new PlayHistory({
+      course_id: _id,
+      playedby : "anonymous"  // TODO 暫定
+    });
+
+    playHistory.save(function(err, course) {
+      if (err) {
+        console.log(err);
+        res.redirect('back');
+      }
+    });
+  }
+}
+
 // 記録画面 - DBへ格納
-exports.save = function(req, res) {
+exports.saveCourse = function(req, res) {
   // タグ情報を配列に分解
   var tagArray
   if (req.body.tags.length == 0) {

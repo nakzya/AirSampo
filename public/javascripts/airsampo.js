@@ -543,6 +543,8 @@ function searchResultInitialize() {
   // 検索結果を表示
   search(searchWord, 1);
 
+  $(".loading").css("display", "none");
+
   // ページネーションの設定
   setSearchPagination(1, "/pagination/search?searchWord=" + searchWord, searchWord);
 }
@@ -1049,6 +1051,12 @@ function play() {
     // 再生回数をインクリメント
     $.ajax({
       url: "/incrementPlayCount?_id=" + $("#_id").val(),
+      cache: false
+    });
+
+    // 再生履歴を登録
+    $.ajax({
+      url: "/playHistory?_id=" + $("#_id").val(),
       cache: false
     });
 

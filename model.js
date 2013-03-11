@@ -5,6 +5,7 @@ function validator(v) {
   return v.length > 0;
 }
 
+// コース情報
 var Course = new mongoose.Schema({
   owner       : {type: String, required: true},
   title       : {type: String, required: true},
@@ -26,4 +27,14 @@ var Position = new mongoose.Schema({
   distance : {type: Number, required: true}
 });
 
-exports.Course = db.model('Course', Course);
+exports.Course = db.model("Course", Course);
+
+
+// 再生履歴情報
+var PlayHistory = new mongoose.Schema({
+  course_id : {type: String, required: true},
+  datetime  : {type: Date, default: Date.now},
+  playedby  : {type: String, required: true}
+});
+
+exports.PlayHistory = db.model("PlayHistory", PlayHistory);

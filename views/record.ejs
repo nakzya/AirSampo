@@ -34,6 +34,24 @@
         <div class="span1"></div>
 
         <div class="span8" style="margin-top: 50px;">
+          <!--
+          <h4>さんぽコースの記録方法<h4/>
+            <ol>
+              <li>さんぽのスタート地点を決めましょう。</li>
+              <li>下の右側の地図でスタート地点を探して下さい。<br/>
+                  地図は左上の"＋/－"で拡大・縮小することができます。</li>
+                  <img src="images/howtorecord2.png" />
+              <li>スタート地点を見つけると、そこにペグマン（地図の左上の人型）をドラッグしてスタート地点に置きましょう。そうすると左側のストリートビューの画面が変わったでしょうか？<br/>
+                  ※ペグマンを置けるのは地図上の青い箇所です。</li>
+              <li>スタート地点が気に入らない場合はストリートビューで変更することができます。<br/>
+                  色々さわってみて場所・角度・方向などを微調整しましょう。</li>
+              <li>いよいよスタート地点が決まったら記録を始めましょう。まず下の赤いボタンを一度押して下さい。そうすると記録が始まります。</li>
+              <li>ではさんぽスタートです。スタート地点から進んでみましょう。気になるものがあれば振り向いてみましょう。</li>
+              <li>さんぽを終わる場合はもう一度赤いボタンを押せば終了です。</li>
+              <li>さんぽを記録すると青いボタンを押せるようになっています。これは再生ボタンです。試しに押してみましょう。するとどうでしょうか、さんぽが自動的に始まりましたね。</li>
+            </ol>
+          -->
+
           <!-- Search -->
           <form class="form-search">
             <div id="searchDiv" class="input-append">
@@ -55,7 +73,7 @@
           <!-- Control Button -->
           <div id="control">
             <div style="margin-left: 18%; margin-top: 5px">
-              <div style="float: left;"><img src="images/right_arrow.gif" id="arrowRecordBtn"/></div>
+              <!-- <div style="float: left;"><img src="images/right_arrow.gif" id="arrowRecordBtn"/></div> -->
               <div style="float: left"><button name="btnRecord" id="btnRecord" class="btn btn-danger controlBtn" data-original-title="記録"><i class="icon-facetime-video icon-white"></i></button></div>
               <div style="float: left"><button name="btnPlay" id="btnPlay" class="btn btn-info controlBtn" disabled data-original-title="再生" disabled><i class="icon-play icon-white"></i></button></div>
               <div style="float: left"><button name="btnStop" id="btnStop" class="btn btn-primary controlBtn" disabled data-original-title="停止" disabled><i class="icon-stop icon-white"></i></button></div>
@@ -73,7 +91,7 @@
           </div>
 
           <div style="border: solid 1px;margin-top: 10px">
-            <form method="post" action="/save" id="saveForm" class="form-horizontal">
+            <form method="post" action="/saveCourse" id="saveForm" class="form-horizontal">
               <div class="control-group">
                 <label class="control-label">タイトル</label>
                 <div class="controls">

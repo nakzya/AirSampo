@@ -36,9 +36,10 @@ app.get('/recommend', routes.recommend);
 app.get('/play', routes.play);
 app.get('/loadCourse', routes.loadCourse);
 app.get('/incrementPlayCount', routes.incrementPlayCount);
+app.get('/playHistory', routes.playHistory);
 
 app.get('/record', routes.record);
-app.post('/save', routes.save);
+app.post('/saveCourse', routes.saveCourse);
 
 app.get('/login', routes.login);
 
