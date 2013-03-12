@@ -37,8 +37,8 @@ exports.record = function(req, res) {
   res.render("record", {_id: _id, title: title, description: description});
 };
 
-// トップ画面 - ページネーションのための件数取得
-exports.paginationTop = function(req, res) {
+// トップ画面 - 表示件数取得
+exports.topCount = function(req, res) {
   Course.count(
     {},  // 暫定的に全件の件数を取得
     function(err, count) {
@@ -56,10 +56,20 @@ exports.paginationTop = function(req, res) {
 exports.course = function(req, res) {
   var page = req.query.page;
   var skip = (page - 1) * 4;
+  var idx = req.query.idx;
+
+  var options;
+  if (idx) {
+    options = {skip: idx - 1, limit: 1};
+  } else {
+    options = {sort: {playCount: -1}, skip: skip, limit: 4};
+  }
+
   Course.find(
     {},  // 暫定的に全件（再生回数の多い順）に取得している
     null,
-    {sort: {playCount: -1}, skip: skip, limit: 4},
+    //{sort: {playCount: -1}, skip: skip, limit: 4},
+    options,
     function(err, courses) {
       if (err) {
         console.log(err);

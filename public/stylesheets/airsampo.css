@@ -27,6 +27,14 @@ div.hero-unit {
   margin-right: 20px;
 }
 
+#startingCourse {
+  height: 300px;
+}
+
+#startingCourseContainer {
+  margin-bottom: 100px;
+}
+
 ul.thumbnails li {
   display: none;
 }
@@ -115,11 +123,12 @@ a[id^="btnCourse"]:hover {
   transform:scale(1.05);
 }
 
-#arrowRecordBtn {
-  height: 30px;
-  width: 70px;
-  margin-top: 5px;
-  margin-right: 3px
+#btnSave:hover {
+  -webkit-transform:scale(1.05);
+  -moz-transform:scale(1.05);
+  -ms-transform:scale(1.05);
+  -o-transform:scale(1.05);
+  transform:scale(1.05);
 }
 
 #playSpeedSlider {

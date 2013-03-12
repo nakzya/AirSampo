@@ -61,10 +61,10 @@ function navInitialize() {
 }
 
 // トップ画面のページネーションの設定
-function setTopPagination(page, url) {
+function setTopPagination(page, startingCourseIdx) {
   $.ajax({
-    url: url,   // 件数を引数として受け取るようにすると、再帰的に呼び出す際に不都合がある（件数の増減に対応できない）
-    cache: true,
+    url: "/topCount",   // 件数を引数として受け取るようにすると、再帰的に呼び出す際に不都合がある（件数の増減に対応できない）
+    cache: false,
     dataType: "json",
     success: function(data) {
       var count = data.count;
@@ -82,7 +82,7 @@ function setTopPagination(page, url) {
         prevLi.addClass("disabled");
         prevLi.removeAttr("onclick");
       } else {
-        prevLi.attr("onclick", "setCourseThumbnail(" + (page - 1) + "); setTopPagination(" + (page - 1) + ", '" + url + "')");
+        prevLi.attr("onclick", "setCourseThumbnail(" + (page - 1) + "); setTopPagination(" + (page - 1) + ")");
       }
       ul.append(prevLi);
 
@@ -94,7 +94,7 @@ function setTopPagination(page, url) {
           li.addClass("active");
           li.removeAttr("onclick");
         } else {
-          li.attr("onclick", "setCourseThumbnail(" + i + "); setTopPagination(" + i + ", '" + url + "')");
+          li.attr("onclick", "setCourseThumbnail(" + i + "); setTopPagination(" + i + ")");
         }
         ul.append(li);
       }
@@ -105,7 +105,7 @@ function setTopPagination(page, url) {
         nextLi.addClass("disabled");
         nextLi.removeAttr("onclick");
       } else {
-        nextLi.attr("onclick", "setCourseThumbnail(" + (page + 1) + "); setTopPagination(" + (page + 1) + ", '" + url + "')");
+        nextLi.attr("onclick", "setCourseThumbnail(" + (page + 1) + "); setTopPagination(" + (page + 1) + ")");
       }
       ul.append(nextLi);
     }
@@ -164,6 +164,7 @@ function setSearchPagination(page, url, searchWord) {
 function setNavigationBar(mode) {
   $.ajax({
     url: "./navigationBar.html",
+    cache: true,
     success: function(html) {
       $("#navigationBar").html(html);
 
@@ -186,6 +187,7 @@ function setNavigationBar(mode) {
 function setFooter() {
   $.ajax({
     url: "./footer.html",
+    cache: true,
     success: function(html) {
       $("#footer").html(html);
     }
@@ -223,19 +225,24 @@ function initialize() {
 
 // トップ画面 初期処理
 function topInitialize() {
+  var startingCourseIdx = 1;  //初期再生動画のナンバー
+
+  // 初期表示コースの設定
+  setStartingCourse();
+
   $(".loading").css("display", "none");
 
-  // 初期表示コースのサムネイル設定
+  // 初期表示4コースのサムネイル設定
   setCourseThumbnail(1);
+
+  // ページネーションの設定
+  setTopPagination(1);
 
   // 新着情報表示
   showNewArrival();
 
   // ナビゲーションバー初期処理
   navInitialize()
-
-  // ページネーションの設定
-  setTopPagination(1, "/pagination/top");
 
   $("#btnCourse1").bind("click", function(event) {
     stop();  // 念のため停止処理
@@ -324,7 +331,7 @@ function commonInitialize() {
 
   // 「現在地」ボタン クリックイベント
   $("#btnHere").bind("click", function(event) {
-    getCurrentPosition();
+    getCurrentPosition(true);
     event.preventDefault();
   });
 
@@ -390,6 +397,10 @@ function recordInitialize() {
      map.setZoom(4);
      initPanoramaSlider();
   }
+
+  // 現在地に移動
+  getCurrentPosition(false);
+  map.setZoom(15);
 
   links = [];
 
@@ -549,8 +560,70 @@ function searchResultInitialize() {
   setSearchPagination(1, "/pagination/search?searchWord=" + searchWord, searchWord);
 }
 
+// 初期表示コースの設定
+function setStartingCourse() {
+  $.ajax({
+    url: "/topCount",
+    cache: false,
+    dataType: "json",
+    success: function(data) {
+      var count = data.count;
+      // 初期再生動画のナンバーをランダムで決定（1～N）
+      startingCourseIdx = Math.floor(Math.random() * Number(count) + 1);
+
+      $.ajax({
+        url: "/course?idx=" + startingCourseIdx,
+        cache: false,
+        dataType: "json",
+        success: function(courses) {
+          var course = courses[0];
+          if (course.position) {
+            var retArry = [];
+            for (var i = 0; i < course.position.length; i++) {
+              var data = JSON.parse(course.position[i]);
+              var panoData = new PanoramaData();
+              panoData.lat = data.lat;
+              panoData.lng = data.lng;
+              panoData.heading = Number(data.heading);
+              panoData.pitch = Number(data.pitch);
+              panoData.zoom = Number(data.zoom);
+              panoData.distance = data.distance;
+              retArry.push(panoData);
+            }
+            panoramaDataArray = retArry;
+
+            var firstPosition = JSON.parse(course.position[0]);
+            var startPosition = new google.maps.LatLng(firstPosition.lat, firstPosition.lng);
+            var panoramaOptions = {
+              // 最初の位置・POVを表示
+              position: startPosition,
+              pov: {
+                heading: Number(firstPosition.heading),
+                pitch: Number(firstPosition.pitch),
+                zoom: Number(firstPosition.zoom)
+              },
+              addressControl: false,
+              linksControl: false,
+              panControl: false,
+              clickToGo: false,
+              zoomControl: false,
+              imageDateControl: false,
+              scrollwheel: false
+            };
+            var startingPanorama =
+              new google.maps.StreetViewPanorama(document.getElementById("startingCourse"), panoramaOptions);
+
+            // 初期表示コースをループ再生
+            play(startingPanorama, true);
+          }
+        }
+      });
+    }
+  });
+}
+
 // サムネイル情報を設定
-function setCourseThumbnail(page) {
+function setCourseThumbnail(page, startingCourseIdx) {
   // 一旦全て非表示に
   $("ul.thumbnails li").css("display", "none");
 
@@ -630,7 +703,7 @@ function setCourseThumbnail(page) {
 function loadCourse(_id) {
   $.ajax({
     url: "/loadCourse?_id=" + _id,
-    cache: false,
+    cache: true,
     dataType: "json",
     success: function(courses) {
       // タイトル
@@ -877,13 +950,15 @@ function initPanoramaSlider() {
 }
 
 // 「現在地」ボタン
-function getCurrentPosition() {
+function getCurrentPosition(showErrorMsg) {
   if(navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(function(position) {
       movePanorama(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
     },
     function() {
-      alert("ご使用のブラウザはGoeLocation（現在地取得機能）に対応していません。");
+      if (showErrorMsg) {
+        alert("ご使用のブラウザはGoeLocation（現在地取得機能）に対応していません。");
+      }
     });
   }
 }
@@ -924,7 +999,7 @@ function toggleRecord() {
         title: "スタート地点"
       });
       markers.push(startMarker);
-
+/*
       // パノラマ表示用スタート地点マーカー
       var startMarker2 = new google.maps.Marker({
         position: panorama.getPosition(),
@@ -937,7 +1012,7 @@ function toggleRecord() {
       });
       infowindow.open(panorama, startMarker2);
       InfoWindows.push(infowindow);
-
+*/
       links = [];
 
       panoramaDataArray = [];
@@ -1013,7 +1088,7 @@ function toggleRecord() {
       title: "記録終了地点"
     });
     markers.push(goalMarker);
-
+/*
     // パノラマ表示用スゴールマーカー
     var goalMarker2 = new google.maps.Marker({
       position: panorama.getPosition(),
@@ -1026,14 +1101,16 @@ function toggleRecord() {
     });
     infowindow.open(panorama, goalMarker2);
     InfoWindows.push(infowindow);
-
+*/
     // 再生スライダーを設定
     setPanoramaSlider();
   }
 }
 
 // 「再生」ボタン
-function play() {
+// targetPanorama: 通常の再生・記録画面のpanorama以外のpanoramaで再生する場合に指定
+// ループ再生する場合:TRUE
+function play(targetPanorama, loop) {
   if (panoramaDataArray.length < 2) {
     $("#message").css("display", "block");  // エラー表示
     deleteMoveMarkers();
@@ -1044,21 +1121,31 @@ function play() {
     $("#message").css("display", "none");
   }
 
+  if (!targetPanorama) {
+    targetPanorama = panorama;
+  }
+  if (!loop) {
+    loop = false;
+  }
+
   // 停止 → 再生
   if (playMode == 0) {
     playMode = 1;
 
-    // 再生回数をインクリメント
-    $.ajax({
-      url: "/incrementPlayCount?_id=" + $("#_id").val(),
-      cache: false
-    });
+    // 通常の再生以外は再生回数のインクリメント、再生履歴の登録を行わない
+    if (!targetPanorama) {
+      // 再生回数をインクリメント
+      $.ajax({
+        url: "/incrementPlayCount?_id=" + $("#_id").val(),
+        cache: false
+      });
 
-    // 再生履歴を登録
-    $.ajax({
-      url: "/playHistory?_id=" + $("#_id").val(),
-      cache: false
-    });
+      // 再生履歴を登録
+      $.ajax({
+        url: "/playHistory?_id=" + $("#_id").val(),
+        cache: false
+      });
+    }
 
     $("#btnPlay i").addClass("icon-pause");
     $("#btnPlay i").removeClass("icon-play");
@@ -1090,31 +1177,31 @@ function play() {
       title: "スタート地点"
     });
     markers.push(startMarker);
-
+/*
     // パノラマ表示用スタート地点マーカー
     var startMarker2 = new google.maps.Marker({
-      position: panorama.getPosition(),
-      map: panorama,
+      position: targetPanorama.getPosition(),
+      map: targetPanorama,
       title: "スタート地点"
     });
     markers.push(startMarker2);
     var infowindow = new google.maps.InfoWindow({
       content: "<p style='font-weight: bold'>スタート地点　<img src='../images/running.gif'/></p><p>張り切って行きましょう!</p>"
     });
-    infowindow.open(panorama, startMarker2);
+    infowindow.open(targetPanorama, startMarker2);
     InfoWindows.push(infowindow);
-
+*/
     // 位置・向き・角度・ズームを初期化
-    panorama.setPosition(panoData2LatLng(panoDataFirst));
-    panorama.setPov({
+    targetPanorama.setPosition(panoData2LatLng(panoDataFirst));
+    targetPanorama.setPov({
       heading: panoDataFirst.heading,
       pitch: panoDataFirst.pitch
     });
-    panorama.setZoom(panoDataFirst.zoom);
+    targetPanorama.setZoom(panoDataFirst.zoom);
 
     $("#panoramaSlider").slider("value", 1);
 
-    actionInterval(0);
+    actionInterval(0, targetPanorama, loop);
 
   // 再生 → 一時停止
   } else if (playMode == 1) {
@@ -1147,7 +1234,14 @@ function play() {
 }
 
 // 連続再生処理
-function actionInterval(arryIdx) {
+// arryIdx: 何フレーム目から再生するか
+// targetPanorama: 通常の再生・記録画面のpanorama以外のpanoramaで再生する場合に指定
+// ループ再生する場合:TRUE
+function actionInterval(arryIdx, targetPanorama, loop) {
+  if (!targetPanorama) {
+    targetPanorama = panorama;
+  }
+
   if (playMode == 1) {
     var panoData = panoramaDataArray[arryIdx];
     var panoDataNext = panoramaDataArray[arryIdx + 1];
@@ -1158,6 +1252,8 @@ function actionInterval(arryIdx) {
     if (arryIdx >= panoramaDataArray.length) {
       playMode = 0;
 
+      play(targetPanorama, loop);
+
       // ゴール地点にマーカーを設置
       var goalMarker = new google.maps.Marker({
         position: panoData2LatLng(panoData),
@@ -1166,20 +1262,20 @@ function actionInterval(arryIdx) {
         title: "ゴール地点"
       });
       markers.push(goalMarker);
-
+/*
       // パノラマ表示用スゴールマーカー
       var goalMarker2 = new google.maps.Marker({
-        position: panorama.getPosition(),
-        map: panorama,
+        position: targetPanorama.getPosition(),
+        map: targetPanorama,
         title: "ゴール地点"
       });
       markers.push(goalMarker2);
       var infowindow = new google.maps.InfoWindow({
         content: "<p style='font-weight: bold'>ゴール地点</p><p>お疲れ様でした。</p>"
       });
-      infowindow.open(panorama, goalMarker2);
+      infowindow.open(targetPanorama, goalMarker2);
       InfoWindows.push(infowindow);
-
+*/
       $("#btnRecord").removeAttr("disabled");
       $("#btnPlay i").addClass("icon-play");
       $("#btnPlay i").removeClass("icon-pause");
@@ -1194,12 +1290,12 @@ function actionInterval(arryIdx) {
     // 地点の移動
     if (panoData.lat != panoDataNext.lat || panoData.lng != panoDataNext.lng) {
       currentTimer = setTimeout(function() {
-        panorama.setPosition(new google.maps.LatLng(panoDataNext.lat, panoDataNext.lng));
-        panorama.setPov({  // POVも一時停止中などに変更されている可能性があるため、設定しておく
+        targetPanorama.setPosition(new google.maps.LatLng(panoDataNext.lat, panoDataNext.lng));
+        targetPanorama.setPov({  // POVも一時停止中などに変更されている可能性があるため、設定しておく
           heading: panoDataNext.heading,
           pitch: panoDataNext.pitch
         });
-        panorama.setZoom(panoDataNext.zoom);
+        targetPanorama.setZoom(panoDataNext.zoom);
 
         var fromLatLng = new google.maps.LatLng(panoData.lat, panoData.lng);
         var toLatLng = new google.maps.LatLng(panoDataNext.lat, panoDataNext.lng);
@@ -1210,26 +1306,26 @@ function actionInterval(arryIdx) {
         // 距離を表示
         $("#distance").html(panoDataNext.distance + "m");
 
-        actionInterval(arryIdx);
+        actionInterval(arryIdx, targetPanorama);
       }, playSpeed);
 
     // 方向・角度の変更
     } else if (panoData.heading != panoDataNext.heading || panoData.pitch != panoDataNext.pitch) {
       currentTimer = setTimeout(function() {
-        panorama.setPov({
+        targetPanorama.setPov({
           heading: panoDataNext.heading,
           pitch: panoDataNext.pitch
         });
 
-        actionInterval(arryIdx);
+        actionInterval(arryIdx, targetPanorama);
       }, 160);
 
     // ズームの変更
     } else if (panoData.zoom != panoDataNext.zoom) {
       currentTimer = setTimeout(function() {
-        panorama.setZoom(panoDataNext.zoom);
+        targetPanorama.setZoom(panoDataNext.zoom);
 
-        actionInterval(arryIdx);
+        actionInterval(arryIdx, targetPanorama);
       }, 1000);
     }
 
@@ -1247,7 +1343,7 @@ function actionInterval(arryIdx) {
 
     // 開始地点に戻る
     var panoData = panoramaDataArray[0];
-    panorama.setPosition(panoData2LatLng(panoData));
+    targetPanorama.setPosition(panoData2LatLng(panoData));
   }
 }
 
@@ -1326,12 +1422,13 @@ function setPanoramaSlider() {
 // PanoramaのControlの有効／無効を切り換える
 function setPanoramaContralEnable(flg) {
   var panoramaOptions = {
-    clickToGo: flg,
-    addressControl: flg,
-    panControl: flg,
-    clickToGo: flg,
-    linksControl: flg,
-    imageDateControl: false
+    addressControl: false,
+    linksControl: false,
+    panControl: false,
+    clickToGo: false,
+    zoomControl: false,
+    imageDateControl: false,
+    scrollwheel: false
   };
   panorama = new  google.maps.StreetViewPanorama(document.getElementById("streetview"), panoramaOptions);
   map.setStreetView(panorama);
@@ -1363,9 +1460,7 @@ function drawPlayLine(fromLatLng, toLatLng) {
 
 // 指定の場所までの再生線を引く
 function drawPlayLines(panoDataArrayIdx) {
-
   for (var i = 0; i < panoDataArrayIdx; i++) {
-
     var panoData = panoramaDataArray[i];
     var panoDataNext = panoramaDataArray[i + 1];
 
@@ -1464,7 +1559,7 @@ function showPositionInfo(latlng, pov) {
 function setCourseThumbnailFromJSON(num) {
   $.ajax({
     url: "course" + String(num) + ".json",
-    cache: false,
+    cache: true,
     dataType: "json",
     success: function(json) {
       var selectorStr = "#course" + num + "+div h3";
@@ -1509,7 +1604,7 @@ function setCourseThumbnailFromJSON(num) {
 function loadCourseFromJSON(num) {
   $.ajax({
     url: "course" + String(num) + ".json",
-    cache: false,
+    cache: true,
     dataType: "json",
     success: function(json) {
       // タイトル

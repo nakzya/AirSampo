@@ -28,7 +28,7 @@ app.configure('development', function(){
 
 app.get('/', routes.index);
 app.get('/course', routes.course);
-app.get('/pagination/top', routes.paginationTop);
+app.get('/topCount', routes.topCount);
 app.get('/newArrival', routes.newArrival);
 
 app.get('/recommend', routes.recommend);
