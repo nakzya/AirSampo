@@ -242,7 +242,7 @@ function topInitialize() {
   showNewArrival();
 
   // ナビゲーションバー初期処理
-  navInitialize()
+  //navInitialize();
 
   $("#btnCourse1").bind("click", function(event) {
     stop();  // 念のため停止処理
