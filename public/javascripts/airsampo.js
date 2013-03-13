@@ -613,6 +613,12 @@ function setStartingCourse() {
             var startingPanorama =
               new google.maps.StreetViewPanorama(document.getElementById("startingCourse"), panoramaOptions);
 
+            // 左上のDescriptionラベル作成
+            var descriptionStrLabelDiv = document.createElement('div');
+            var descriptionLabel = new DescriptionLabel(descriptionStrLabelDiv, course);
+            descriptionStrLabelDiv.index = 1;
+            startingPanorama.controls[google.maps.ControlPosition.TOP_LEFT].push(descriptionStrLabelDiv);
+
             // 初期表示コースをループ再生
             play(startingPanorama, true);
           }
@@ -620,6 +626,35 @@ function setStartingCourse() {
       });
     }
   });
+}
+
+// 初期再生コースのラベル
+function DescriptionLabel(labelDiv, course) {
+  labelDiv.style.padding = '5px';
+
+  var labelUI = document.createElement('div');
+  labelUI.style.backgroundColor = 'white';
+ // labelUI.style.cursor = 'pointer';
+  labelUI.style.textAlign = 'left';
+  labelUI.style.opacity = 0.5;
+  labelUI.title = course.title;
+  labelDiv.appendChild(labelUI);
+
+  var labelText = document.createElement('div');
+  labelText.style.fontFamily = 'Arial,sans-serif';
+  labelText.style.fontSize = '12px';
+  labelText.style.paddingLeft = '4px';
+  labelText.style.paddingRight = '4px';
+  labelText.innerHTML = "<strong>" + course.title + "</strong><br/>" + course.description;
+  labelUI.appendChild(labelText);
+
+/* 何故か画面遷移しない
+  google.maps.event.addDomListener(labelUI, "click", function() {
+    $.get("/play?_id=" + course._id, function (data) {
+        alert(data);
+    });
+  });
+*/
 }
 
 // サムネイル情報を設定
