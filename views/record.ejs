@@ -34,15 +34,34 @@
         <div class="span1"></div>
 
         <div class="span8" style="margin-top: 50px;">
-          <!-- Search -->
-          <form class="form-search">
-            <div id="searchDiv" class="input-append">
-              <input type="text" id="txtSearch" class="span10 search-query" placeholder="住所、ランドマークなど">
-              <button id="btnSearch" class="btn"><i class="icon-search"></i></button>
+          <div class="row-fluid">
+            <div class="span6">
+              <!-- Search -->
+              <form class="form-search">
+                <div id="searchDiv" class="input-append">
+                  <input type="text" id="txtSearch" class="span10 search-query" placeholder="住所、ランドマークなど">
+                  <button id="btnSearch" class="btn"><i class="icon-search"></i></button>
+                </div>
+                <button id="btnHere" class="btn" data-original-title="現在地">現在地</button>
+              </form>
             </div>
-            <button id="btnHere" class="btn" data-original-title="現在地">現在地</button>
 
-          </form>
+            <div class="span6" style="margin-top: 25px">
+              <div class="btn-group" style="float: right">
+                <button class="btn dropdown-toggle" data-toggle="dropdown">
+                  表示サイズ変更
+                  <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a href="javascript:void(0)" onclick="changePanoramaMapSize(1)">StreetView（左側）最大化</a></li>
+                  <li><a href="javascript:void(0)" onclick="changePanoramaMapSize(2)">Map（右側）最大化</a></li>
+                  <li><a href="javascript:void(0)" onclick="changePanoramaMapSize(3)">均等割</a></li>
+                  <li><a href="javascript:void(0)" onclick="changePanoramaMapSize(4)">StreetView：Map = 3：2</a></li>
+                  <li><a href="javascript:void(0)" onclick="changePanoramaMapSize(5)">StreetView：Map = 2：3</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
 
           <!-- Map & StreetView -->
           <div id="view">

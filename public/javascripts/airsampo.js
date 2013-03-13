@@ -302,7 +302,8 @@ function commonInitialize() {
   };
   panorama = new  google.maps.StreetViewPanorama(document.getElementById("streetview"), panoramaOptions);
   map.setStreetView(panorama);
-  google.maps.event.trigger(panorama, 'resize');
+  google.maps.event.trigger(panorama, "resize");
+  //google.maps.event.trigger(panorama, "position_changed");
   //movePanorama(startPosition);
 
   $("#btnRecord").tooltip();
@@ -565,6 +566,11 @@ function recordInitialize() {
 
     event.preventDefault();
   });
+
+  $("#test").bind("click", function() {
+
+
+  });
 }
 
 // ランキング画面 初期処理
@@ -640,10 +646,11 @@ function setStartingCourse() {
               new google.maps.StreetViewPanorama(document.getElementById("startingCourse"), panoramaOptions);
 
             // 左上のDescriptionラベル作成
-            var descriptionStrLabelDiv = document.createElement('div');
-            var descriptionLabel = new DescriptionLabel(descriptionStrLabelDiv, course);
-            descriptionStrLabelDiv.index = 1;
-            startingPanorama.controls[google.maps.ControlPosition.TOP_LEFT].push(descriptionStrLabelDiv);
+            var descriptionLabelDiv = $("<div></div>");
+            descriptionLabelDiv.css("max-width", "40%");
+            var descriptionLabel = new DescriptionLabel(descriptionLabelDiv, course);
+            descriptionLabelDiv.attr("index", "1");
+            startingPanorama.controls[google.maps.ControlPosition.TOP_LEFT].push(descriptionLabelDiv[0]);
 
             // 初期表示コースをループ再生
             play(startingPanorama, false, true);
@@ -656,29 +663,27 @@ function setStartingCourse() {
 
 // 初期再生コースのラベル
 function DescriptionLabel(labelDiv, course) {
-  labelDiv.style.padding = '5px';
+  labelDiv.css("padding", "5px");
 
-  var labelUI = document.createElement('div');
-  labelUI.style.backgroundColor = 'white';
- // labelUI.style.cursor = 'pointer';
-  labelUI.style.textAlign = 'left';
-  labelUI.style.opacity = 0.5;
-  labelUI.title = course.title;
-  labelDiv.appendChild(labelUI);
+  var labelUI = $("<div></div>");
+  labelUI.css("backgroundColor", "white");
+  //labelUI.css("cursor", "pointer");
+  labelUI.css("textAlign", "left");
+  labelUI.css("opacity", "0.5");
+  labelUI.attr("title", course.title);
+  labelDiv.append(labelUI);
 
-  var labelText = document.createElement('div');
-  labelText.style.fontFamily = 'Arial,sans-serif';
-  labelText.style.fontSize = '12px';
-  labelText.style.paddingLeft = '4px';
-  labelText.style.paddingRight = '4px';
-  labelText.innerHTML = "<strong>" + course.title + "</strong><br/>" + course.description;
-  labelUI.appendChild(labelText);
+  var labelText = $("<div></div>");
+  labelText.css("fontFamily", "Arial,sans-serif");
+  labelText.css("fontSize", "12px");
+  labelText.css("paddingLeft", "4px");
+  labelText.css("paddingRight", "4px");
+  labelText.html("<strong>" + course.title + "</strong><br/>" + course.description);
+  labelUI.append(labelText);
 
 /* 何故か画面遷移しない
-  google.maps.event.addDomListener(labelUI, "click", function() {
-    $.get("/play?_id=" + course._id, function (data) {
-        alert(data);
-    });
+  labelUI.bind("click", function() {
+    $.get("/play?_id=" + course._id);
   });
 */
 }
@@ -1018,11 +1023,48 @@ function getCurrentPosition(showErrorMsg) {
         movePanorama(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
       },
       function(error) {
-       if (showErrorMsg) {
+        if (showErrorMsg) {
           alert("ご使用のブラウザはGoeLocation（現在地取得機能）に対応していません。");
         }
       }
     );
+  }
+}
+
+// StreetView / Map の表示サイズを変更
+function changePanoramaMapSize(mode) {
+  switch (mode) {
+    case 1:  // StreetView（左側）最大化
+      $("#streetview").removeClass("span4 span6 span8").addClass("span12").css("display", "block");
+      $("#map_canvas").css("display", "none");
+      break;
+    case 2:  // Map（右側）最大化
+      $("#streetview").css("display", "none");
+      $("#map_canvas").removeClass("span4 span6 span8").addClass("span12").css("display", "block");
+      break;
+    case 3:  // 均等割
+      $("#streetview").removeClass("span4 span6 span8").addClass("span6").css("display", "block");
+      $("#map_canvas").removeClass("span4 span6 span8").addClass("span6").css("display", "block");
+      break;
+    case 4:  // StreetView：Map = 3：2
+      $("#streetview").removeClass("span4 span6 span8").addClass("span8").css("display", "block");
+      $("#map_canvas").removeClass("span4 span6 span8").addClass("span4").css("display", "block");
+      break;
+    case 5:  // StreetView：Map = 2：3
+      $("#streetview").removeClass("span4 span6 span8").addClass("span4").css("display", "block");
+      $("#map_canvas").removeClass("span4 span6 span8").addClass("span8").css("display", "block");
+      break;
+  }
+  google.maps.event.trigger(panorama, "resize");
+  google.maps.event.trigger(map, "resize");
+
+  // 地図の中心位置を移動
+  map.panTo(panorama.getPosition());
+
+  // 中央の再生ボタンを表示する場合は、座標を再建して再表示
+  if (playMode != 1 && recordFlg != 1) {
+    $("#btnPlayCenter").remove();
+    setCenterPlayBtn();
   }
 }
 
@@ -1359,8 +1401,10 @@ function actionInterval(arryIdx, targetPanorama, increment, loop) {
       $("#running").css("display", "none");
       $("#panoramaSlider").slider("value", arryIdx);
       $("#panoramaSlider").slider("enable");
-      setCenterPlayBtn();
 
+      if (!loop) {  // ループ再生の場合はセンターの再生ボタンは表示不要
+        setCenterPlayBtn();
+      }
       return;
     }
 
@@ -1383,7 +1427,7 @@ function actionInterval(arryIdx, targetPanorama, increment, loop) {
         // 距離を表示
         $("#distance").html(panoDataNext.distance + "m");
 
-        actionInterval(arryIdx, targetPanorama);
+        actionInterval(arryIdx, targetPanorama, increment, loop);
       }, playSpeed);
 
     // 方向・角度の変更
@@ -1394,7 +1438,7 @@ function actionInterval(arryIdx, targetPanorama, increment, loop) {
           pitch: panoDataNext.pitch
         });
 
-        actionInterval(arryIdx, targetPanorama);
+        actionInterval(arryIdx, targetPanorama, increment, loop);
       }, 160);
 
     // ズームの変更
@@ -1402,7 +1446,7 @@ function actionInterval(arryIdx, targetPanorama, increment, loop) {
       currentTimer = setTimeout(function() {
         targetPanorama.setZoom(panoDataNext.zoom);
 
-        actionInterval(arryIdx, targetPanorama);
+        actionInterval(arryIdx, targetPanorama, increment, loop);
       }, 1000);
     }
 
@@ -1414,7 +1458,7 @@ function actionInterval(arryIdx, targetPanorama, increment, loop) {
   } else if (playMode == 0) {
     deleteLines();        // 念のためMap上の既存の線を全て削除
     deleteMoveMarkers();  // 念のためMap上の既存の開始・終了マーカーを削除
-    deleteInfoWindows();  //  一旦panorama上の既存のinfoWindowを削除
+    deleteInfoWindows();  // 一旦panorama上の既存のinfoWindowを削除
 
     $("#distance").html("0m");
 
