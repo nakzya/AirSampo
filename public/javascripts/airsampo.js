@@ -1013,14 +1013,17 @@ function initPanoramaSlider() {
 // 「現在地」ボタン
 function getCurrentPosition(showErrorMsg) {
   if(navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(function(position) {
-      movePanorama(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
-    },
-    function() {
-      if (showErrorMsg) {
-        alert("ご使用のブラウザはGoeLocation（現在地取得機能）に対応していません。");
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        movePanorama(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
+      },
+      function(error) {
+        alert(error);
+       if (showErrorMsg) {
+          alert("ご使用のブラウザはGoeLocation（現在地取得機能）に対応していません。");
+        }
       }
-    });
+    );
   }
 }
 
