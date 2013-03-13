@@ -1018,7 +1018,6 @@ function getCurrentPosition(showErrorMsg) {
         movePanorama(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
       },
       function(error) {
-        alert(error);
        if (showErrorMsg) {
           alert("ご使用のブラウザはGoeLocation（現在地取得機能）に対応していません。");
         }
