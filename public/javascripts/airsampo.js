@@ -337,7 +337,7 @@ function commonInitialize() {
 
   // 「再生」ボタン クリックイベント
   $("#btnPlay").bind("click", function(event) {
-    play();
+    play(panorama, true, false);
     event.preventDefault();
   });
 
@@ -359,6 +359,9 @@ function commonInitialize() {
       playSpeed = ui.value * PLAY_SPEED_UNIT;
     }
   });
+
+  // StreetViewの真ん中に再生ボタンを設置
+  setCenterPlayBtn();
 }
 
 // 再生画面 初期処理
@@ -381,6 +384,27 @@ function playInitialize() {
   });
 }
 
+// StreetViewの中心に再生ボタンを設置
+function setCenterPlayBtn() {
+  var streetview = $("#streetview");
+  streetview.css("position", "relative");
+  var btnPlayCenter = $("<img id='btnPlayCenter' src='images/play_button.png' />");
+
+  setTimeout(function(){
+    var top = (streetview.get(0).offsetHeight - btnPlayCenter.get(0).offsetHeight) / 2;
+    var left = (streetview.get(0).offsetWidth - btnPlayCenter.get(0).offsetWidth) / 2;
+    btnPlayCenter.css("top", top);
+    btnPlayCenter.css("left", left);
+  }, 100);  // 100ミリ秒後に遅延して位置を決めることで、一連のDOMの描画が完了してから位置決めでき正確な値になる
+
+  btnPlayCenter.css("width", "100px").css("height", "100px");
+  btnPlayCenter.bind("click", function() {   // クリックしたら再生
+    play(panorama, true, false);
+    btnPlayCenter.remove();
+  });
+  streetview.append(btnPlayCenter);
+}
+
 // 記録画面 初期処理
 function recordInitialize() {
   var _id = arguments[0][1];
@@ -392,10 +416,12 @@ function recordInitialize() {
 
     $("#btnPlay").removeAttr("disabled");
     $("#btnStop").removeAttr("disabled");
+    setCenterPlayBtn();  // display: block だと座標位置がずれる
 
   } else {
      map.setZoom(4);
      initPanoramaSlider();
+     $("#btnPlayCenter").remove();
   }
 
   // 現在地に移動
@@ -620,7 +646,7 @@ function setStartingCourse() {
             startingPanorama.controls[google.maps.ControlPosition.TOP_LEFT].push(descriptionStrLabelDiv);
 
             // 初期表示コースをループ再生
-            play(startingPanorama, true);
+            play(startingPanorama, false, true);
           }
         }
       });
@@ -1015,7 +1041,7 @@ function toggleRecord() {
       */
       $("#btnPlay").attr("disabled", "disabled");
       $("#btnStop").attr("disabled", "disabled");
-      $("#arrowRecordBtn").css("display", "none");
+      $("#btnPlayCenter").remove();
 
       map.setZoom(15);
 
@@ -1081,6 +1107,7 @@ function toggleRecord() {
             }).popover("show");
             $("#btnPlay").attr("disabled", "disabled");
             $("#btnStop").attr("disabled", "disabled");
+            $("#btnPlayCenter").remove();
 
             // 現在の次の地点以降を削除
             panoramaDataArray.splice(panoramaDataArrayIdx + 1, panoramaDataArray.length - 1);
@@ -1094,6 +1121,7 @@ function toggleRecord() {
             $("#btnRecord").popover("hide");
             $("#btnPlay").removeAttr("disabled");
             $("#btnStop").removeAttr("disabled");
+            setCenterPlayBtn();
 
             return;
           }
@@ -1105,6 +1133,8 @@ function toggleRecord() {
   // 記録終了
   } else {
     recordFlg = 0;
+
+    setCenterPlayBtn();  // display: block だと座標位置がずれる
 
     $("#btnRecord").tooltip("hide").attr("data-original-title", "記録").tooltip("fixTitle");
 
@@ -1144,8 +1174,9 @@ function toggleRecord() {
 
 // 「再生」ボタン
 // targetPanorama: 通常の再生・記録画面のpanorama以外のpanoramaで再生する場合に指定
-// ループ再生する場合:TRUE
-function play(targetPanorama, loop) {
+// increment: 再生回数をインクリメント＋再生履歴を登録する場合：TRUE
+// loop: ループ再生する場合:TRUE
+function play(targetPanorama, increment, loop) {
   if (panoramaDataArray.length < 2) {
     $("#message").css("display", "block");  // エラー表示
     deleteMoveMarkers();
@@ -1167,8 +1198,10 @@ function play(targetPanorama, loop) {
   if (playMode == 0) {
     playMode = 1;
 
+    $("#btnPlayCenter").remove();
+
     // 通常の再生以外は再生回数のインクリメント、再生履歴の登録を行わない
-    if (!targetPanorama) {
+    if (increment) {
       // 再生回数をインクリメント
       $.ajax({
         url: "/incrementPlayCount?_id=" + $("#_id").val(),
@@ -1236,11 +1269,13 @@ function play(targetPanorama, loop) {
 
     $("#panoramaSlider").slider("value", 1);
 
-    actionInterval(0, targetPanorama, loop);
+    actionInterval(0, targetPanorama, increment, loop);
 
   // 再生 → 一時停止
   } else if (playMode == 1) {
     playMode = 2;
+
+    setCenterPlayBtn();
 
     $("#btnPlay i").addClass("icon-play");
     $("#btnPlay i").removeClass("icon-pause");
@@ -1256,6 +1291,8 @@ function play(targetPanorama, loop) {
   } else if (playMode == 2) {
     playMode = 1;
 
+    $("#btnPlayCenter").remove();
+
     $("#btnPlay i").addClass("icon-pause");
     $("#btnPlay i").removeClass("icon-play");
     $("#btnPlay").tooltip("hide").attr("data-original-title", "一時停止").tooltip("fixTitle");
@@ -1264,7 +1301,7 @@ function play(targetPanorama, loop) {
 
     //setPanoramaContralEnable(false);
 
-    actionInterval(panoramaDataArrayIdx);
+    actionInterval(panoramaDataArrayIdx, targetPanorama, increment, loop);
   }
 }
 
@@ -1272,7 +1309,7 @@ function play(targetPanorama, loop) {
 // arryIdx: 何フレーム目から再生するか
 // targetPanorama: 通常の再生・記録画面のpanorama以外のpanoramaで再生する場合に指定
 // ループ再生する場合:TRUE
-function actionInterval(arryIdx, targetPanorama, loop) {
+function actionInterval(arryIdx, targetPanorama, increment, loop) {
   if (!targetPanorama) {
     targetPanorama = panorama;
   }
@@ -1287,7 +1324,9 @@ function actionInterval(arryIdx, targetPanorama, loop) {
     if (arryIdx >= panoramaDataArray.length) {
       playMode = 0;
 
-      play(targetPanorama, loop);
+      if (loop) {
+        play(targetPanorama, increment, loop);
+      }
 
       // ゴール地点にマーカーを設置
       var goalMarker = new google.maps.Marker({
@@ -1318,6 +1357,7 @@ function actionInterval(arryIdx, targetPanorama, loop) {
       $("#running").css("display", "none");
       $("#panoramaSlider").slider("value", arryIdx);
       $("#panoramaSlider").slider("enable");
+      setCenterPlayBtn();
 
       return;
     }
@@ -1385,6 +1425,9 @@ function actionInterval(arryIdx, targetPanorama, loop) {
 // 「停止」ボタン
 function stop() {
   clearTimeout(currentTimer);
+
+  // SteetViewの中心の再生ボタンを再表示
+  setCenterPlayBtn();
 
   playMode = 0;
 

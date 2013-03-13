@@ -49,6 +49,23 @@ ul.thumbnails li {
   text-align: left;
 }
 
+#streetview {
+  position: relative;
+}
+
+#streetview img{
+  z-index: 2;
+  position: absolute;
+}
+
+#streetview img:hover {
+  -webkit-transform:scale(1.04);
+  -moz-transform:scale(1.04);
+  -ms-transform:scale(1.04);
+  -o-transform:scale(1.04);
+  transform:scale(1.04);
+}
+
 #description {
   color: #555;
   margin-bottom: 10px;
