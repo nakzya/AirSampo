@@ -5,8 +5,9 @@
 
 var url = require("url");
 var ObjectId = require('mongoose').Types.ObjectId;
-var model = require('../model');
+var model = require("../model");
 var Course = model.Course;
+var Position = model.Position;
 var PlayHistory = model.PlayHistory;
 
 // トップ画面表示
@@ -52,23 +53,16 @@ exports.topCount = function(req, res) {
   );
 }
 
-// トップ画面 - コースのサムネイル表示
-exports.course = function(req, res) {
+// トップ画面 - コースのサムネイルを取得
+exports.courseThumbnail = function(req, res) {
   var page = req.query.page;
   var skip = (page - 1) * 4;
-  var idx = req.query.idx;
 
-  var options;
-  if (idx) {
-    options = {skip: idx - 1, limit: 1};
-  } else {
-    options = {sort: {playCount: -1}, skip: skip, limit: 4};
-  }
+  var options = {sort: {playCount: -1}, skip: skip, limit: 4};
 
   Course.find(
     {},  // 暫定的に全件（再生回数の多い順）に取得している
-    null,
-    //{sort: {playCount: -1}, skip: skip, limit: 4},
+    {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "link": 1, "playCount": 1, "created": 1},  // positions以外
     options,
     function(err, courses) {
       if (err) {
@@ -83,19 +77,34 @@ exports.course = function(req, res) {
 
 // 新着
 exports.newArrival = function (req, res) {
-  Course.find({}, null, {"sort": {"created": -1}, "limit": 5}, function(err, courses) {
-    if (err) {
-      console.log(err);
-      res.redirect('back');
-    } else {
-      res.json(courses);
+  Course.find(
+    {},
+    {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "link": 1, "playCount": 1, "created": 1},  // positions以外
+    {"sort": {"created": -1}, "limit": 5},
+    function(err, courses) {
+      if (err) {
+        console.log(err);
+        res.redirect('back');
+      } else {
+        res.json(courses);
+      }
     }
-  });
+  );
 };
 
 // 再生画面 - 移動位置情報をDBからロード
 exports.loadCourse = function(req, res) {
   var _id = req.query._id;
+  var idx = req.query.idx;
+  if (_id) {
+    loadCourseById(_id, res);
+  } else if (idx) {
+    loadCourseWithSkip(idx - 1, res);
+  }
+}
+
+// _idでCourseを取得
+function loadCourseById(_id, res) {
   Course.findOne({_id: new ObjectId(_id)}, function(err, course) {
     if (err) {
       console.log(err);
@@ -104,6 +113,22 @@ exports.loadCourse = function(req, res) {
       res.json(course);
     }
   });
+}
+
+// skip指定でCourseを取得
+function loadCourseWithSkip(skip, res) {
+  var options = {skip: skip, limit: 1};
+
+  Course.find(
+    {}, null, options, function(err, courses) {
+      if (err) {
+        console.log(err);
+        res.redirect('back');
+      } else {
+        res.json(courses);
+      }
+    }
+  );
 }
 
 // 再生画面 - 再生回数をインクリメント
@@ -163,45 +188,74 @@ exports.saveCourse = function(req, res) {
   var startPos = 0;
   for (var i = 1; i < positions.length - 1; i++) {
     if (positions.charAt(i - 1) == "}" && positions.charAt(i) == "," && positions.charAt(i + 1) == "{") {
-      positionArray.push(positions.substr(startPos, i - startPos));
+
+      var positionObj = JSON.parse(positions.substr(startPos, i - startPos));
+      var position = new Position({
+        lat     : positionObj.lat,
+        lng     : positionObj.lng,
+        heading : positionObj.heading,
+        pitch   : positionObj.pitch,
+        zoom    : positionObj.zoom,
+        distance: positionObj.distance
+      });
+      positionArray.push(position);
+
       startPos = i + 1;
     }
   }
-  positionArray.push(positions.substr(startPos, positions.length));  // 最後の要素をpush
+  var lastPositionObj = JSON.parse(positions.substr(startPos));
+  var lastPosition = new Position({
+        lat     : lastPositionObj.lat,
+        lng     : lastPositionObj.lng,
+        heading : lastPositionObj.heading,
+        pitch   : lastPositionObj.pitch,
+        zoom    : lastPositionObj.zoom,
+        distance: lastPositionObj.distance
+      });
+  positionArray.push(lastPosition);
+
+  // 初期位置情報
+  var firstPositionArray = [];
+  firstPositionArray.push(positionArray[0]);
 
   // link情報
   var linkArray = req.body.links.split(",");
 
   var course = new Course({
-    owner      : "owner",
-    title      : req.body["txtTitle"],
-    description: req.body["txtDescription"],
-    position   : positionArray,
-    tag        : tagArray,
-    link       : linkArray,
-    playCount  : 0
+    owner        : "owner",
+    title        : req.body["txtTitle"],
+    description  : req.body["txtDescription"],
+    position     : positionArray,
+    firstPosition: firstPositionArray,
+    tag          : tagArray,
+    link         : linkArray,
+    playCount    : 0
   });
-
-  course.save(function(err, course) {
+  course.save(function(err, saveCourse) {
     if (err) {
       console.log(err);
       res.redirect('back');
     } else {
-      res.redirect('/record?_id=' + course._id + "&title=" + course.title + "&description=" + course.description);
+      res.redirect('/record?_id=' + saveCourse._id + "&title=" + saveCourse.title + "&description=" + saveCourse.description);
     }
   });
 };
 
 // おすすめを表示
 exports.recommend = function(req, res) {
-  Course.find({}, null, {"sort": {"playCount": -1}, "limit": 5}, function(err, courses) {
-    if (err) {
-      console.log(err);
-      res.redirect('back');
-    } else {
-      res.json(courses);
+  Course.find(
+    {},
+    {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "link": 1, "playCount": 1, "created": 1},  // positions以外
+    {"sort": {"playCount": -1}, "limit": 5},
+    function(err, courses) {
+      if (err) {
+        console.log(err);
+        res.redirect('back');
+      } else {
+        res.json(courses);
+      }
     }
-  });
+  );
 }
 
 // ログイン画面表示
@@ -224,7 +278,7 @@ exports.searchResult = function(req, res) {
                      {tag        : {$all: searchWord}},                         // タグに含まれる、または
                      {link       : {$all: searchWord}}                          // リンクに含まれる
                     ]},
-              null,
+              {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "link": 1, "playCount": 1, "created": 1},  // positions以外
               {sort: {playCount: -1}, skip: skip, limit: 10},
               function(err, courses) {
     if (err) {
@@ -265,14 +319,19 @@ exports.selectRanking = function(req, res) {
   var page = req.query.page;
   if (!page) page = 1;
   var skip = (page - 1) * 10;
-  Course.find({}, null, {"sort": {"playCount": -1}, skip: skip, "limit": 10}, function(err, courses) {
-    if (err) {
-      console.log(err);
-      res.redirect('back');
-    } else {
-      res.json(courses);
+  Course.find(
+    {},
+        {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "link": 1, "playCount": 1, "created": 1},  // positions以外
+    {"sort": {"playCount": -1}, skip: skip, "limit": 10},
+    function(err, courses) {
+      if (err) {
+        console.log(err);
+        res.redirect('back');
+      } else {
+        res.json(courses);
+      }
     }
-  });
+  );
 }
 
 // プライバシーポリシー画面表示

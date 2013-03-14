@@ -27,7 +27,7 @@ app.configure('development', function(){
 });
 
 app.get('/', routes.index);
-app.get('/course', routes.course);
+app.get('/courseThumbnail', routes.courseThumbnail);
 app.get('/topCount', routes.topCount);
 app.get('/newArrival', routes.newArrival);
 

@@ -566,11 +566,6 @@ function recordInitialize() {
 
     event.preventDefault();
   });
-
-  $("#test").bind("click", function() {
-
-
-  });
 }
 
 // ランキング画面 初期処理
@@ -604,15 +599,15 @@ function setStartingCourse() {
       startingCourseIdx = Math.floor(Math.random() * Number(count) + 1);
 
       $.ajax({
-        url: "/course?idx=" + startingCourseIdx,
+        url: "/loadCourse?idx=" + startingCourseIdx,
         cache: false,
         dataType: "json",
         success: function(courses) {
           var course = courses[0];
-          if (course.position) {
+          if (course) {
             var retArry = [];
             for (var i = 0; i < course.position.length; i++) {
-              var data = JSON.parse(course.position[i]);
+              var data = course.position[i];
               var panoData = new PanoramaData();
               panoData.lat = data.lat;
               panoData.lng = data.lng;
@@ -624,8 +619,9 @@ function setStartingCourse() {
             }
             panoramaDataArray = retArry;
 
-            var firstPosition = JSON.parse(course.position[0]);
+            var firstPosition = course.position[0];
             var startPosition = new google.maps.LatLng(firstPosition.lat, firstPosition.lng);
+
             var panoramaOptions = {
               // 最初の位置・POVを表示
               position: startPosition,
@@ -651,6 +647,12 @@ function setStartingCourse() {
             var descriptionLabel = new DescriptionLabel(descriptionLabelDiv, course);
             descriptionLabelDiv.attr("index", "1");
             startingPanorama.controls[google.maps.ControlPosition.TOP_LEFT].push(descriptionLabelDiv[0]);
+
+            // 右上のCloseボタンを有効にし、クリックされた場合は非表示にする
+            google.maps.event.addListener(startingPanorama, "closeclick", function() {
+              $("#startingCourseContainer").css("display", "none");
+            });
+            startingPanorama.setEnableCloseButton(true);
 
             // 初期表示コースをループ再生
             play(startingPanorama, false, true);
@@ -696,7 +698,7 @@ function setCourseThumbnail(page, startingCourseIdx) {
   $(".loading").css("display", "block");
 
   $.ajax({
-    url: "/course?page=" + page,
+    url: "/courseThumbnail?page=" + page,
     cache: true,
     dataType: "json",
     success: function(courses) {
@@ -722,8 +724,8 @@ function setCourseThumbnail(page, startingCourseIdx) {
         }
 
         // サムネイル
-        if (course.position) {
-          var position = JSON.parse(course.position[0]);
+        if (course.firstPosition) {
+          var position = course.firstPosition[0];
           var startPosition = new google.maps.LatLng(position.lat, position.lng);
           var panoramaOptions = {
             // 最初の位置・POVを表示
@@ -786,7 +788,7 @@ function loadCourse(_id) {
       if (courses.position) {
         var retArry = [];
         for (var i = 0; i < courses.position.length; i++) {
-          var data = JSON.parse(courses.position[i]);
+          var data = courses.position[i];
           var panoData = new PanoramaData();
           panoData.lat = data.lat;
           panoData.lng = data.lng;
@@ -837,7 +839,7 @@ function search(searchWord, page) {
 
           // サムネイル
           var div2 = $("<div id='course" + idx + "'></div>");
-          var firstPosition = JSON.parse(course.position[0]);
+          var firstPosition = course.firstPosition[0];
           var imgLink = $("<a href='/play?_id=" + course._id + "'></a>");
           var thumbnailImg = "<img src='http://maps.googleapis.com/maps/api/streetview?size=360x250&location=" + firstPosition.lat + "," + firstPosition.lng + "&heading=" + firstPosition.heading + "&pitch=" + firstPosition.pitch + "&sensor=false'\"' />";
           imgLink.append(thumbnailImg);
@@ -903,7 +905,7 @@ function setRanking(page) {
 
         // サムネイル
         var div2 = $("<div id='course" + (i + 1) + "' class='span6'></div>");
-        var firstPosition = JSON.parse(course.position[0]);
+        var firstPosition = course.firstPosition[0];
         var imgLink = $("<a href='/play?_id=" + course._id + "'></a>");
         var thumbnailImg = "<img src='http://maps.googleapis.com/maps/api/streetview?size=360x250&location=" + firstPosition.lat + "," + firstPosition.lng + "&heading=" + firstPosition.heading + "&pitch=" + firstPosition.pitch + "&sensor=false'\"' />";
         imgLink.append(thumbnailImg);
@@ -985,7 +987,7 @@ function showRecommend() {
 function setSideBarCourse(ul, courses) {
   for (var i = 0; i < courses.length; i++) {
     var course = courses[i];
-    var firstPosition = JSON.parse(course.position[0]);
+    var firstPosition = course.firstPosition[0];
     var imgLink = $("<a href='/play?_id=" + course._id + "'></a>");
     var thumbnailImg = "<img src=\"http://maps.googleapis.com/maps/api/streetview?size=360x200&location=" + firstPosition.lat + "," + firstPosition.lng + "&heading=" + firstPosition.heading + "&pitch=" + firstPosition.pitch + "&sensor=false\" />";
     imgLink.append(thumbnailImg);
@@ -1062,7 +1064,7 @@ function changePanoramaMapSize(mode) {
   map.panTo(panorama.getPosition());
 
   // 中央の再生ボタンを表示する場合は、座標を再建して再表示
-  if (playMode != 1 && recordFlg != 1) {
+  if (playMode != 1 && panoramaDataArray.length != 0 && recordFlg != 1) {
     $("#btnPlayCenter").remove();
     setCenterPlayBtn();
   }

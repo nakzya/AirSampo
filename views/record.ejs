@@ -53,11 +53,11 @@
                   <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu">
-                  <li><a href="javascript:void(0)" onclick="changePanoramaMapSize(1)">StreetView（左側）最大化</a></li>
-                  <li><a href="javascript:void(0)" onclick="changePanoramaMapSize(2)">Map（右側）最大化</a></li>
+                  <li><a href="javascript:void(0)" onclick="changePanoramaMapSize(1)">ストリートビュー（左側）拡大</a></li>
+                  <li><a href="javascript:void(0)" onclick="changePanoramaMapSize(2)">地図（右側）拡大</a></li>
                   <li><a href="javascript:void(0)" onclick="changePanoramaMapSize(3)">均等割</a></li>
-                  <li><a href="javascript:void(0)" onclick="changePanoramaMapSize(4)">StreetView：Map = 3：2</a></li>
-                  <li><a href="javascript:void(0)" onclick="changePanoramaMapSize(5)">StreetView：Map = 2：3</a></li>
+                  <li><a href="javascript:void(0)" onclick="changePanoramaMapSize(4)">ストリートビュー：60％　地図：40％</a></li>
+                  <li><a href="javascript:void(0)" onclick="changePanoramaMapSize(5)">ストリートビュー：40％　地図：60％</a></li>
                 </ul>
               </div>
             </div>
@@ -102,7 +102,7 @@
               <div class="control-group">
                 <label class="control-label">説明文とか</label>
                 <div class="controls">
-                  <textarea id="txtDescription" name="txtDescription" class="span10" rows="3" placeholder="感想、説明、何でもご自由にどうぞ♪"></textarea>
+                  <textarea id="txtDescription" name="txtDescription" class="span10" rows="3" placeholder="感想、説明、何でもご自由にどうぞ♪"><%= description %></textarea>
                 </div>
               </div>
               <div class="control-group">
