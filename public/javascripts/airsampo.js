@@ -651,6 +651,7 @@ function setStartingCourse() {
             // 右上のCloseボタンを有効にし、クリックされた場合は非表示にする
             google.maps.event.addListener(startingPanorama, "closeclick", function() {
               $("#startingCourseContainer").css("display", "none");
+              stop();
             });
             startingPanorama.setEnableCloseButton(true);
 
@@ -1038,23 +1039,23 @@ function changePanoramaMapSize(mode) {
   switch (mode) {
     case 1:  // StreetView（左側）最大化
       $("#streetview").removeClass("span4 span6 span8").addClass("span12").css("display", "block");
-      $("#map_canvas").css("display", "none");
+      $("#map_canvas").css("display", "none").css("margin-left", "");
       break;
     case 2:  // Map（右側）最大化
       $("#streetview").css("display", "none");
-      $("#map_canvas").removeClass("span4 span6 span8").addClass("span12").css("display", "block");
+      $("#map_canvas").removeClass("span4 span6 span8").addClass("span12").css("display", "block").css("margin-left", "0");
       break;
     case 3:  // 均等割
       $("#streetview").removeClass("span4 span6 span8").addClass("span6").css("display", "block");
-      $("#map_canvas").removeClass("span4 span6 span8").addClass("span6").css("display", "block");
+      $("#map_canvas").removeClass("span4 span6 span8").addClass("span6").css("display", "block").css("margin-left", "");
       break;
     case 4:  // StreetView：Map = 3：2
       $("#streetview").removeClass("span4 span6 span8").addClass("span8").css("display", "block");
-      $("#map_canvas").removeClass("span4 span6 span8").addClass("span4").css("display", "block");
+      $("#map_canvas").removeClass("span4 span6 span8").addClass("span4").css("display", "block").css("margin-left", "");
       break;
     case 5:  // StreetView：Map = 2：3
       $("#streetview").removeClass("span4 span6 span8").addClass("span4").css("display", "block");
-      $("#map_canvas").removeClass("span4 span6 span8").addClass("span8").css("display", "block");
+      $("#map_canvas").removeClass("span4 span6 span8").addClass("span8").css("display", "block").css("margin-left", "");
       break;
   }
   google.maps.event.trigger(panorama, "resize");
@@ -1548,13 +1549,13 @@ function setPanoramaSlider() {
 // PanoramaのControlの有効／無効を切り換える
 function setPanoramaContralEnable(flg) {
   var panoramaOptions = {
-    addressControl: false,
-    linksControl: false,
-    panControl: false,
-    clickToGo: false,
-    zoomControl: false,
-    imageDateControl: false,
-    scrollwheel: false
+    addressControl: flg,
+    linksControl: flg,
+    panControl: flg,
+    clickToGo: flg,
+    zoomControl: flg,
+    imageDateControl: flg,
+    scrollwheel: flg
   };
   panorama = new  google.maps.StreetViewPanorama(document.getElementById("streetview"), panoramaOptions);
   map.setStreetView(panorama);
