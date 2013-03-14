@@ -185,9 +185,6 @@ function setNavigationBar(mode) {
         case "ranking":
           $("#rankingLink").attr("class", "active");
           break;
-        case "about":
-          $("#aboutLink").attr("class", "active");
-          break;
       }
     }
   });
@@ -320,7 +317,7 @@ function commonInitialize() {
   };
   panorama = new  google.maps.StreetViewPanorama(document.getElementById("streetview"), panoramaOptions);
   map.setStreetView(panorama);
-  google.maps.event.trigger(panorama, "resize");
+  //google.maps.event.trigger(panorama, "resize");
   //google.maps.event.trigger(panorama, "position_changed");
   //movePanorama(startPosition);
 
@@ -366,19 +363,6 @@ function commonInitialize() {
     event.preventDefault();
   });
 
-  // 再生速度スライダーの設定
-  $("#playSpeedSlider").slider({
-    range: "min",
-    value: PLAY_SPEDD_SLIDER_INIT_VALUE,
-    min: 1,
-    max: 100,
-    step: 1,
-    slide: function(event, ui) {
-      $("#playSpeedSliderValue").val(ui.value);
-      playSpeed = ui.value * PLAY_SPEED_UNIT;
-    }
-  });
-
   // StreetViewの真ん中に再生ボタンを設置
   setCenterPlayBtn();
 }
@@ -402,6 +386,19 @@ function playInitialize() {
   // StreetViewイベントハンドラ追加 "pov_changed"
   google.maps.event.addListener(panorama, "pov_changed", function() {  // zoom_changedイベントを含む
     showPositionInfo(panorama.getPosition(), panorama.getPov());
+  });
+
+  // 再生速度スライダーの設定
+  $("#playSpeedSlider").slider({
+    range: "min",
+    value: PLAY_SPEDD_SLIDER_INIT_VALUE,
+    min: 1,
+    max: 100,
+    step: 1,
+    slide: function(event, ui) {
+      $("#playSpeedSliderValue").val(ui.value);
+      playSpeed = ui.value * PLAY_SPEED_UNIT;
+    }
   });
 }
 
@@ -448,6 +445,19 @@ function recordInitialize() {
      initPanoramaSlider();
      $("#btnPlayCenter").remove();
   }
+
+  // 再生速度スライダーの設定
+  $("#playSpeedSliderRecord").slider({
+    range: "min",
+    value: PLAY_SPEDD_SLIDER_INIT_VALUE,
+    min: 1,
+    max: 100,
+    step: 1,
+    slide: function(event, ui) {
+      $("#playSpeedSliderValue").val(ui.value);
+      playSpeed = ui.value * PLAY_SPEED_UNIT;
+    }
+  });
 
   // 現在地に移動
   getCurrentPosition(false);

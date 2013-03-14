@@ -53,17 +53,21 @@ ul.thumbnails li {
   position: relative;
 }
 
-#streetview img{
+#streetview #btnPlayCenter{
   z-index: 2;
   position: absolute;
 }
 
-#streetview img:hover {
+#streetview #btnPlayCenter:hover {
   -webkit-transform:scale(1.04);
   -moz-transform:scale(1.04);
   -ms-transform:scale(1.04);
   -o-transform:scale(1.04);
   transform:scale(1.04);
+}
+
+#map img {
+  max-width: inherit
 }
 
 #description {
@@ -150,6 +154,40 @@ a[id^="btnCourse"]:hover {
   transform:scale(1.05);
 }
 
+#playSpeedSlider {
+  margin-left: 5px;
+  margin-top: 13px;
+  width: 110px;
+}
+
+#controlRecord {
+  height: 90px;
+  overflow: hidden;
+  background-color: black;
+}
+
+.controlBtnRecord {
+  margin: 12px 0px 5px 5px;
+}
+
+.controlBtnLarge {
+  margin: 5px 0px 5px 5px;
+}
+
+.controlBtnLarge:hover {
+  -webkit-transform:scale(1.05);
+  -moz-transform:scale(1.05);
+  -ms-transform:scale(1.05);
+  -o-transform:scale(1.05);
+  transform:scale(1.05);
+}
+
+#playSpeedSliderRecord {
+  margin-left: 5px;
+  margin-top: 19px;
+  width: 110px;
+}
+
 #btnSave:hover {
   -webkit-transform:scale(1.05);
   -moz-transform:scale(1.05);
@@ -158,11 +196,7 @@ a[id^="btnCourse"]:hover {
   transform:scale(1.05);
 }
 
-#playSpeedSlider {
-  margin-left: 5px;
-  margin-top: 13px;
-  width: 110px;
-}
+
 
 #panoramaSlider {
   margin: 10px 25px 0 25px;

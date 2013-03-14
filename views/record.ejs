@@ -18,6 +18,8 @@
       $(document).ready(function() {
         var _id = "<%= _id %>";
         initialize("record", _id);
+
+
       });
     </script>
     <title>エアーさんぽ。</title>
@@ -72,14 +74,14 @@
           </div>
 
           <!-- Control Button -->
-          <div id="control">
+          <div id="controlRecord">
             <div style="margin-left: 18%; margin-top: 5px">
               <!-- <div style="float: left;"><img src="images/right_arrow.gif" id="arrowRecordBtn"/></div> -->
-              <div style="float: left"><button name="btnRecord" id="btnRecord" class="btn btn-danger controlBtn" data-original-title="記録"><i class="icon-facetime-video icon-white"></i></button></div>
-              <div style="float: left"><button name="btnPlay" id="btnPlay" class="btn btn-info controlBtn" disabled data-original-title="再生" disabled><i class="icon-play icon-white"></i></button></div>
-              <div style="float: left"><button name="btnStop" id="btnStop" class="btn btn-primary controlBtn" disabled data-original-title="停止" disabled><i class="icon-stop icon-white"></i></button></div>
-              <span style="margin-top: 10px; float:left">　再生速度: </span>
-              <div style="float: left"><div id="playSpeedSlider"></div></div>
+              <div style="float: left"><button name="btnRecord" id="btnRecord" class="btn btn-large btn-danger controlBtnLarge" data-original-title="記録"><i class="icon-facetime-video icon-white"></i></button></div>
+              <div style="float: left"><button name="btnPlay" id="btnPlay" class="btn btn-info controlBtnRecord" disabled data-original-title="再生" disabled><i class="icon-play icon-white"></i></button></div>
+              <div style="float: left"><button name="btnStop" id="btnStop" class="btn btn-primary controlBtnRecord" disabled data-original-title="停止" disabled><i class="icon-stop icon-white"></i></button></div>
+              <span style="margin-top: 17px; float:left">　再生速度: </span>
+              <div style="float: left"><div id="playSpeedSliderRecord"></div></div>
               <div id="distance" style="float: left"></div>
               <div><img src="images/running.gif" id="running" style="display: none;"></img></div>
               <div style="clear: left"></div>
