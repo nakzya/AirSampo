@@ -14,13 +14,7 @@
     <script src="javascripts/airsampo.js"></script>
     <script>
       $(document).ready(function() {
-        initialize("login", "<%= message %>");
-
-//        var message = "<%= message %>";
-//        if (message) {
-//          $("#message").css("display", "block");
-//        }
-
+        initialize("signup");
       });
     </script>
     <title>エアーさんぽ。</title>
@@ -33,29 +27,43 @@
     <div class="container">
       <div class="row-fluid">
         <div class="span8 offset2">
-          <p style="margin-top: 60px">ログイン</p>
-          <form method="post" action="/login/auth" id="authForm" class="form-horizontal">
+          <p style="margin-top: 60px">新規ユーザー登録</p>
+          <form method="post" action="/saveUser" id="saveUserForm" class="form-horizontal">
+            <div class="control-group">
+              <label class="control-label">ユーザー名</label>
+              <div class="controls">
+                <input type="text" id="txtUserName" name="txtUserName" value="" class="" placeholder="name" required></input>
+                <span class="help-inline">3文字以上の英数字（小文字のみ）、_を入力できます。</span>
+              </div>
+            </div>
             <div class="control-group">
               <label class="control-label">メールアドレス</label>
               <div class="controls">
-                <input type="email" id="txtEmail" name="email" value="<%= email %>" class="" placeholder="E-mail" required></input>
+                <input type="email" id="txtEmail" name="txtEmail" value="" class="" placeholder="e-mail" required></input>
               </div>
             </div>
             <div class="control-group">
               <label class="control-label">パスワード</label>
               <div class="controls">
-                <input type="password" id="txtPassword" name="password" value="<%= password %>" class="" placeholder="Password" required></input>
+                <input type="password" id="txtPassword" name="txtPassword" value="" class="" placeholder="password" required></input>
+                <span class="help-inline">パスワードは6文字以上で入力してください。</span>
+              </div>
+            </div>
+            <div class="control-group">
+              <label class="control-label">パスワード（確認）</label>
+              <div class="controls">
+                <input type="password" id="txtPasswordConfirm" name="txtPasswordConfirm" value="" class="" placeholder="re-password" required></input>
+                <span class="help-inline">確認のため、もう1度同じパスワードを入力してください。</span>
               </div>
             </div>
             <div class="control-group">
               <div class="controls">
-                <button id="btnLogin" id="btnLogin" class="btn-large btn-primary" data-original-title="ログイン">ログイン</button>
+                <button id="btnSaveUser" id="btnSaveUser" class="btn-large btn-primary" data-original-title="ユーザー登録">ユーザー登録</button>
               </div>
             </div>
           </form>
 
           <div id="message" class="alert alert-error fade in" style="display:none; margin-top: 40px;">
-            <%= message %>
             <button type="button" class="close" data-dismiss="alert">&times;</button>
           </div>
         </div>

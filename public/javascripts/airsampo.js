@@ -225,6 +225,12 @@ function initialize() {
     case "search":
       searchResultInitialize(arguments);
       break;
+    case "signup":
+      signupInitialize(arguments);
+      break;
+    case "login":
+      loginInitialize(arguments);
+      break;
   }
 
   // ナビゲーションバー設定
@@ -257,6 +263,16 @@ function topInitialize() {
   // ナビゲーションバー初期処理
   //navInitialize();
 
+  $("#btnSignup").bind("click", function(event) {
+    var form = $("<form action='/signup'></form>");
+    form.submit();
+  });
+
+  $("#btnLogin").bind("click", function(event) {
+    var form = $("<form action='/login'></form>");
+    form.submit();
+  });
+
   $("#btnCourse1").bind("click", function(event) {
     stop();  // 念のため停止処理
     event.preventDefault();
@@ -276,6 +292,11 @@ function topInitialize() {
     stop();  // 念のため停止処理
     event.preventDefault();
   });
+
+  var userName = arguments[0][1];
+  if (userName) {  // ログイン済みの場合
+    //alert("こんにちわ、" + userName + "さん！");
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -317,6 +338,9 @@ function commonInitialize() {
   };
   panorama = new  google.maps.StreetViewPanorama(document.getElementById("streetview"), panoramaOptions);
   map.setStreetView(panorama);
+  setTimeout(function() {
+    google.maps.event.trigger(panorama, "resize");
+  }, 500);
   //google.maps.event.trigger(panorama, "resize");
   //google.maps.event.trigger(panorama, "position_changed");
   //movePanorama(startPosition);
@@ -541,11 +565,11 @@ function recordInitialize() {
     // 「タイトル」 必須チェック
     if ($("#txtTitle").val() == "" || $("#txtTitle").val().length == 0) {
       if (!$("#txtTitle").parent().parent().hasClass("error")) {
-        var errorMsgSpan = $("<span id='msgSpan' class='help-inline'>タイトルを入れて下さい。</span>");
+        var errorMsgSpan = $("<span id='msgSpan' class='help-inline'>タイトルは必須です。</span>");
         $("#txtTitle").parent().parent().addClass("error");
         $("#txtTitle").parent().append(errorMsgSpan);
       }
-      return;
+      return false;
     } else {
       $("#txtTitle").parent().parent().removeClass("error");
       $("#msgSpan").remove();
@@ -623,6 +647,257 @@ function searchResultInitialize() {
 
   // ページネーションの設定
   setSearchPagination(1, "/pagination/search?searchWord=" + searchWord, searchWord);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// 新規ユーザー登録画面 初期処理
+//////////////////////////////////////////////////////////////////////////////////////////////
+function signupInitialize() {
+  // ユーザー登録ボタン
+  $("#btnSaveUser").bind("click", function(event) {
+    // 入力チェック
+    var checkResult = checkInputSignup($("#txtUserName").val(),
+                                       $("#txtEmail").val(),
+                                       $("#txtPassword").val(),
+                                       $("#txtPasswordConfirm").val());
+    if (!ceckResult) {
+      return false;
+    }
+
+    $("#saveUserForm").submit();
+    event.preventDefault();
+  });
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// 新規ユーザー登録画面 入力チェック
+//////////////////////////////////////////////////////////////////////////////////////////////
+function checkInputSignup(userName, email, password, passConfirm) {
+  var message = "";
+
+  // ■■■■■■■■■■ TODO ■■■■■■■■■■
+  //
+  // チェック追加
+  //
+  // ■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+
+  /////////////////////////
+  // ユーザー名
+  /////////////////////////
+  var errorFlgUser = false;
+  if (!userName || userName.length == 0) {
+    message += "ユーザー名は必須です。"
+    errorFlgUser = true;
+  } else if (userName.length < 3) {
+    message += "ユーザー名は3文字以上で入力してください。"
+    errorFlgUser = true;
+  }
+
+  if (errorFlgUser) {
+    if (!$("#txtUserName").parent().parent().hasClass("error")) {
+      $("#txtUserName").parent().parent().addClass("error");
+    }
+  } else {
+    $("#txtUserName").parent().parent().removeClass("error")
+  }
+
+  /////////////////////////
+  // メールアドレス
+  /////////////////////////
+  var errorFlgEmail = false;
+  var emailMsg = checkEmail(email);
+  if (emailMsg.length != 0) {
+    errorFlgEmail = true;
+  }
+
+  if (errorFlgEmail) {
+    if (!$("#txtEmail").parent().parent().hasClass("error")) {
+      $("#txtEmail").parent().parent().addClass("error");
+    }
+    if (message.length != 0) {  // 既にエラーが発生している場合
+      message += "<br>" + emailMsg;
+    }
+  } else {
+    $("#txtEmail").parent().parent().removeClass("error")
+  }
+
+  /////////////////////////
+  // パスワード
+  /////////////////////////
+  var errorFlgPassword = false;
+  var passwordMsg = checkPassword(password);
+  if (passwordMsg.length != 0) {
+    errorFlgPassword = true;
+  }
+
+  if (errorFlgPassword) {
+    if (!$("#txtPassword").parent().parent().hasClass("error")) {
+      $("#txtPassword").parent().parent().addClass("error");
+    }
+    if (message.length != 0) {  // 既にエラーが発生している場合
+      message += "<br>" + passwordMsg;
+    }
+  } else {
+    $("#txtPassword").parent().parent().removeClass("error")
+  }
+
+  if (!errorFlgUser && !errorFlgEmail && !errorFlgPassword) {
+    $("#message").css("display", "none");
+  }
+
+  /////////////////////////
+  // パスワード（確認）
+  /////////////////////////
+  var errorFlgPassConfirm = false;
+  var passConfirmMsg = checkPassword(passConfirm);
+  if (passConfirmMsg.length != 0) {
+    errorFlgPassConfirm = true;
+  }
+
+  if (password != passConfirm) {
+    if (message.length != 0) {  // 既にエラーが発生している場合
+      passConfirmMsg += "<br>";
+    }
+    passConfirmMsg += "パスワードが一致しません。"
+    errorFlgPassConfirm = true;
+  }
+
+  if (passConfirmMsg.length != 0) {
+    passConfirmMsg = passConfirmMsg.split("パスワード").join("パスワード（確認）");  // 置換
+  }
+
+  if (errorFlgPassConfirm) {
+    if (!$("#txtPasswordConfirm").parent().parent().hasClass("error")) {
+      $("#txtPasswordConfirm").parent().parent().addClass("error");
+    }
+    if (message.length != 0) {  // 既にエラーが発生している場合
+      message += "<br>" + passConfirmMsg;
+    }
+  } else {
+    $("#txtPasswordConfirm").parent().parent().removeClass("error")
+  }
+
+  if (message.length == 0) {
+    $("#message").css("display", "none");
+    return true;
+  } else {
+    $("#message").html(message);
+    $("#message").css("display", "block");
+    return false;
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// ログイン画面 初期処理
+//////////////////////////////////////////////////////////////////////////////////////////////
+function loginInitialize() {
+  var message = arguments[0][1];
+  if (message) {  // 認証失敗で再表示する場合
+    $("#message").css("display", "block");
+  }
+
+  // ユーザー登録ボタン
+  $("#btnLogin").bind("click", function(event) {
+    // 入力チェック
+    var checkResult = checkInputLogin($("#txtEmail").val(),
+                                      $("#txtPassword").val());
+    if (!checkResult) {
+      return false;
+    }
+
+    $("#authForm").submit();
+    event.preventDefault();
+  });
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// ログイン画面 入力チェック
+//////////////////////////////////////////////////////////////////////////////////////////////
+function checkInputLogin(email, password) {
+  var message = "";
+
+  /////////////////////////
+  // メールアドレス
+  /////////////////////////
+  var errorFlgEmail = false;
+  var message = checkEmail(email);
+  if (message.length != 0) {
+    errorFlgEmail = true;
+  }
+
+  if (errorFlgEmail) {
+    if (!$("#txtEmail").parent().parent().hasClass("error")) {
+      $("#txtEmail").parent().parent().addClass("error");
+    }
+  } else {
+    $("#txtEmail").parent().parent().removeClass("error")
+  }
+
+  /////////////////////////
+  // パスワード
+  /////////////////////////
+  var errorFlgPassword = false;
+  var passwordMsg = checkPassword(password);
+  if (passwordMsg.length != 0) {
+    errorFlgPassword = true;
+  }
+
+  if (errorFlgPassword) {
+    if (!$("#txtPassword").parent().parent().hasClass("error")) {
+      $("#txtPassword").parent().parent().addClass("error");
+    }
+    if (message.length != 0) {  // 既にエラーが発生している場合
+      message += "<br>" + passwordMsg;
+    }
+  } else {
+    $("#txtPassword").parent().parent().removeClass("error")
+  }
+
+  if (message.length == 0) {
+    $("#message").css("display", "none");
+    return true;
+  } else {
+    $("#message").html(message);
+    $("#message").css("display", "block");
+    return false;
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// 入力Emailのチェック
+//////////////////////////////////////////////////////////////////////////////////////////////
+function checkEmail(email) {
+  // ■■■■■■■■■■ TODO ■■■■■■■■■■
+  //
+  // チェック追加
+  //
+  // ■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+  var message = "";
+  if (!email || email.length == 0) {
+    message += "メールアドレスは必須です。"
+  }
+  return message;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// 入力パスワードのチェック
+//////////////////////////////////////////////////////////////////////////////////////////////
+function checkPassword(password) {
+  // ■■■■■■■■■■ TODO ■■■■■■■■■■
+  //
+  // チェック追加
+  //
+  // ■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+  var message = "";
+  if (!password || password.length == 0) {
+    message += "パスワードは必須です。"
+  } else if(password.length < 6) {
+    message += "パスワードは6文字以上で入力してください。"
+  }
+  return message;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -1380,7 +1655,7 @@ function play(targetPanorama, increment, loop) {
     $("#running").css("display", "block");
     $("#panoramaSlider").slider("disable");
 
-    //setPanoramaContralEnable(false);
+    setPanoramaContralEnable(false);
 
     panoramaDataArrayIdx = 0;
 
@@ -1445,9 +1720,8 @@ function play(targetPanorama, increment, loop) {
 
     $("#panoramaSlider").slider("enable");
 
-    //setPanoramaContralEnable(true);
+    setPanoramaContralEnable(true);
 
-  //
   /////////////////////////////////////////////
   // 一時停止 → 再生
   /////////////////////////////////////////////
@@ -1462,7 +1736,7 @@ function play(targetPanorama, increment, loop) {
 
     $("#running").css("display", "block");
 
-    //setPanoramaContralEnable(false);
+    setPanoramaContralEnable(false);
 
     actionInterval(panoramaDataArrayIdx, targetPanorama, increment, loop);
   }
@@ -1526,6 +1800,8 @@ function actionInterval(arryIdx, targetPanorama, increment, loop) {
       $("#panoramaSlider").slider("value", arryIdx);
       $("#panoramaSlider").slider("enable");
 
+      setPanoramaContralEnable(true);
+
       if (!loop) {  // ループ再生の場合はセンターの再生ボタンは表示不要
         setCenterPlayBtn();
       }
@@ -1586,6 +1862,8 @@ function actionInterval(arryIdx, targetPanorama, increment, loop) {
     deleteMoveMarkers();  // 念のためMap上の既存の開始・終了マーカーを削除
     deleteInfoWindows();  // 一旦panorama上の既存のinfoWindowを削除
 
+    setPanoramaContralEnable(true);
+
     $("#distance").html("0m");
 
     // 開始地点に戻る
@@ -1629,6 +1907,8 @@ function stop() {
     $("#btnPlay").removeAttr("disabled");
     $("#btnPlay").tooltip("hide").attr("data-original-title", "再生").tooltip("fixTitle");
   }
+
+  setPanoramaContralEnable(true);
 
   deleteLines();        // Map上の既存の線を全て削除
   deleteMoveMarkers();  // Map上の既存の開始・終了マーカーを削除
@@ -1677,17 +1957,20 @@ function setPanoramaSlider() {
 // PanoramaのControlの有効／無効を切り換える
 //////////////////////////////////////////////////////////////////////////////////////////////
 function setPanoramaContralEnable(flg) {
-  var panoramaOptions = {
-    addressControl: flg,
-    linksControl: flg,
-    panControl: flg,
-    clickToGo: flg,
-    zoomControl: flg,
-    imageDateControl: flg,
-    scrollwheel: flg
-  };
-  panorama = new  google.maps.StreetViewPanorama(document.getElementById("streetview"), panoramaOptions);
-  map.setStreetView(panorama);
+  if (panorama) {
+    var panoramaOptions = {
+      addressControl: flg,
+      linksControl: flg,
+      panControl: flg,
+      clickToGo: flg,
+      zoomControl: flg,
+      imageDateControl: flg,
+      scrollwheel: flg
+    };
+    panorama.setOptions(panoramaOptions);
+  }
+  //panorama = new  google.maps.StreetViewPanorama(document.getElementById("streetview"), panoramaOptions);
+  //map.setStreetView(panorama);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -1809,6 +2092,13 @@ function roundEx(n, keta) {
   } else {
     return Number(str.substring(0, str.indexOf(".") + (keta * -1) + 1));
   }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// 文字列置換
+//////////////////////////////////////////////////////////////////////////////////////////////
+function replaceAll(expression, org, dest){
+  return expression.split(org).join(dest);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////

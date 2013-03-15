@@ -14,7 +14,7 @@
     <script src="javascripts/airsampo.js"></script>
     <script>
       $(document).ready(function() {
-        initialize("top");
+        initialize("top", "<%= userName %>");
       });
 
     </script>
@@ -117,20 +117,29 @@
         <!-- Side Bar -->
         <div class="span2">
           <div class="sbox">
+            <h2 style="text-align:center;">ログイン</h2>
+            <div class="sboxInner">
+              <button id="btnSignup" class="btn btn-info">新規登録（無料）</button>
+              &nbsp;
+              <button id="btnLogin" class="btn btn-info">ログイン</button>
+            </div>
+          </div>
+
+          <div class="sbox">
             <h2 style="text-align:center;">このサイトについて</h2>
             <div class="sboxInner">
               <p>「エアーさんぽ。（仮）」は見るだけで運動をした気になれるサイトです。</p>
               <p></strong>詳しくは<a href="/about">『このサイトについて』</a>をご覧ください。</p>
-            </div><!-- /sboxInner -->
-          </div><!-- /sbox -->
+            </div>
+          </div>
 
           <div class="sbox">
             <h2 style="text-align:center;">新着</h2>
             <div class="sboxInner">
               <ul class="unstyled" id="newArrivalList"></ul>
               <div style="text-align: right"><a href="#">&raquo; もっと見る (123)</a></div>
-            </div><!-- /sboxInner -->
-          </div><!-- /sbox -->
+            </div>
+          </div>
         </div><!-- /span2 -->
 
         <div class="span1"></div>
