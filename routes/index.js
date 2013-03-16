@@ -43,10 +43,27 @@ exports.saveUser = function(req, res) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
+// ユーザ情報取得
+//////////////////////////////////////////////////////////////////////////////////////////////
+exports.getUser = function(req, res) {
+  var name = req.query.name;
+  if (name) {
+    User.findOne({name: name}, function(err, user) {
+      if (err) {
+        console.log(err);
+        res.redirect('back');
+      } else {
+        res.json(user);
+      }
+    });
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 // ログイン画面表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.login = function(req, res) {
-  res.render("login", {email: "", password: "", message: req.flash('error')});
+  res.render("login", {userName: getUserNameFromSession(req), email: "", password: "", message: req.flash('error')});
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -61,11 +78,7 @@ exports.logout = function(req, res) {
 // トップ画面表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.index = function(req, res) {
-  var userName = "";
-  if (req.user) {
-    userName =  req.user.name;
-  }
-  res.render("index", {userName: req.user});
+  res.render("index", {userName: getUserNameFromSession(req)});
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -73,13 +86,18 @@ exports.index = function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.play = function(req, res) {
   var _id = req.query._id;
-  res.render("play", {_id: _id});
+  res.render("play", {userName: getUserNameFromSession(req), _id: _id});
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 // 記録画面表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.record = function(req, res) {
+  var userName = getUserNameFromSession(req);
+  if (!userName) {  // ログインせずにURL直叩きで記録画面を開こうとした場合
+    res.redirect("/");
+  }
+
   var _id = req.query._id;
   var title = req.query.title;
   var description = req.query.description;
@@ -92,7 +110,7 @@ exports.record = function(req, res) {
   if (!description) {
     description = "";
   }
-  res.render("record", {_id: _id, title: title, description: description});
+  res.render("record", {userName: userName, _id: _id, title: title, description: description});
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -339,7 +357,7 @@ exports.recommend = function(req, res) {
 // 検索画面表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.search = function(req, res) {
-  res.render("searchResult", {searchWord: req.body.txtNavSearch});
+  res.render("searchResult", {userName: getUserNameFromSession(req), searchWord: req.body.txtNavSearch});
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -391,7 +409,7 @@ exports.paginationSearch = function(req, res) {
 // ランキング画面表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.ranking = function(req, res) {
-  res.render("ranking", {});
+  res.render("ranking", {userName: getUserNameFromSession(req)});
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -420,19 +438,29 @@ exports.selectRanking = function(req, res) {
 // プライバシーポリシー画面表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.privacy = function(req, res) {
-  res.render("privacy", {});
+
+  res.render("privacy", {userName: getUserNameFromSession(req)});
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 // 利用規約画面表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.rules = function(req, res) {
-  res.render("rules", {});
+  res.render("rules", {userName: getUserNameFromSession(req)});
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 // 「このサイトについて」画面表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.about = function(req, res) {
-  res.render("about", {});
+  res.render("about", {userName: getUserNameFromSession(req)});
 };
+
+
+function getUserNameFromSession(req) {
+  var userName = "";
+  if (req.user) {
+    userName =  req.user.name;
+  }
+  return userName;
+}

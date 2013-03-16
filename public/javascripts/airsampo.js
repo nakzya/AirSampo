@@ -54,17 +54,6 @@ function PanoramaData(panorama) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-// ナビゲーションバー 初期処理
-//////////////////////////////////////////////////////////////////////////////////////////////
-function navInitialize() {
-  $("#btnNavSearch").bind("click", function(req, res){
-    // 単純に<input type="submit"… にすると、なぜかボタンのアイコンが表示されないため、
-    // やむなく <button … で代用
-    $("#navSearchForm").submit();
-  })
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////
 // トップ画面のページネーションの設定
 //////////////////////////////////////////////////////////////////////////////////////////////
 function setTopPagination(page, startingCourseIdx) {
@@ -171,20 +160,19 @@ function setSearchPagination(page, url, searchWord) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 // ナビゲーションバー表示処理
 //////////////////////////////////////////////////////////////////////////////////////////////
-function setNavigationBar(mode) {
+function setNavigationBar(mode, userName) {
   $.ajax({
     url: "./navigationBar.html",
     cache: true,
     success: function(html) {
       $("#navigationBar").html(html);
 
-      switch(mode) {
-        case "record":
-          $("#recordLink").attr("class", "active");
-          break;
-        case "ranking":
-          $("#rankingLink").attr("class", "active");
-          break;
+      if (userName) {  // ログイン済みの場合
+        $("#navUserName").text(userName + "さん");
+        $("#userDropdown").css("display", "block");
+      } else {
+        $("#navUserName").text("");
+        $("#userDropdown").css("display", "none");
       }
     }
   });
@@ -207,7 +195,10 @@ function setFooter() {
 // 画面共通 初期処理
 //////////////////////////////////////////////////////////////////////////////////////////////
 function initialize() {
-  switch(arguments[0]) {
+  var mode = arguments[0];
+  var userName = arguments[1];
+
+  switch(mode) {
     case "top":
       topInitialize(arguments);
       break;
@@ -234,7 +225,7 @@ function initialize() {
   }
 
   // ナビゲーションバー設定
-  setNavigationBar(arguments[0]);
+  setNavigationBar(mode, userName);
 
   // フッタ設定
   setFooter();
@@ -260,8 +251,14 @@ function topInitialize() {
   // 新着情報表示
   showNewArrival();
 
-  // ナビゲーションバー初期処理
-  //navInitialize();
+  // ログイン済みかどうか
+  if (arguments[0][1]) {
+    $("#loginBox").css("display", "none");
+    $("#aboutBox").css("margin-top", "50px");
+  } else {
+    $("#loginBox").css("display", "block");
+    $("#aboutBox").css("margin-top", "");
+  }
 
   $("#btnSignup").bind("click", function(event) {
     var form = $("<form action='/signup'></form>");
@@ -292,11 +289,6 @@ function topInitialize() {
     stop();  // 念のため停止処理
     event.preventDefault();
   });
-
-  var userName = arguments[0][1];
-  if (userName) {  // ログイン済みの場合
-    //alert("こんにちわ、" + userName + "さん！");
-  }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -395,7 +387,7 @@ function commonInitialize() {
 // 再生画面 初期処理
 //////////////////////////////////////////////////////////////////////////////////////////////
 function playInitialize() {
-  var _id = arguments[0][1];
+  var _id = arguments[0][2];
 
   // 移動位置情報をDBからロード
   loadCourse(_id);
@@ -453,7 +445,7 @@ function setCenterPlayBtn() {
 // 記録画面 初期処理
 //////////////////////////////////////////////////////////////////////////////////////////////
 function recordInitialize() {
-  var _id = arguments[0][1];
+  var _id = arguments[0][2];
 
   // 記録確定後、再表示する場合
   if (_id != "") {
@@ -638,7 +630,7 @@ function rankingInitialize() {
 // 検索結果画面 初期処理
 //////////////////////////////////////////////////////////////////////////////////////////////
 function searchResultInitialize() {
-  var searchWord = arguments[0][1];
+  var searchWord = arguments[0][2];
 
   // 検索結果を表示
   search(searchWord, 1);
@@ -660,11 +652,28 @@ function signupInitialize() {
                                        $("#txtEmail").val(),
                                        $("#txtPassword").val(),
                                        $("#txtPasswordConfirm").val());
-    if (!ceckResult) {
+    if (!checkResult) {
       return false;
     }
+    // ユーザー名重複チェック
+    $.ajax({
+      url: "/user?name=" + $("#txtUserName").val(),
+      cache: true,
+      dataType: "json",
+      success: function(user) {
+        if (!user) {
+          $("#saveUserForm").submit();
+        } else {
+          if (!$("#txtUserName").parent().parent().hasClass("error")) {
+            $("#txtUserName").parent().parent().addClass("error");
+          }
+          $("#message").html($("#txtUserName").val() + " は既に登録されています。");
+          $("#message").css("display", "block");
+          return false;
+        }
+      }
+    });
 
-    $("#saveUserForm").submit();
     event.preventDefault();
   });
 }
@@ -687,10 +696,10 @@ function checkInputSignup(userName, email, password, passConfirm) {
   /////////////////////////
   var errorFlgUser = false;
   if (!userName || userName.length == 0) {
-    message += "ユーザー名は必須です。"
+    message += "ユーザー名は必須です。";
     errorFlgUser = true;
   } else if (userName.length < 3) {
-    message += "ユーザー名は3文字以上で入力してください。"
+    message += "ユーザー名は3文字以上で入力してください。";
     errorFlgUser = true;
   }
 
@@ -794,7 +803,7 @@ function checkInputSignup(userName, email, password, passConfirm) {
 function loginInitialize() {
   var message = arguments[0][1];
   if (message) {  // 認証失敗で再表示する場合
-    $("#message").css("display", "block");
+    $("#authMessage").css("display", "block");
   }
 
   // ユーザー登録ボタン

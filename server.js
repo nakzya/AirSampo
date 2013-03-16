@@ -81,6 +81,7 @@ app.get('/recommend', routes.recommend);
 
 // 共通
 app.get('/loadCourse', routes.loadCourse);
+app.get('/user', routes.getUser);
 app.get('/logout', routes.logout);
 
 http.createServer(app).listen(app.get('port'), function(){

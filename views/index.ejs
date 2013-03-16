@@ -25,6 +25,7 @@
     <div id="navigationBar"></div>
 
     <div class="container">
+      <!--
       <div class="row-fluid">
         <div class="span1"></div>
         <div class="hero-unit span10">
@@ -34,18 +35,30 @@
         </div>
         <div class="span1"></div>
       </div>
-
+      -->
 
       <div class="row-fluid">
         <div class="span1"></div>
         <div class="span8">
           <!-- Starting -->
           <div class="row-fluid">
-            <div class="span12">
+            <div class="span12" style="margin-top: 50px">
               <div class="loading"><img src="images/loading.gif" /></div>
               <div id="startingCourseContainer" class="thumbnail">
                 <div id="startingCourse"></div>
               </div>
+            </div>
+          </div>
+
+          <div class="row-fluid">
+            <div class="span12" style="margin-bottom: 30px">
+              <a href="/ranking">ランキング</a>
+              <form method="post" action="/search" id="navSearchForm" class="form-search navbar-form" style="float: right">
+                <div class="input-append">
+                  <input type="text" id="txtNavSearch" name="txtNavSearch" class="input-medium search-query" placeholder="地名、観光名所・・・">
+                  <button id="btnNavSearch" class="btn"><i class="icon-search"></i></button>
+                </div>
+              </form>
             </div>
           </div>
 
@@ -57,6 +70,7 @@
           <!-- コース表示 -->
           <div class="row-fluid">
             <div class="span12">
+              <h4>最近の人気コース</h4>
               <ul class="thumbnails">
                 <li id="thumbnail1" class="span6" >
                   <div class="thumbnail">
@@ -116,16 +130,16 @@
 
         <!-- Side Bar -->
         <div class="span2">
-          <div class="sbox">
+          <div id="loginBox" class="sbox" style="margin-top: 50px">
             <h2 style="text-align:center;">ログイン</h2>
             <div class="sboxInner">
               <button id="btnSignup" class="btn btn-info">新規登録（無料）</button>
-              &nbsp;
+              <p>登録するとオリジナルの散歩コースを記録できるようになります。</p>
               <button id="btnLogin" class="btn btn-info">ログイン</button>
             </div>
           </div>
 
-          <div class="sbox">
+          <div id="aboutBox" class="sbox">
             <h2 style="text-align:center;">このサイトについて</h2>
             <div class="sboxInner">
               <p>「エアーさんぽ。（仮）」は見るだけで運動をした気になれるサイトです。</p>

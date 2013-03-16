@@ -21,8 +21,8 @@ div.hero-unit p { padding: 15px 0 0 30px; }
   margin-right: 20px;
 }
 
-#startingCourse { height: 320px; }
-#startingCourseContainer { margin-bottom: 100px; }
+#startingCourse { height: 350px; }
+#startingCourseContainer { margin-bottom: 30px; }
 
 ul.thumbnails li {
   display: none;
@@ -216,6 +216,13 @@ span[class="help-inline"] {
   color: #888888;
 }
 
+
+/*----------------------------------------------------
+  NavigationBar
+----------------------------------------------------*/
+#userDropdown { display: none; }
+
+
 /*----------------------------------------------------
   Footer
 ----------------------------------------------------*/
@@ -325,6 +332,12 @@ span[class="help-inline"] {
   float:right;
   font-size:12px;
   padding:8px;
+}
+
+#btnSignup + p {
+  padding: 5px;
+  font-size: 12px;
+  color: #666666;
 }
 
 /*----------------------------------------------------
