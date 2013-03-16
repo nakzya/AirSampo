@@ -60,6 +60,10 @@ app.post('/search', routes.search);
 app.get('/searchResult', routes.searchResult);
 app.get('/pagination/search', routes.paginationSearch);
 
+// マイコース画面
+app.get('/mycourse', routes.mycourse);
+app.get('/mycourseResult', routes.mycourseResult);
+
 // ランキング画面
 app.get('/ranking', routes.ranking);
 app.get('/ranking/select', routes.selectRanking);

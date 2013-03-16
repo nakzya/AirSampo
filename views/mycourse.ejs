@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="stylesheets/airsampo.css" />
+    <link rel="stylesheet" href="stylesheets/jquery-ui-1.10.1.custom.min.css" />
+    <link rel="stylesheet" href="stylesheets/bootstrap.min.css" />
+    <link rel="stylesheet" href="stylesheets/bootstrap-responsive.min.css" />
+    <script src="http://www.google.com/jsapi"></script>
+    <script src="javascripts/jquery-1.9.1.js"></script>
+    <script src="javascripts/jquery-ui-1.10.1.custom.min.js"></script>
+    <script src="javascripts/bootstrap.min.js"></script>
+    <script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDoj7QWz-XTSo2QhYnj9IMWRXkrlMjYqIU&libraries=geometry&sensor=false"></script>
+    <script src="javascripts/airsampo.js"></script>
+    <script>
+      $(document).ready(function() {
+        initialize("mycourse", "<%= userName %>");
+      });
+    </script>
+    <title>エアーさんぽ。</title>
+  </head>
+
+  <body>
+    <!-- Navigation Bar -->
+    <div id="navigationBar"></div>
+
+    <div id="mycourseContainer" class="container">
+      <div class="row-fluid">
+        <div class="span2"></div>
+        <div class="span8">
+          <h3><%= userName %>さんのマイコース</h3>
+          <p>件数 ： <span id="mycourseResultCount"></span></p>
+          <div class="loading span6"><img src="images/loading.gif" /></div>
+          <div id="mycourseResult"></div>
+          <div id="pagination" class="pagination">
+            <ul></ul>
+          </div>
+        </div>
+        <div class="span2"></div>
+      </div>
+    </div><!-- /container -->
+
+    <!-- Footer -->
+    <div id="footer" class="container"></div>
+
+  </body>
+</html>
+

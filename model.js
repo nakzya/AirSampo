@@ -26,7 +26,7 @@ exports.Position = db.model("Position", Position);
 
 // コース情報
 var Course = new mongoose.Schema({
-  owner         : {type: String, required: true},
+  owner         : {type: String, required: true, default: "anonymous"},
   title         : {type: String, required: true},
   description   : {type: String, required: false, default: ""},
   position      : {type: [Position]},

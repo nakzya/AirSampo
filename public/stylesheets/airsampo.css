@@ -9,6 +9,7 @@ body {
   padding-bottom: 40px;
 }
 
+
 /*----------------------------------------------------
   トップ画面
 ----------------------------------------------------*/
@@ -201,7 +202,7 @@ a[id^="btnCourse"]:hover {
   width: 200px;
 }
 
-#searchResultContainer, #rankingContainer {
+#searchResultContainer, #rankingContainer, #mycourseContainer {
   margin-top: 50px;
 }
 

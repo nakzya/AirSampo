@@ -273,6 +273,9 @@ exports.playHistory = function(req, res) {
 // 記録画面 - DBへ格納
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.saveCourse = function(req, res) {
+  // 登録者
+  var userName = req.user.name;
+
   // タグ情報を配列に分解
   var tagArray
   if (req.body.tags.length == 0) {
@@ -322,7 +325,7 @@ exports.saveCourse = function(req, res) {
   var linkArray = req.body.links.split(",");
 
   var course = new Course({
-    owner        : "owner",
+    owner        : userName,
     title        : req.body["txtTitle"],
     description  : req.body["txtDescription"],
     position     : positionArray,
@@ -413,6 +416,43 @@ exports.paginationSearch = function(req, res) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
+// マイコース画面表示
+//////////////////////////////////////////////////////////////////////////////////////////////
+exports.mycourse = function(req, res) {
+  var userName = getUserNameFromSession(req);
+  if (!userName) {  // ログインせずにURL直叩きで記録画面を開こうとした場合
+    res.redirect("/");
+  }
+
+  res.render("mycourse", {userName: getUserNameFromSession(req)});
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// マイコース結果表示
+//////////////////////////////////////////////////////////////////////////////////////////////
+exports.mycourseResult = function(req, res) {
+  var userName = req.user.name;
+  var page = req.query.page;
+  var skip = (page - 1) * 10;
+
+  if (userName) {
+    Course.find(
+      {owner: userName},
+      {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "link": 1, "playCount": 1, "created": 1},
+      {sort: {created: -1}, skip: skip, limit: 10},
+      function(err, courses) {
+        if (err) {
+          console.log(err);
+          res.redirect('back');
+        } else {
+          res.json(courses);
+        }
+      }
+    );
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 // ランキング画面表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.ranking = function(req, res) {
@@ -428,7 +468,7 @@ exports.selectRanking = function(req, res) {
   var skip = (page - 1) * 10;
   Course.find(
     {},
-        {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "link": 1, "playCount": 1, "created": 1},  // positions以外
+    {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "link": 1, "playCount": 1, "created": 1},  // positions以外
     {"sort": {"playCount": -1}, skip: skip, "limit": 10},
     function(err, courses) {
       if (err) {
