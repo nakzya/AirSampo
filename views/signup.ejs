@@ -14,7 +14,7 @@
     <script src="javascripts/airsampo.js"></script>
     <script>
       $(document).ready(function() {
-        initialize("signup");
+        initialize("signup", "<%= userName %>", "<%= message %>");
       });
     </script>
     <title>エアーさんぽ。</title>
@@ -63,7 +63,8 @@
             </div>
           </form>
 
-          <div id="message" class="alert alert-error fade in" style="display:none; margin-top: 40px;">
+          <div id="signupMessage" class="alert alert-error fade in" style="display:none; margin-top: 40px;">
+            <%= message %>
             <button type="button" class="close" data-dismiss="alert">&times;</button>
           </div>
         </div>

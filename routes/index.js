@@ -15,7 +15,11 @@ var PlayHistory = model.PlayHistory;
 // 新規ユーザ登録画面表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.signup = function(req, res) {
-  res.render("signup", {});
+  var message = "";
+  if (req.query.message) {
+    message = req.query.message;
+  }
+  res.render("signup", {userName: getUserNameFromSession(req), message: message});
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -32,14 +36,13 @@ exports.saveUser = function(req, res) {
     password: password
   });
 
-  user.save(function(err, course) {
+  user.save(function(err, user) {
     if (err) {
       console.log(err);
-      res.redirect('back');
+      res.redirect("/signup?message=ユーザー登録に失敗しました。管理者にお問い合わせください。");
     }
+    res.redirect("/signup?message=ユーザー登録が完了しました、" + user.name + "さん。");
   });
-
-  res.redirect("/login", {email: email, password: password});
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -63,7 +66,11 @@ exports.getUser = function(req, res) {
 // ログイン画面表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.login = function(req, res) {
-  res.render("login", {userName: getUserNameFromSession(req), email: "", password: "", message: req.flash('error')});
+  var email ="";
+  if (req.query.email) {  // 新規ユーザー登録直後の場合
+    email = req.query.email;
+  }
+  res.render("login", {userName: getUserNameFromSession(req), email: email, password: "", message: req.flash('error')});
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////

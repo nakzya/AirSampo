@@ -645,6 +645,11 @@ function searchResultInitialize() {
 // 新規ユーザー登録画面 初期処理
 //////////////////////////////////////////////////////////////////////////////////////////////
 function signupInitialize() {
+  var message = arguments[0][2];
+  if (message) {  // 認証失敗で再表示する場合
+    $("#signupMessage").css("display", "block");
+  }
+
   // ユーザー登録ボタン
   $("#btnSaveUser").bind("click", function(event) {
     // 入力チェック
@@ -801,7 +806,7 @@ function checkInputSignup(userName, email, password, passConfirm) {
 // ログイン画面 初期処理
 //////////////////////////////////////////////////////////////////////////////////////////////
 function loginInitialize() {
-  var message = arguments[0][1];
+  var message = arguments[0][2];
   if (message) {  // 認証失敗で再表示する場合
     $("#authMessage").css("display", "block");
   }
