@@ -34,11 +34,14 @@
         <div class="span1"></div>
 
         <div class="span8" style="margin-top: 50px;">
+          <div class="page-header">
+            <h3 style="margin-top: 20px">散歩コースを記録 <small>あなたオリジナルの素敵なさんぽコースを記録しよう！</small></h3>
+          </div>
           <div class="row-fluid">
             <div class="span6">
               <!-- Search -->
               <form class="form-search">
-                <div id="searchDiv" class="input-append">
+                <div id="searchDiv" class="input-append pull-left">
                   <input type="text" id="txtSearch" class="span10 search-query" placeholder="住所、ランドマークなど">
                   <button id="btnSearch" class="btn"><i class="icon-search"></i></button>
                 </div>
@@ -47,7 +50,7 @@
             </div>
 
             <div class="span6" style="margin-top: 25px">
-              <div class="btn-group" style="float: right">
+              <div class="btn-group pull-right">
                 <button class="btn dropdown-toggle" data-toggle="dropdown">
                   表示サイズ変更
                   <span class="caret"></span>
@@ -75,12 +78,12 @@
           <div id="controlRecord">
             <div style="margin-left: 18%; margin-top: 5px">
               <!-- <div style="float: left;"><img src="images/right_arrow.gif" id="arrowRecordBtn"/></div> -->
-              <div style="float: left"><button name="btnRecord" id="btnRecord" class="btn btn-large btn-danger controlBtnLarge" data-original-title="記録"><i class="icon-facetime-video icon-white"></i></button></div>
-              <div style="float: left"><button name="btnPlay" id="btnPlay" class="btn btn-info controlBtnRecord" disabled data-original-title="再生" disabled><i class="icon-play icon-white"></i></button></div>
-              <div style="float: left"><button name="btnStop" id="btnStop" class="btn btn-primary controlBtnRecord" disabled data-original-title="停止" disabled><i class="icon-stop icon-white"></i></button></div>
+              <div class="pull-left"><button name="btnRecord" id="btnRecord" class="btn btn-large btn-danger controlBtnLarge" data-original-title="記録"><i class="icon-facetime-video icon-white"></i></button></div>
+              <div class="pull-left"><button name="btnPlay" id="btnPlay" class="btn btn-info controlBtnRecord" disabled data-original-title="再生" disabled><i class="icon-play icon-white"></i></button></div>
+              <div class="pull-left"><button name="btnStop" id="btnStop" class="btn btn-primary controlBtnRecord" disabled data-original-title="停止" disabled><i class="icon-stop icon-white"></i></button></div>
               <span style="margin-top: 17px; float:left">　再生速度: </span>
-              <div style="float: left"><div id="playSpeedSliderRecord"></div></div>
-              <div id="distance" style="float: left"></div>
+              <div class="pull-left"><div id="playSpeedSliderRecord"></div></div>
+              <div id="distance" class="pull-left"></div>
               <div><img src="images/running.gif" id="running" style="display: none;"></img></div>
               <div style="clear: left"></div>
             </div>

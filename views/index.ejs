@@ -42,7 +42,7 @@
         <div class="span8">
           <!-- Starting -->
           <div class="row-fluid">
-            <div class="span12" style="margin-top: 50px">
+            <div class="span12" style="margin-top: 60px">
               <div class="loading"><img src="images/loading.gif" /></div>
               <div id="startingCourseContainer" class="thumbnail">
                 <div id="startingCourse"></div>
@@ -52,13 +52,41 @@
 
           <div class="row-fluid">
             <div class="span12" style="margin-bottom: 30px">
-              <a href="/ranking">ランキング</a>
-              <form method="post" action="/search" id="navSearchForm" class="form-search navbar-form" style="float: right">
-                <div class="input-append">
-                  <input type="text" id="txtNavSearch" name="txtNavSearch" class="input-medium search-query" placeholder="地名、観光名所・・・">
-                  <button id="btnNavSearch" class="btn"><i class="icon-search"></i></button>
+              <h4 calss="text-info"><blockquote>さんぽコースを探す</blockquote></h4>
+
+              <div class="tabbable" style="margin-bottom: 18px;">
+                <ul class="nav nav-tabs">
+                  <li class="active"><a href="#tabSearch" data-toggle="tab">検索</a></li>
+                  <li><a href="#tabRanking" data-toggle="tab">ランキング</a></li>
+                  <li><a href="#tabCategory" data-toggle="tab">カテゴリ</a></li>
+                </ul>
+                <div class="tab-content" style="padding-bottom: 9px; border-bottom: 1px solid #ddd;">
+                  <div class="tab-pane active" id="tabSearch">
+                    <form method="post" action="/search" id="navSearchForm" class="form-search navbar-form">
+                      <p><strong>地名</strong>や<strong>観光名所</strong>などのキーワードを入力して検索してください。おもしろいさんぽコースが見つかもしれません！</p>
+                      <p>入力例： 世界遺産、南極、グランドキャニオン・・・
+                      <div class="input-append">
+                        <input type="text" id="txtNavSearch" name="txtNavSearch" class="input-medium search-query span12" placeholder="地名、観光名所・・・">
+                        <button id="btnNavSearch" class="btn"><i class="icon-search"></i></button>
+                      </div>
+                    </form>
+                  </div>
+                  <div class="tab-pane" id="tabRanking">
+                    <ul>
+                      <li>今日の再生回数ランキング</li>
+                      <li>最近1週間の再生回数ランキング</li>
+                      <li>最近１ヶ月の再生回数ランキング</li>
+                      <li>etc</li>
+                    </ul>
+                  </div>
+                  <div class="tab-pane" id="tabCategory">
+                    <ul>
+                      <li>世界遺産</li>
+                      <li>～～～</li>
+                    </ul>
+                  </div>
                 </div>
-              </form>
+              </div>
             </div>
           </div>
 
@@ -70,7 +98,7 @@
           <!-- コース表示 -->
           <div class="row-fluid">
             <div class="span12">
-              <h4>最近の人気コース</h4>
+              <h4 calss="text-info"><blockquote>最近の人気コース</blockquote></h4>
               <ul class="thumbnails">
                 <li id="thumbnail1" class="span6" >
                   <div class="thumbnail">
@@ -80,7 +108,7 @@
                       <p></p>
                       <span class="label label-inverse" style="margin-bottom: 20px">さんぽ回数</span>
                       <span class="badge badge-important" id="playCount1"></span>
-                      <p style="text-align: center"><a href="/play" id="btnCourse1" class="btn btn-primary btn-large">散歩する</a></p>
+                      <p style="text-align: center"><a href="/play" id="btnCourse1" class="btn btn-primary btn-large btn-block">散歩する</a></p>
                     </div>
                   </div>
                 </li>
@@ -92,7 +120,7 @@
                       <p></p>
                       <span class="label label-inverse" style="margin-bottom: 20px">さんぽ回数</span>
                       <span class="badge badge-important" id="playCount2"></span>
-                      <p style="text-align: center"><a href="/play" id="btnCourse2" class="btn btn-primary btn-large">散歩する</a></p>
+                      <p style="text-align: center"><a href="/play" id="btnCourse2" class="btn btn-primary btn-large btn-block">散歩する</a></p>
                     </div>
                   </div>
                 </li>
@@ -107,7 +135,7 @@
                       <p></p>
                       <span class="label label-inverse" style="margin-bottom: 20px">さんぽ回数</span>
                       <span class="badge badge-important" id="playCount3"></span>
-                      <p style="text-align: center"><a href="/play" id="btnCourse3" class="btn btn-primary btn-large">散歩する</a></p>
+                      <p style="text-align: center"><a href="/play" id="btnCourse3" class="btn btn-primary btn-large btn-block">散歩する</a></p>
                     </div>
                   </div>
                 </li>
@@ -119,23 +147,26 @@
                       <p></p>
                       <span class="label label-inverse" style="margin-bottom: 20px">さんぽ回数</span>
                       <span class="badge badge-important" id="playCount4"></span>
-                      <p style="text-align: center"><a href="/play?no=4" id="btnCourse4" class="btn btn-primary btn-large">散歩する</a></p>
+                      <p style="text-align: center"><a href="/play?no=4" id="btnCourse4" class="btn btn-primary btn-large btn-block">散歩する</a></p>
                     </div>
                   </div>
                 </li>
               </ul>
             </div>
+            <div id="pagination" class="pagination">
+              <ul></ul>
+            </div>
           </div>
         </div>
 
         <!-- Side Bar -->
-        <div class="span2">
-          <div id="loginBox" class="sbox" style="margin-top: 50px">
+        <div class="span2" style="margin-top: 60px">
+          <div id="loginBox" class="sbox">
             <h2 style="text-align:center;">ログイン</h2>
             <div class="sboxInner">
-              <button id="btnSignup" class="btn btn-info">新規登録（無料）</button>
-              <p>登録するとオリジナルの散歩コースを記録できるようになります。</p>
-              <button id="btnLogin" class="btn btn-info">ログイン</button>
+              <button id="btnSignup" class="btn btn-info btn-block">新規登録（無料）</button>
+              <p>登録するとオリジナルの散歩コースを記録できるようになります。（無料）</p>
+              <button id="btnLogin" class="btn btn-info btn-block">ログイン</button>
             </div>
           </div>
 
@@ -159,77 +190,9 @@
         <div class="span1"></div>
       </div>
 
-      <div class="row">
-        <div class="span1"></div>
-        <div class="span8">
-          <ul class="thumbnails">
-            <div class="loading span4"><img src="images/loading.gif" /></div>
-            <li id="thumbnail1" class="span4" >
-              <div class="thumbnail">
-                <div id="course1" class="thumbnail_course"></div>
-                <div class="caption">
-                  <h3></h3>
-                  <p></p>
-                  <span class="label label-inverse" style="margin-bottom: 20px">さんぽ回数</span>
-                  <span class="badge badge-important" id="playCount1"></span>
-                  <p style="text-align: center"><a href="/play" id="btnCourse1" class="btn btn-primary btn-large">散歩する</a></p>
-                </div>
-              </div>
-            </li>
-            <div class="loading span4"><img src="images/loading.gif" /></div>
-            <li id="thumbnail2" class="span4">
-              <div class="thumbnail">
-                <div id="course2" class="thumbnail_course"></div>
-                <div class="caption">
-                  <h3></h3>
-                  <p></p>
-                  <span class="label label-inverse" style="margin-bottom: 20px">さんぽ回数</span>
-                  <span class="badge badge-important" id="playCount2"></span>
-                  <p style="text-align: center"><a href="/play" id="btnCourse2" class="btn btn-primary btn-large">散歩する</a></p>
-                </div>
-              </div>
-            </li>
-          </ul>
-
-          <ul class="thumbnails">
-            <li id="thumbnail3" class="span4">
-              <div class="thumbnail">
-                <div id="course3" class="thumbnail_course"></div>
-                <div class="caption">
-                  <h3></h3>
-                  <p></p>
-                  <span class="label label-inverse" style="margin-bottom: 20px">さんぽ回数</span>
-                  <span class="badge badge-important" id="playCount3"></span>
-                  <p style="text-align: center"><a href="/play" id="btnCourse3" class="btn btn-primary btn-large">散歩する</a></p>
-                </div>
-              </div>
-            </li>
-            <li id="thumbnail4" class="span4">
-              <div class="thumbnail">
-                <div id="course4" class="thumbnail_course"></div>
-                <div class="caption">
-                  <h3></h3>
-                  <p></p>
-                  <span class="label label-inverse" style="margin-bottom: 20px">さんぽ回数</span>
-                  <span class="badge badge-important" id="playCount4"></span>
-                  <p style="text-align: center"><a href="/play?no=4" id="btnCourse4" class="btn btn-primary btn-large">散歩する</a></p>
-                </div>
-              </div>
-            </li>
-          </ul>
-
-          <div id="pagination" class="pagination">
-            <ul></ul>
-          </div>
-
-        </div><!-- /span8 -->
-
-        <div class="span1"></div>
-      </div><!-- /row -->
-
     </div><!-- /container -->
 
     <!-- Footer -->
-    <div id="footer" class="container"></div>
+    <div id="footer" class="container-fluid"></div>
   </body>
 </html>

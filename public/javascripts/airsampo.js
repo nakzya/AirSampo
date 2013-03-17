@@ -257,10 +257,8 @@ function topInitialize() {
   // ログイン済みかどうか
   if (arguments[0][1]) {
     $("#loginBox").css("display", "none");
-    $("#aboutBox").css("margin-top", "50px");
   } else {
     $("#loginBox").css("display", "block");
-    $("#aboutBox").css("margin-top", "");
   }
 
   $("#btnSignup").bind("click", function(event) {
@@ -452,6 +450,8 @@ function recordInitialize() {
 
   // 記録確定後、再表示する場合
   if (_id != "") {
+    alert("記録しました！");
+
     // 移動位置情報をDBからロード
     loadCourse(_id);
 
@@ -602,8 +602,6 @@ function recordInitialize() {
 
     // DBに書き込み
     $("#saveForm").submit();
-
-    alert("確定しました！");
 
     // 初期位置に戻す
     var firstPosition = panoramaDataArray[0];

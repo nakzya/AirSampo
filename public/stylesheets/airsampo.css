@@ -1,6 +1,4 @@
-html {
-  height: 100%;
-}
+html { height: 100%; }
 
 body {
   height: 100%;
@@ -17,36 +15,15 @@ div.hero-unit { padding: 40px; }
 div.hero-unit h1 { padding: 15px 0 0 30px; font-size: 60px; }
 div.hero-unit p { padding: 15px 0 0 30px; }
 
-#login {
-  float: left;
-  margin-right: 20px;
-}
-
 #startingCourse { height: 350px; }
-#startingCourseContainer { margin-bottom: 30px; }
+#startingCourseContainer { margin-bottom:30px; }
 
-ul.thumbnails li {
-  display: none;
-}
+ul.thumbnails li { display: none; }
+.thumbnail_course { width: 100%; height: 250px; }
 
-.thumbnail_course {
-  width: 100%;
-  height: 250px;
-}
+#title { color: #555; text-align: left; }
 
-#title {
-  color: #555;
-  text-align: left;
-}
-
-#streetview {
-  position: relative;
-}
-
-#streetview #btnPlayCenter{
-  z-index: 2;
-  position: absolute;
-}
+#streetview #btnPlayCenter{ z-index: 2; position: absolute; }
 
 #streetview #btnPlayCenter:hover {
   -webkit-transform:scale(1.04);
@@ -56,28 +33,11 @@ ul.thumbnails li {
   transform:scale(1.04);
 }
 
-#map img {
-  max-width: inherit
-}
-
-#description {
-  color: #555;
-  margin-bottom: 10px;
-}
-
-#newArrivalList * {
-  font-size: 12px;
-  line-height: 1.8em;
-}
-
-#searchDiv{
-  margin-top: 25px;
-  float: left;
-}
-
-#searchResult {
-  margin-top: 40px;
-}
+#map img { max-width: inherit }
+#description { color: #555; margin-bottom: 10px; }
+#newArrivalList * { font-size: 12px; line-height: 1.8em; }
+#searchDiv{ margin-top: 25px; }
+#searchResult { margin-top: 40px; }
 
 #btnHere {
   margin-top: 25px;
@@ -87,9 +47,9 @@ ul.thumbnails li {
   -moz-border-radius:    15px;
 }
 
-#view {
-  margin-top: 5px;
-}
+#view { margin-top: 5px; }
+#streetview { height: 350px; position: relative; }
+#map_canvas { height: 350px; }
 
 div.recording {
   position: relative;
@@ -101,17 +61,8 @@ div.recording {
   box-shadow: -5px 5px 20px #F00;
 }
 
-#streetview {
-  height: 350px;
-}
-
-#map_canvas {
-  height: 350px;
-}
-
 a[id^="btnCourse"] {
   margin: 0 auto 0 auto;
-  width: 85%;
   -webkit-transition:all 0.1s ease-in-out;
   -moz-transition:all 0.1s ease-in-out;
   -o-transition:all 0.1s ease-in-out;
@@ -126,16 +77,8 @@ a[id^="btnCourse"]:hover {
   transform:scale(1.02);
 }
 
-#control {
-  height: 75px;
-  overflow: hidden;
-  background-color: black;
-}
-
-.controlBtn {
-  margin: 5px 0px 5px 5px;
-}
-
+#control { height: 75px; overflow: hidden; background-color: black; }
+.controlBtn { margin: 5px 0px 5px 5px; }
 .controlBtn:hover {
   -webkit-transform:scale(1.05);
   -moz-transform:scale(1.05);
@@ -144,26 +87,12 @@ a[id^="btnCourse"]:hover {
   transform:scale(1.05);
 }
 
-#playSpeedSlider {
-  margin-left: 5px;
-  margin-top: 13px;
-  width: 110px;
-}
+#playSpeedSlider { margin-left: 5px; margin-top: 13px; width: 110px; }
 
-#controlRecord {
-  height: 90px;
-  overflow: hidden;
-  background-color: black;
-}
+#controlRecord { height: 90px; overflow: hidden; background-color: black; }
 
-.controlBtnRecord {
-  margin: 12px 0px 5px 5px;
-}
-
-.controlBtnLarge {
-  margin: 5px 0px 5px 5px;
-}
-
+.controlBtnRecord { margin: 12px 0px 5px 5px; }
+.controlBtnLarge { margin: 5px 0px 5px 5px; }
 .controlBtnLarge:hover {
   -webkit-transform:scale(1.05);
   -moz-transform:scale(1.05);
@@ -186,36 +115,19 @@ a[id^="btnCourse"]:hover {
   transform:scale(1.05);
 }
 
-#panoramaSlider {
-  margin: 10px 25px 0 25px;
-}
+#panoramaSlider { margin: 10px 25px 0 25px; }
+#distance { margin: 10px; }
+#saveForm { margin-top: 30px; }
+#saveForm input:text { width: 200px; }
 
-#distance {
-  margin: 10px;
-}
+#searchResultContainer, #rankingContainer, #mycourseContainer { margin-top: 50px; }
 
-#saveForm {
-  margin-top: 30px;
-}
+span[class="help-inline"] { font-size: 12px; color: #888888; }
 
-#saveForm input:text {
-  width: 200px;
-}
-
-#searchResultContainer, #rankingContainer, #mycourseContainer {
-  margin-top: 50px;
-}
-
-#rules-box {
-  margin-top: 50px;
-  padding: 15px;
-  border: solid 1px;
-}
-
-span[class="help-inline"] {
-  font-size: 12px;
-  color: #888888;
-}
+]/*----------------------------------------------------
+  利用規約画面
+----------------------------------------------------*/
+#rules-box { margin-top: 50px; padding: 15px; border: solid 1px; }
 
 
 /*----------------------------------------------------
