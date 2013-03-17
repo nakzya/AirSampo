@@ -58,7 +58,7 @@ function PanoramaData(panorama) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 function setTopPagination(page, startingCourseIdx) {
   $.ajax({
-    url: "/topCount",   // 件数を引数として受け取るようにすると、再帰的に呼び出す際に不都合がある（件数の増減に対応できない）
+    url: "/count?mode=top",   // 件数を引数として受け取るようにすると、再帰的に呼び出す際に不都合がある（件数の増減に対応できない）
     cache: false,
     dataType: "json",
     success: function(data) {
@@ -933,7 +933,7 @@ function checkPassword(password) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 function setStartingCourse() {
   $.ajax({
-    url: "/topCount",
+    url: "/count?mode=top",
     cache: false,
     dataType: "json",
     success: function(data) {
@@ -991,12 +991,13 @@ function setStartingCourse() {
             descriptionLabelDiv.attr("index", "1");
             startingPanorama.controls[google.maps.ControlPosition.TOP_LEFT].push(descriptionLabelDiv[0]);
 
-            // 右上のCloseボタンを有効にし、クリックされた場合は非表示にする
-            google.maps.event.addListener(startingPanorama, "closeclick", function() {
+            // 閉じるボタン
+            var left = $("#startingCourseContainer").get(0).offsetWidth - 50;
+            $("#startingCourseContainer img").css("left", left + "px");
+            $("#startingCourseContainer img").bind("click", function(event) {
               $("#startingCourseContainer").css("display", "none");
               stop();
-            });
-            startingPanorama.setEnableCloseButton(true);
+            })
 
             // 初期表示コースをループ再生
             play(startingPanorama, false, true);

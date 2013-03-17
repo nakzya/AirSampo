@@ -123,15 +123,56 @@ exports.record = function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 // トップ画面 - 表示件数取得
 //////////////////////////////////////////////////////////////////////////////////////////////
-exports.topCount = function(req, res) {
+exports.count = function(req, res) {
+  var mode = req.query.mode;
+  var condition;
+
+  // modeによってカウントを取得する条件を変更
+  switch (mode) {
+    case "top":
+      condition = {};
+      break;
+  }
+
   Course.count(
-    {},  // 暫定的に全件の件数を取得
+    condition,
     function(err, count) {
       if (err) {
         console.log(err);
         res.redirect('back');
       } else {
         res.json({"count": count});
+      }
+    }
+  );
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// トップ画面 - ランダムなコースの再生画面を表示
+//////////////////////////////////////////////////////////////////////////////////////////////
+exports.randomCourse = function(req, res) {
+
+  Course.count(  // 全件の件数を取得
+    {},
+    function(err, count) {
+      if (err) {
+        console.log(err);
+        res.redirect('back');
+      } else {
+        // ランダム番目のコースの_idを取得し、再生画面を表示
+        var randomIdx = Math.floor(Math.random() * Number(count) + 1);
+        var options = {skip: randomIdx, limit: 1};
+        Course.find(
+          {}, {"_id": 1}, options, function(err, courses) {
+            if (err) {
+              console.log(err);
+              res.redirect('back');
+            } else {
+              var course = courses[0];
+              res.redirect("/play?_id=" + course._id);
+            }
+          }
+        );
       }
     }
   );

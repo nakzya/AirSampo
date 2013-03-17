@@ -43,8 +43,8 @@ app.post('/login/auth', passport.authenticate('local', {successRedirect: '/',
 
 // トップ画面
 app.get('/', routes.index);
+app.get('/random', routes.randomCourse);
 app.get('/courseThumbnail', routes.courseThumbnail);
-app.get('/topCount', routes.topCount);
 
 // 再生・記録画面共通
 app.get('/play', routes.play);
@@ -84,6 +84,7 @@ app.get('/newArrival', routes.newArrival);
 app.get('/recommend', routes.recommend);
 
 // 共通
+app.get('/count', routes.count);
 app.get('/loadCourse', routes.loadCourse);
 app.get('/user', routes.getUser);
 app.get('/logout', routes.logout);
