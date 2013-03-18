@@ -28,13 +28,16 @@ exports.Position = db.model("Position", Position);
 var Course = new mongoose.Schema({
   owner         : {type: String, required: true, default: "anonymous"},
   title         : {type: String, required: true},
-  description   : {type: String, required: false, default: ""},
+  description   : {type: String, default: ""},
   position      : {type: [Position]},
   firstPosition : {type: [Position]},  // Modelをネストする場合は配列にする必要あり
   tag           : {type: [String]},
   link          : {type: [String]},
   playCount     : {type: Number, min: 0, default: 0},
-  created       : {type: Date, default: Date.now}
+  privateFlg    : {type: Boolean, default: false},
+  created       : {type: Date, default: Date.now},
+  updated       : {type: Date},
+  deleted       : {type: Date}
 });
 exports.Course = db.model("Course", Course);
 

@@ -1,10 +1,6 @@
-
-/*
- * GET home page.
- */
-
 var url = require("url");
-var ObjectId = require('mongoose').Types.ObjectId;
+var mongoose = require('mongoose');
+var ObjectId = mongoose.Types.ObjectId;
 var model = require("../model");
 var User = model.User;
 var Course = model.Course;
@@ -121,37 +117,9 @@ exports.record = function(req, res) {
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-// トップ画面 - 表示件数取得
-//////////////////////////////////////////////////////////////////////////////////////////////
-exports.count = function(req, res) {
-  var mode = req.query.mode;
-  var condition;
-
-  // modeによってカウントを取得する条件を変更
-  switch (mode) {
-    case "top":
-      condition = {};
-      break;
-  }
-
-  Course.count(
-    condition,
-    function(err, count) {
-      if (err) {
-        console.log(err);
-        res.redirect('back');
-      } else {
-        res.json({"count": count});
-      }
-    }
-  );
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////
 // トップ画面 - ランダムなコースの再生画面を表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.randomCourse = function(req, res) {
-
   Course.count(  // 全件の件数を取得
     {},
     function(err, count) {
@@ -182,44 +150,147 @@ exports.randomCourse = function(req, res) {
 // トップ画面 - コースのサムネイルを取得
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.courseThumbnail = function(req, res) {
-  var page = req.query.page;
-  var skip = (page - 1) * 4;
+  var map = function() {
+    emit(this.course_id, {count: 1, datetime: this.datetime});
+  };
 
-  var options = {sort: {playCount: -1}, skip: skip, limit: 4};
+  var reduce = function(key, values) {
+    var result = {count: 0};  //集計結果を初期化
+    values.forEach(function(value){
+      result.count += value.count;
+    });
+    return result;
+  };
 
-  Course.find(
-    {},  // 暫定的に全件（再生回数の多い順）に取得している
-    {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "link": 1, "playCount": 1, "created": 1},  // positions以外
-    options,
-    function(err, courses) {
-      if (err) {
-        console.log(err);
-        res.redirect('back');
-      } else {
-        res.json(courses);
-      }
+  var today = new Date();
+  var targetDate = computeDate(today.getFullYear(), (today.getMonth() + 1), today.getDate(), -7);  // ７日前
+  var conditions = {datetime: {"$gte": targetDate}};
+
+  var options = {out: {inline: 1}, query: conditions};
+
+  // 直近1周間のcourse_idごとの再生回数の合計を取得
+  PlayHistory.collection.mapReduce(map.toString(),
+                                   reduce.toString(),
+                                   options,
+                                   function(err, data) {
+/*
+  var command = {
+    mapreduce: "PlayHistory",
+    map: map.toString(),
+    reduce: reduce.toString(),
+    query: conditions,
+    out: {inline: 1}
+  };
+  mongoose.connection.db.executeDbCommand(command, function(err, data) {
+*/
+
+    if (err) {
+      console.log("error: " + err);
     }
-  );
+    if (!data) return;
+
+    // countの降順にsort
+    data.sort(function(data1, data2){
+      if (data1.value.count < data2.value.count) return 1;
+      if (data1.value.count > data2.value.count) return -1;
+      return 0;
+    });
+
+    for (var i = 0; i < data.length; i++) {
+      console.log(i + " : " + data[i]._id + " : " + data[i].value.count);
+    }
+
+    var page = req.query.page;
+    var skip = (page - 1) * 4;
+    var options = {sort: {playCount: -1}, skip: skip, limit: 4};
+
+    // 再生回数上位4つ（skip考慮）を取得するようconditionsを生成
+    var idx;
+    var conditions = '{"$or": [';
+    for (var idx = skip; idx < skip + 3 && idx < data.length - 1; idx++) {
+      conditions += '{"_id": "' + data[idx]._id + '"},';
+    }
+    conditions += '{"_id": "' + data[idx]._id + '"}]}';
+    conditions = JSON.parse(conditions);
+
+    Course.find(
+      conditions,
+      {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "link": 1, "playCount": 1, "created": 1},  // positions以外
+      {},
+      function(err, courses) {
+        if (err) {
+          console.log(err);
+          res.redirect('back');
+        } else {
+          res.json(courses);
+        }
+      }
+    );
+  });
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-// 新着
+// 表示件数取得
 //////////////////////////////////////////////////////////////////////////////////////////////
-exports.newArrival = function (req, res) {
-  Course.find(
-    {},
-    {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "link": 1, "playCount": 1, "created": 1},  // positions以外
-    {"sort": {"created": -1}, "limit": 5},
-    function(err, courses) {
+exports.count = function(req, res) {
+  var mode = req.query.mode;
+  var count = 0;
+
+  // modeによってカウントを取得する条件を変更
+  if (mode == "top") {
+    var back = req.query.back;  // 直近何日間の件数を取得するか
+
+    var map = function() {
+      emit(this.course_id, {count: 1, datetime: this.datetime});
+    };
+
+    var reduce = function(key, values) {
+      var result = {count: 0};  //集計結果を初期化
+      values.forEach(function(value){
+        result.count += value.count;
+      });
+      return result;
+    };
+
+    var today = new Date();
+    var targetDate = computeDate(today.getFullYear(), (today.getMonth() + 1), today.getDate(), Number(back) * -1);
+    var conditions = {datetime: {"$gte": targetDate}};
+
+    var options = {out: {inline: 1}, query: conditions};
+
+    // 直近N日間のcourse_idごとの再生回数の合計を取得（再生回数＝0は含まない）
+    PlayHistory.collection.mapReduce(map.toString(),
+                                     reduce.toString(),
+                                     options,
+                                     function(err, data) {
       if (err) {
-        console.log(err);
-        res.redirect('back');
-      } else {
-        res.json(courses);
+        console.log("error: " + err);
       }
-    }
-  );
-};
+      if (!data) return;
+
+      var count = data.length;
+      if (data.length > 40) {
+        count = 40;
+      }
+      console.log(count);
+      res.json({"count": count});
+    });
+
+  } else if (mode = "all") {
+    var conditions = {};
+    Course.count(
+      conditions,
+      function(err, count) {
+        if (err) {
+          console.log(err);
+          res.redirect('back');
+        } else {
+          res.json({"count": count});
+        }
+      }
+    );
+  }
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 // 再生画面 - 移動位置情報をDBからロード
@@ -267,7 +338,7 @@ function loadCourseWithSkip(skip, res) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-// 再生画面 - 再生回数をインクリメント
+// 再生回数をインクリメント
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.incrementPlayCount = function(req, res) {
   var _id = req.query._id;
@@ -383,6 +454,25 @@ exports.saveCourse = function(req, res) {
       res.redirect('/record?_id=' + saveCourse._id + "&title=" + saveCourse.title + "&description=" + saveCourse.description);
     }
   });
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// 新着
+//////////////////////////////////////////////////////////////////////////////////////////////
+exports.newArrival = function (req, res) {
+  Course.find(
+    {},
+    {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "link": 1, "playCount": 1, "created": 1},  // positions以外
+    {"sort": {"created": -1}, "limit": 5},
+    function(err, courses) {
+      if (err) {
+        console.log(err);
+        res.redirect('back');
+      } else {
+        res.json(courses);
+      }
+    }
+  );
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -526,7 +616,6 @@ exports.selectRanking = function(req, res) {
 // プライバシーポリシー画面表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.privacy = function(req, res) {
-
   res.render("privacy", {userName: getUserNameFromSession(req)});
 };
 
@@ -544,11 +633,36 @@ exports.about = function(req, res) {
   res.render("about", {userName: getUserNameFromSession(req)});
 };
 
-
+//////////////////////////////////////////////////////////////////////////////////////////////
+// SessionからUser情報を取得
+//////////////////////////////////////////////////////////////////////////////////////////////
 function getUserNameFromSession(req) {
   var userName = "";
   if (req.user) {
     userName =  req.user.name;
   }
   return userName;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// 前0埋め
+//////////////////////////////////////////////////////////////////////////////////////////////
+function paddingZero(str, keta) {
+  var zero = "";
+  for (var i = 0; i < keta; i++) {
+    zero += "0";
+  }
+  return (zero + str).slice(keta * -1);
+}
+
+ //////////////////////////////////////////////////////////////////////////////////////////////
+// 年月日と加算日からn日後、n日前を求める
+//////////////////////////////////////////////////////////////////////////////////////////////
+function computeDate(year, month, day, addDays) {
+    var dt = new Date(year, month - 1, day);
+    var baseSec = dt.getTime();
+    var addSec = addDays * 86400000;//日数 * 1日のミリ秒数
+    var targetSec = baseSec + addSec;
+    dt.setTime(targetSec);
+    return dt;
 }

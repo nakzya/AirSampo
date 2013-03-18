@@ -56,14 +56,14 @@ function PanoramaData(panorama) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 // トップ画面のページネーションの設定
 //////////////////////////////////////////////////////////////////////////////////////////////
-function setTopPagination(page, startingCourseIdx) {
+function setTopPagination(page) {
   $.ajax({
-    url: "/count?mode=top",   // 件数を引数として受け取るようにすると、再帰的に呼び出す際に不都合がある（件数の増減に対応できない）
+    url: "/count?mode=top&back=7",   // 件数を引数として受け取るようにすると、再帰的に呼び出す際に不都合がある（件数の増減に対応できない）
     cache: false,
     dataType: "json",
     success: function(data) {
       var count = data.count;
-      if (data.count > 4 * 10) {   // とりあえず最大10ページ
+      if (data.count > 4 * 10) {   // 最大10ページ
         count = 4 * 10;
       }
 
@@ -450,8 +450,6 @@ function recordInitialize() {
 
   // 記録確定後、再表示する場合
   if (_id != "") {
-    alert("記録しました！");
-
     // 移動位置情報をDBからロード
     loadCourse(_id);
 
@@ -614,6 +612,8 @@ function recordInitialize() {
       pitch: firstPosition.pitch,
       zoom: firstPosition.zoom
     });
+
+    alert("記録しました！");
 
     event.preventDefault();
   });
@@ -933,7 +933,7 @@ function checkPassword(password) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 function setStartingCourse() {
   $.ajax({
-    url: "/count?mode=top",
+    url: "/count?mode=all",   // 全件のカウント
     cache: false,
     dataType: "json",
     success: function(data) {
@@ -1040,7 +1040,7 @@ function DescriptionLabel(labelDiv, course) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 // サムネイル情報を設定
 //////////////////////////////////////////////////////////////////////////////////////////////
-function setCourseThumbnail(page, startingCourseIdx) {
+function setCourseThumbnail(page) {
   // 一旦全て非表示に
   $("ul.thumbnails li").css("display", "none");
 
@@ -1104,14 +1104,8 @@ function setCourseThumbnail(page, startingCourseIdx) {
 
       $(".loading").css("display", "none");
 
-    // サムネイルを静止画で表示する場合（こっちのほうが軽い）　※ただし場所によっては画像が取れないことがある しかもその判定は不可
-    /*
-    var thumbnailImg = "<img src=\"http://maps.googleapis.com/maps/api/streetview?size=360x200&location=" + json.Position[0].lat + "," + json.Position[0].lng + "&heading=" + json.Position[0].heading + "&pitch=" + json.Position[0].pitch + "&sensor=false\" />";
-    $("#course" + String(num)).append(thumbnailImg);
-    */
-
-    // 初期LatLngがGray表示の場合があるため
-    //movePanorama(startPosition, panorama_thumbnail);
+      // 初期LatLngがGray表示の場合があるため
+      //movePanorama(startPosition, panorama_thumbnail);
     }
   });
 }

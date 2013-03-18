@@ -66,7 +66,15 @@
               <div class="tabbable" style="margin-bottom: 18px;">
                 <ul class="nav nav-tabs">
                   <li class="active"><a href="#tabSearch" data-toggle="tab">検索</a></li>
-                  <li><a href="#tabRanking" data-toggle="tab">ランキング</a></li>
+                  <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">ランキング <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                      <li><a href="#">今日の再生回数ランキング</a></li>
+                      <li><a href="#">最近1週間の再生回数ランキング</a></li>
+                      <li><a href="#">最近１ヶ月の再生回数ランキング</a></li>
+                      <li><a href="/ranking">総合再生回数ランキング</a></li>
+                    </ul>
+                  </li>
                   <li><a href="#tabCategory" data-toggle="tab">カテゴリ</a></li>
                   <li><a href="/random" id="tabRandom">ランダム</a>
                 </ul>
@@ -81,14 +89,7 @@
                       </div>
                     </form>
                   </div>
-                  <div class="tab-pane" id="tabRanking">
-                    <ul>
-                      <li>今日の再生回数ランキング</li>
-                      <li>最近1週間の再生回数ランキング</li>
-                      <li>最近１ヶ月の再生回数ランキング</li>
-                      <li><a href="/ranking">etc</a></li>
-                    </ul>
-                  </div>
+                  <div class="tab-pane" id="tabRanking"></div>
                   <div class="tab-pane" id="tabCategory">
                     <ul>
                       <li>世界遺産</li>
