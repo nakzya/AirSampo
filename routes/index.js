@@ -150,8 +150,8 @@ exports.randomCourse = function(req, res) {
 // トップ画面 - コースのサムネイルを取得
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.courseThumbnail = function(req, res) {
-  // 過去7日間の再生回数を集計し、その結果を以下のcallback関数に渡す
-  playHistoryCount(7, function(err, data) {
+  // 過去30日間の再生回数を集計し、その結果を以下のcallback関数に渡す
+  playHistoryCount(30, function(err, data) {
     if (err) {
       console.log("error: " + err);
     }
@@ -216,6 +216,25 @@ exports.count = function(req, res) {
 
       var count = data.length;
       res.json({"count": count});
+    });
+
+  // ランキング画面で表示する特定期間の再生回数
+  } else if (mode == "ranking") {
+    var _id = req.query._id;
+    var back = req.query.back;  // 直近何日間の件数を取得するか
+    var no = req.query.no;  // レスポンスを返してクライアント側で何番目に表示するか
+
+    var today = new Date();
+    var targetDate = computeDate(today.getFullYear(), (today.getMonth() + 1), today.getDate(), Number(back) * -1);
+    var conditions = {course_id: _id, playedDate: {$gte: targetDate}};
+
+    PlayHistory.count(conditions, function(err,count) {
+      if (err) {
+        console.log(err);
+        res.redirect('back');
+      } else {
+        res.json({no: no, count: count});
+      }
     });
 
   } else if (mode = "all") {
@@ -529,18 +548,19 @@ exports.mycourseResult = function(req, res) {
 // ランキング画面表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.ranking = function(req, res) {
-  var span = req.query.r;
-  res.render('ranking', {userName: getUserNameFromSession(req), span: span});
+  var back = req.query.back;
+console.log("back:" + back);
+  res.render('ranking', {userName: getUserNameFromSession(req), back: back});
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 // ランキング画面 - ランキングデータ取得
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.selectRanking = function(req, res) {
-  var span = req.query.span;
+  var back = req.query.back;
 
-  // 過去span日間の再生回数を集計し、その結果を以下のcallback関数に渡す
-  playHistoryCount(span, function(err, data) {
+  // 過去back日間の再生回数を集計し、その結果を以下のcallback関数に渡す
+  playHistoryCount(back, function(err, data) {
     if (err) {
       console.log("error: " + err);
     }
@@ -553,9 +573,9 @@ exports.selectRanking = function(req, res) {
       return 0;
     });
 
-    for (var i = 0; i < data.length; i++) {
-      console.log("ranking_" + i + " : " + data[i]._id + " : " + data[i].value.count);
-    }
+    //for (var i = 0; i < data.length; i++) {
+    //  console.log("ranking_" + i + " : " + data[i]._id + " : " + data[i].value.count);
+    //}
 
     var page = req.query.page;
     if (!page) page = 1;

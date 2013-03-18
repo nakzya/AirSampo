@@ -548,6 +548,24 @@ function recordInitialize() {
     event.preventDefault();
   });
 
+  // カテゴリドロップダウン選択イベント
+  $("#catDomestic").bind("click", function(event) {
+    $("#catPlace").text(this.text);
+    event.preventDefault();
+  });
+  $("#catDomestic+ul li a").bind("click", function(event) {
+    $("#catPlace").text(this.text);
+    event.preventDefault();
+  });
+  $("#catAbroad").bind("click", function(event) {
+    $("#catPlace").text(this.text);
+    event.preventDefault();
+  });
+  $("#catAbroad+ul li a").bind("click", function(event) {
+    $("#catPlace").text(this.text);
+    event.preventDefault();
+  });
+
   // 「確定」ボタン クリックイベント
   $("#btnSave").bind("click", function(event) {
     if (panoramaDataArray.length == 0) {
@@ -623,23 +641,34 @@ function recordInitialize() {
 // ランキング画面 初期処理
 //////////////////////////////////////////////////////////////////////////////////////////////
 function rankingInitialize() {
-  var span = arguments[0][2];
-  switch (span) {
+  var back = arguments[0][2];
+
+  // 一旦初期化
+  $("#tabRankingToday").removeClass("active");
+  $("#tabRankingWeekly").removeClass("active");
+  $("#tabRankingMonthly").removeClass("active");
+  $("#tabRankingAll").removeClass("active");
+
+  switch (back) {
     case "today":
-      span = 0;
+      back = 0;
+      $("#tabRankingToday").addClass("active");
       break;
     case "week":
-      span = 7;
+      back = 7;
+      $("#tabRankingWeekly").addClass("active");
       break;
     case "month":
-     span = 30;
+     back = 30;
+     $("#tabRankingMonthly").addClass("active");
      break;
     case "all":
-     span = null;
+     back = null;
+     $("#tabRankingAll").addClass("active");
      break;
   }
   // ランキングデータを表示
-  setRanking(1, span);
+  setRanking(1, back);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -1144,6 +1173,14 @@ function loadCourse(_id) {
         $("#description").text(courses.description);
       }
 
+      // タグ
+      if (courses.tag) {
+        var ul = $("#tagList");
+        for (var i = 0; i < courses.tag.length; i++) {
+          ul.tagit("createTag", courses.tag[i]);
+        }
+      }
+
       // 位置情報
       if (courses.position) {
         var retArry = [];
@@ -1173,7 +1210,6 @@ function loadCourse(_id) {
       }
     }
   });
-
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -1250,12 +1286,12 @@ function search(searchWord, page) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 // ランキングを表示
 //////////////////////////////////////////////////////////////////////////////////////////////
-function setRanking(page, span) {
+function setRanking(page, back) {
   // 一旦全て非表示に
   $("ul.thumbnails li").css("display", "none");
 
   $.ajax({
-    url: "/ranking/select?page=" + page + "&span=" + span,
+    url: "/ranking/select?page=" + page + "&back=" + back,
     cache: false,
     dataType: "json",
     success: function(courses) {
@@ -1265,8 +1301,8 @@ function setRanking(page, span) {
         var course = courses[i];
         if (!course) { break; }
 
-        var li = $("<li id='thumbnail" + (i + 1) + "' class='span12'></li>");
-        var div1 = $("<div class='row' style='border: none; margin-bottom: 50px'></div>");
+        var li = $("<li id='thumbnail" + (i + 1) + "' class='span12' style='margin-left: 0'></li>");
+        var div1 = $("<div class='row-fluid' style='border: none; margin-bottom: 50px'></div>");
 
         // サムネイル
         var div2 = $("<div id='course" + (i + 1) + "' class='span6'></div>");
@@ -1276,7 +1312,7 @@ function setRanking(page, span) {
         imgLink.append(thumbnailImg);
         div2.append(imgLink);
 
-        var div3 = $("<div class='caption span6'></div>");
+        var div3 = $("<div id='divCaption" + (i + 1) + "' class='caption span6'></div>");
 
         // メダル・順位
         var ranking;
@@ -1297,9 +1333,7 @@ function setRanking(page, span) {
 
         // 説明文
         var p = $("<p></p>");
-        var descriptionStr = course.description;
-        //var descriptionStr = course.description.length > 22 ? course.description.substr(0, 20) + "..." : course.description;
-        p.text(descriptionStr);
+        p.text(course.description);
         div3.append(p);
 
         // さんぽ回数（ラベル）
@@ -1307,9 +1341,16 @@ function setRanking(page, span) {
         div3.append(span1);
 
         // さんぽ回数
-        var span2 = $("<span class='badge badge-important'></span>");
-        span2.text(course.playCount);
-        div3.append(span2);
+        $.ajax({
+          url: "/count?mode=ranking&_id=" + course._id + "&back=" + back + "&no=" + String(i + 1),
+          cache: false,
+          dataType: "json",
+          success: function(data) {
+            var span2 = $("<span class='badge badge-important'></span>");
+            span2.text(data.count);
+            $("#divCaption" + data.no).append(span2);
+          }
+        });
 
         div1.append(div2);
         div1.append(div3);

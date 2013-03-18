@@ -14,7 +14,7 @@
     <script src="javascripts/airsampo.js"></script>
     <script>
       $(document).ready(function() {
-        initialize("ranking", "<%= userName %>", "<%= span %>");
+        initialize("ranking", "<%= userName %>", "<%= back %>");
       });
     </script>
     <title>エアーさんぽ。</title>
@@ -28,16 +28,15 @@
         <div class="span2"></div>
         <div class="span8">
           <div class="page-header">
-            <h3 style="margin-top: 20px">ランキング（工事中）</h3>
+            <h3 style="margin-top: 20px">さんぽ回数ランキング</h3>
           </div>
-          <ul class="nav nav-pills">
-            <li class="active">
-              <a href="#">Home</a>
-            </li>
-            <li><a href="#">aaa</a></li>
-            <li><a href="#">sss</a></li>
+          <ul class="nav nav-tabs" style="margin-bottom: 40px">
+            <li id="tabRankingToday" class="active"><a href="/ranking?back=today">今日</a></li>
+            <li id="tabRankingWeekly"><a href="/ranking?back=week">最近1週間</a></li>
+            <li id="tabRankingMonthly"><a href="/ranking?back=month">最近１ヶ月</a></li>
+            <li id="tabRankingAll"><a href="/ranking?back=all">総合</a></li>
           </ul>
-          <div id="ranking"></div>
+          <div id="ranking" class="row-fluid"></div>
           <div id="pagination" class="pagination">
             <ul></ul>
           </div>
