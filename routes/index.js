@@ -150,44 +150,12 @@ exports.randomCourse = function(req, res) {
 // トップ画面 - コースのサムネイルを取得
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.courseThumbnail = function(req, res) {
-  var map = function() {
-    emit(this.course_id, {count: 1, datetime: this.datetime});
-  };
-
-  var reduce = function(key, values) {
-    var result = {count: 0};  //集計結果を初期化
-    values.forEach(function(value){
-      result.count += value.count;
-    });
-    return result;
-  };
-
-  var today = new Date();
-  var targetDate = computeDate(today.getFullYear(), (today.getMonth() + 1), today.getDate(), -7);  // ７日前
-  var conditions = {datetime: {"$gte": targetDate}};
-
-  var options = {out: {inline: 1}, query: conditions};
-
-  // 直近1周間のcourse_idごとの再生回数の合計を取得
-  PlayHistory.collection.mapReduce(map.toString(),
-                                   reduce.toString(),
-                                   options,
-                                   function(err, data) {
-/*
-  var command = {
-    mapreduce: "PlayHistory",
-    map: map.toString(),
-    reduce: reduce.toString(),
-    query: conditions,
-    out: {inline: 1}
-  };
-  mongoose.connection.db.executeDbCommand(command, function(err, data) {
-*/
-
+  // 過去7日間の再生回数を集計し、その結果を以下のcallback関数に渡す
+  playHistoryCount(7, function(err, data) {
     if (err) {
       console.log("error: " + err);
     }
-    if (!data) return;
+    if (!data || data.length == 0) return;
 
     // countの降順にsort
     data.sort(function(data1, data2){
@@ -197,12 +165,11 @@ exports.courseThumbnail = function(req, res) {
     });
 
     for (var i = 0; i < data.length; i++) {
-      console.log(i + " : " + data[i]._id + " : " + data[i].value.count);
+      console.log("courseThumbnail_" + i + " : " + data[i]._id + " : " + data[i].value.count);
     }
 
     var page = req.query.page;
     var skip = (page - 1) * 4;
-    var options = {sort: {playCount: -1}, skip: skip, limit: 4};
 
     // 再生回数上位4つ（skip考慮）を取得するようconditionsを生成
     var idx;
@@ -240,39 +207,14 @@ exports.count = function(req, res) {
   if (mode == "top") {
     var back = req.query.back;  // 直近何日間の件数を取得するか
 
-    var map = function() {
-      emit(this.course_id, {count: 1, datetime: this.datetime});
-    };
-
-    var reduce = function(key, values) {
-      var result = {count: 0};  //集計結果を初期化
-      values.forEach(function(value){
-        result.count += value.count;
-      });
-      return result;
-    };
-
-    var today = new Date();
-    var targetDate = computeDate(today.getFullYear(), (today.getMonth() + 1), today.getDate(), Number(back) * -1);
-    var conditions = {datetime: {"$gte": targetDate}};
-
-    var options = {out: {inline: 1}, query: conditions};
-
-    // 直近N日間のcourse_idごとの再生回数の合計を取得（再生回数＝0は含まない）
-    PlayHistory.collection.mapReduce(map.toString(),
-                                     reduce.toString(),
-                                     options,
-                                     function(err, data) {
+    // 過去N日間の再生回数を集計し、その結果を以下のcallback関数に渡す
+    playHistoryCount(back, function(err, data) {
       if (err) {
         console.log("error: " + err);
       }
-      if (!data) return;
+      if (!data || data.length == 0) return;
 
       var count = data.length;
-      if (data.length > 40) {
-        count = 40;
-      }
-      console.log(count);
       res.json({"count": count});
     });
 
@@ -587,29 +529,61 @@ exports.mycourseResult = function(req, res) {
 // ランキング画面表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.ranking = function(req, res) {
-  res.render("ranking", {userName: getUserNameFromSession(req)});
+  var span = req.query.r;
+  res.render('ranking', {userName: getUserNameFromSession(req), span: span});
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 // ランキング画面 - ランキングデータ取得
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.selectRanking = function(req, res) {
-  var page = req.query.page;
-  if (!page) page = 1;
-  var skip = (page - 1) * 10;
-  Course.find(
-    {},
-    {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "link": 1, "playCount": 1, "created": 1},  // positions以外
-    {"sort": {"playCount": -1}, skip: skip, "limit": 10},
-    function(err, courses) {
-      if (err) {
-        console.log(err);
-        res.redirect('back');
-      } else {
-        res.json(courses);
-      }
+  var span = req.query.span;
+
+  // 過去span日間の再生回数を集計し、その結果を以下のcallback関数に渡す
+  playHistoryCount(span, function(err, data) {
+    if (err) {
+      console.log("error: " + err);
     }
-  );
+    if (!data || data.length == 0) return;
+
+    // countの降順にsort
+    data.sort(function(data1, data2){
+      if (data1.value.count < data2.value.count) return 1;
+      if (data1.value.count > data2.value.count) return -1;
+      return 0;
+    });
+
+    for (var i = 0; i < data.length; i++) {
+      console.log("ranking_" + i + " : " + data[i]._id + " : " + data[i].value.count);
+    }
+
+    var page = req.query.page;
+    if (!page) page = 1;
+    var skip = (page - 1) * 10;
+
+    // 再生回数上位10コース（skip考慮）を取得するようconditionsを生成
+    var idx;
+    var conditions = '{"$or": [';
+    for (var idx = skip; idx < skip + 9 && idx < data.length - 1; idx++) {
+      conditions += '{"_id": "' + data[idx]._id + '"},';
+    }
+    conditions += '{"_id": "' + data[idx]._id + '"}]}';
+    conditions = JSON.parse(conditions);
+
+    Course.find(
+      conditions,
+      {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "link": 1, "playCount": 1, "created": 1},  // positions以外
+      {},
+      function(err, courses) {
+        if (err) {
+          console.log(err);
+          res.redirect('back');
+        } else {
+          res.json(courses);
+        }
+      }
+    );
+  });
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -632,6 +606,44 @@ exports.rules = function(req, res) {
 exports.about = function(req, res) {
   res.render("about", {userName: getUserNameFromSession(req)});
 };
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// 直近N日間の再生回数を集計しカウントを取得する
+// その結果を引数のcallback関数に渡す
+// @param back 直近何日間の集計をとるか
+// @param func callback関数
+//////////////////////////////////////////////////////////////////////////////////////////////
+function playHistoryCount(back, func) {
+  var map = function() {
+    emit(this.course_id, {count: 1, playedDate: this.playedDate});
+  };
+
+  var reduce = function(key, values) {
+    var result = {count: 0};  //集計結果を初期化
+    values.forEach(function(value){
+      result.count += value.count;
+    });
+    return result;
+  };
+
+  var conditions;
+  var today = new Date();
+  var targetDate;
+  if (back == null) {
+    conditions = {};
+  } else {
+    var targetDate = computeDate(today.getFullYear(), (today.getMonth() + 1), today.getDate(), Number(back) * -1);
+    conditions = {playedDate: {$gte: targetDate}};
+  }
+
+  var options = {out: {inline: 1}, query: conditions};
+console.log(options);
+  // 直近N日間のcourse_idごとの再生回数の合計を取得
+  PlayHistory.collection.mapReduce(map.toString(),
+                                   reduce.toString(),
+                                   options,
+                                   func);
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 // SessionからUser情報を取得

@@ -623,8 +623,23 @@ function recordInitialize() {
 // ランキング画面 初期処理
 //////////////////////////////////////////////////////////////////////////////////////////////
 function rankingInitialize() {
+  var span = arguments[0][2];
+  switch (span) {
+    case "today":
+      span = 0;
+      break;
+    case "week":
+      span = 7;
+      break;
+    case "month":
+     span = 30;
+     break;
+    case "all":
+     span = null;
+     break;
+  }
   // ランキングデータを表示
-  setRanking(1);
+  setRanking(1, span);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -1235,12 +1250,12 @@ function search(searchWord, page) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 // ランキングを表示
 //////////////////////////////////////////////////////////////////////////////////////////////
-function setRanking(page) {
+function setRanking(page, span) {
   // 一旦全て非表示に
   $("ul.thumbnails li").css("display", "none");
 
   $.ajax({
-    url: "/ranking/select?page=" + page,
+    url: "/ranking/select?page=" + page + "&span=" + span,
     cache: false,
     dataType: "json",
     success: function(courses) {

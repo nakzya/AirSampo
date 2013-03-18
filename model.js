@@ -43,8 +43,8 @@ exports.Course = db.model("Course", Course);
 
 // 再生履歴情報
 var PlayHistory = new mongoose.Schema({
-  course_id : {type: String, required: true},
-  datetime  : {type: Date, default: Date.now},
-  playedby  : {type: String, required: true}
+  course_id  : {type: String, required: true},
+  playedDate : {type: Date, default: Date.now},
+  playedby   : {type: String, required: true}
 });
 exports.PlayHistory = db.model("PlayHistory", PlayHistory);
