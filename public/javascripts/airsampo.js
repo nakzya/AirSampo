@@ -1176,8 +1176,10 @@ function loadCourse(_id) {
       // タグ
       if (courses.tag) {
         var ul = $("#tagList");
-        for (var i = 0; i < courses.tag.length; i++) {
-          ul.tagit("createTag", courses.tag[i]);
+        if (ul.tagit) {  // 記録画面のみ
+          for (var i = 0; i < courses.tag.length; i++) {
+            ul.tagit("createTag", courses.tag[i]);
+          }
         }
       }
 
