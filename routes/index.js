@@ -182,7 +182,7 @@ exports.courseThumbnail = function(req, res) {
 
     Course.find(
       conditions,
-      {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "link": 1, "playCount": 1, "created": 1},  // positions以外
+      getCourseWithoutPositions(),  // positions以外
       {},
       function(err, courses) {
         if (err) {
@@ -309,12 +309,12 @@ exports.incrementPlayCount = function(req, res) {
       res.redirect('back');
     } else {
       Course.update(
-        {"_id": new ObjectId(_id)},
+        {'_id': new ObjectId(_id)},
         {$set: {playCount: course.playCount + 1}},
         {upsert: false},
         function (err, updateCnt) {
           if (err){
-            console.log("err : " + err);
+            console.log('err : ' + err);
           }
         }
       );
@@ -330,7 +330,7 @@ exports.playHistory = function(req, res) {
   if (_id) {  // 記録確定前の場合、undefinedのため再生履歴を登録しない
     var playHistory = new PlayHistory({
       course_id: _id,
-      playedby : "anonymous"  // TODO 暫定
+      playedby : 'anonymous'  // TODO 暫定
     });
 
     playHistory.save(function(err, course) {
@@ -351,12 +351,17 @@ exports.saveCourse = function(req, res) {
 
   // タグ情報を配列に分解
   var tagArray
-  if (req.body.tags.length == 0) {
+  if (!req.body.tags || req.body.tags.length == 0) {
     tagArray = [];
   } else {
     req.body.tags.splice(req.body.tags.length - 1, 1);
     var tagArray = String(req.body.tags).split(",");
   }
+
+  // カテゴリ情報
+  var place = req.body.catPlace;
+  var kind = req.body.catKind;
+  var categoryArray = [place, kind];
 
   // 移動位置情報を配列に分解
   var positionArray = [];
@@ -399,11 +404,12 @@ exports.saveCourse = function(req, res) {
 
   var course = new Course({
     owner        : userName,
-    title        : req.body["txtTitle"],
-    description  : req.body["txtDescription"],
+    title        : req.body.txtTitle,
+    description  : req.body.txtDescription,
     position     : positionArray,
     firstPosition: firstPositionArray,
     tag          : tagArray,
+    category     : categoryArray,
     link         : linkArray,
     playCount    : 0
   });
@@ -423,7 +429,7 @@ exports.saveCourse = function(req, res) {
 exports.newArrival = function (req, res) {
   Course.find(
     {},
-    {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "link": 1, "playCount": 1, "created": 1},  // positions以外
+    getCourseWithoutPositions(),  // positions以外
     {"sort": {"created": -1}, "limit": 5},
     function(err, courses) {
       if (err) {
@@ -442,7 +448,7 @@ exports.newArrival = function (req, res) {
 exports.recommend = function(req, res) {
   Course.find(
     {},
-    {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "link": 1, "playCount": 1, "created": 1},  // positions以外
+    getCourseWithoutPositions(),  // positions以外
     {"sort": {"playCount": -1}, "limit": 5},
     function(err, courses) {
       if (err) {
@@ -459,7 +465,7 @@ exports.recommend = function(req, res) {
 // 検索画面表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.search = function(req, res) {
-  res.render("searchResult", {userName: getUserNameFromSession(req), searchWord: req.body.txtNavSearch});
+  res.render('searchResult', {userName: getUserNameFromSession(req), searchWord: req.body.txtNavSearch});
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -472,9 +478,10 @@ exports.searchResult = function(req, res) {
   Course.find({$or: [{title      : new RegExp('.*' + searchWord + '.*', "i")},  // タイトルと中間一致、または
                      {description: new RegExp('.*' + searchWord + '.*', "i")},  // 説明文と中間一致、または
                      {tag        : {$all: searchWord}},                         // タグに含まれる、または
-                     {link       : {$all: searchWord}}                          // リンクに含まれる
+                     {link       : {$all: searchWord}},                         // リンクに含まれる
+                     {category   : {$all: searchWord}}                          // カテゴリに含まれる
                     ]},
-              {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "link": 1, "playCount": 1, "created": 1},  // positions以外
+              getCourseWithoutPositions(),  // positions以外
               {sort: {playCount: -1}, skip: skip, limit: 10},
               function(err, courses) {
     if (err) {
@@ -494,7 +501,8 @@ exports.paginationSearch = function(req, res) {
   Course.count({$or: [{title      : new RegExp('.*' + searchWord + '.*', "i")},  // タイトルと中間一致、または
                       {description: new RegExp('.*' + searchWord + '.*', "i")},  // 説明文と中間一致、または
                       {tag        : {$all: searchWord}},                         // タグに含まれる、または
-                      {link       : {$all: searchWord}}                          // リンクに含まれる
+                      {link       : {$all: searchWord}},                         // リンクに含まれる
+                      {category   : {$all: searchWord}}                          // カテゴリに含まれる
                      ]},
     function(err, count) {
       if (err) {
@@ -530,7 +538,7 @@ exports.mycourseResult = function(req, res) {
   if (userName) {
     Course.find(
       {owner: userName},
-      {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "link": 1, "playCount": 1, "created": 1},
+      getCourseWithoutPositions(),  // positions以外
       {sort: {created: -1}, skip: skip, limit: 10},
       function(err, courses) {
         if (err) {
@@ -549,7 +557,6 @@ exports.mycourseResult = function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.ranking = function(req, res) {
   var back = req.query.back;
-console.log("back:" + back);
   res.render('ranking', {userName: getUserNameFromSession(req), back: back});
 }
 
@@ -592,7 +599,7 @@ exports.selectRanking = function(req, res) {
 
     Course.find(
       conditions,
-      {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "link": 1, "playCount": 1, "created": 1},  // positions以外
+      getCourseWithoutPositions(),  // positions以外
       {},
       function(err, courses) {
         if (err) {
@@ -607,10 +614,41 @@ exports.selectRanking = function(req, res) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
+// カテゴリ画面表示
+//////////////////////////////////////////////////////////////////////////////////////////////
+exports.category = function(req, res) {
+  res.render('categoryResult', {userName: getUserNameFromSession(req), category: req.query.category});
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// カテゴリ検索結果画面
+//////////////////////////////////////////////////////////////////////////////////////////////
+exports.selectCategory = function(req, res) {
+  var category = req.query.category;
+  var page = req.query.page;
+  var skip = (page - 1) * 10;
+  if (category) {
+    Course.find(
+      {category: {$all: category}},
+      getCourseWithoutPositions(),  // positions以外
+      {sort: {created: -1}, skip: skip, limit: 10},
+      function(err, courses) {
+        if (err) {
+          console.log(err);
+          res.redirect('back');
+        } else {
+          res.json(courses);
+        }
+      }
+    );
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 // プライバシーポリシー画面表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.privacy = function(req, res) {
-  res.render("privacy", {userName: getUserNameFromSession(req)});
+  res.render('privacy', {userName: getUserNameFromSession(req)});
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -674,6 +712,13 @@ function getUserNameFromSession(req) {
     userName =  req.user.name;
   }
   return userName;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// Courseのpositions以外のフィールド
+//////////////////////////////////////////////////////////////////////////////////////////////
+function getCourseWithoutPositions() {
+  return {"_id": 1, "owner": 1, "title": 1, "description": 1, "firstPosition": 1, "tag": 1, "category": 1, "link": 1, "playCount": 1, "privateFlg": 1,　"created": 1, "updated": 1, "deleted": 1};
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////

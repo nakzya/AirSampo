@@ -216,6 +216,9 @@ function initialize() {
     case "search":
       searchResultInitialize(arguments);
       break;
+    case "category":
+      categoryResultInitialize(arguments);
+      break;
     case "mycourse":
       mycourseResultInitialize(arguments);
       break;
@@ -549,6 +552,10 @@ function recordInitialize() {
   });
 
   // カテゴリドロップダウン選択イベント
+  $("#catSpace").bind("click", function(event) {
+    $("#catPlace").html("<strong>　場所　</strong>");
+    event.preventDefault();
+  });
   $("#catDomestic").bind("click", function(event) {
     $("#catPlace").text(this.text);
     event.preventDefault();
@@ -565,12 +572,40 @@ function recordInitialize() {
     $("#catPlace").text(this.text);
     event.preventDefault();
   });
+  $("#catSpace2").bind("click", function(event) {
+    $("#catKind").html("<strong>　種類　</strong>");
+    event.preventDefault();
+  });
+  $("#catSampo").bind("click", function(event) {
+    $("#catKind").text(this.text);
+    event.preventDefault();
+  });
+  $("#catGuide").bind("click", function(event) {
+    $("#catKind").text(this.text);
+    event.preventDefault();
+  });
+  $("#catNature").bind("click", function(event) {
+    $("#catKind").text(this.text);
+    event.preventDefault();
+  });
+  $("#catNature+ul li a").bind("click", function(event) {
+    $("#catKind").text(this.text);
+    event.preventDefault();
+  });
+  $("#catArtificial").bind("click", function(event) {
+    $("#catKind").text(this.text);
+    event.preventDefault();
+  });
+  $("#catArtificial+ul li a").bind("click", function(event) {
+    $("#catKind").text(this.text);
+    event.preventDefault();
+  });
 
   // 「確定」ボタン クリックイベント
   $("#btnSave").bind("click", function(event) {
-    if (panoramaDataArray.length == 0) {
+    if (panoramaDataArray.length <= 1) {
       alert("確定するデータがありません。");
-      return;
+      return false;
     }
 
     // 「タイトル」 必須チェック
@@ -596,6 +631,12 @@ function recordInitialize() {
       }
     }
     $("#saveForm").append("<input type='hidden' name='tags' value='" + str + "'></input>");
+
+    // カテゴリ情報（場所・種類）をhiddenでpost
+    var place = $("#catPlace").text();
+    $("#saveForm").append("<input type='hidden' name='catPlace' value='" + place + "'></input>");
+    var kind = $("#catKind").text();
+    $("#saveForm").append("<input type='hidden' name='catKind' value='" + kind + "'></input>");
 
     // 移動位置情報を文字列として作成 → hiddenでpost
     str = "";
@@ -696,6 +737,20 @@ function mycourseResultInitialize() {
   $(".loading").css("display", "none");
 
   // ページネーションの設定
+  // TODO
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// カテゴリ検索結果画面 初期処理
+//////////////////////////////////////////////////////////////////////////////////////////////
+function categoryResultInitialize() {
+  var category = arguments[0][2];
+
+  categorySearch(category, 1);
+
+  $(".loading").css("display", "none");
+
+  // ページネーション
   // TODO
 }
 
@@ -1162,32 +1217,42 @@ function loadCourse(_id) {
     url: "/loadCourse?_id=" + _id,
     cache: true,
     dataType: "json",
-    success: function(courses) {
+    success: function(course) {
       // タイトル
-      if (courses.title) {
-        $("#title").text(courses.title);
+      if (course.title) {
+        $("#title").text(course.title);
       }
 
       // 説明
-      if (courses.description) {
-        $("#description").text(courses.description);
+      if (course.description) {
+        $("#description").text(course.description);
       }
 
       // タグ
-      if (courses.tag) {
+      if (course.tag) {
         var ul = $("#tagList");
         if (ul.tagit) {  // 記録画面のみ
-          for (var i = 0; i < courses.tag.length; i++) {
-            ul.tagit("createTag", courses.tag[i]);
+          for (var i = 0; i < course.tag.length; i++) {
+            ul.tagit("createTag", course.tag[i]);
           }
         }
       }
 
+      // カテゴリ
+      if (course.category) {
+        var catPlace = $("#catPlace");
+        var catKind = $("#catKind");
+        if (catPlace && catKind) {
+          catPlace.text(course.category[0]);
+          catKind.text(course.category[1]);
+        }
+      }
+
       // 位置情報
-      if (courses.position) {
+      if (course.position) {
         var retArry = [];
-        for (var i = 0; i < courses.position.length; i++) {
-          var data = courses.position[i];
+        for (var i = 0; i < course.position.length; i++) {
+          var data = course.position[i];
           var panoData = new PanoramaData();
           panoData.lat = data.lat;
           panoData.lng = data.lng;
@@ -1431,6 +1496,78 @@ function showMycourse(page) {
 
         // 検索件数
         $("#mycourseResultCount").text(courses.length);
+      }
+    }
+  });
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// カテゴリ検索結果を表示
+//////////////////////////////////////////////////////////////////////////////////////////////
+function categorySearch(category, page) {
+  // 一旦全て非表示に
+  $("ul.thumbnails li").css("display", "none");
+
+  $.ajax({
+    url: "/category/select?page=" + page +"&category=" + category,
+    cache: false,
+    dataType: "json",
+    success: function(courses) {
+      var searchResultDiv = $("#categorySearchResult");
+      for (var i = 1; i <= SEARCH_RESULT_MAX_ROW; i++) {
+        var ul = $("<ul class='thumbnails'>");
+        searchResultDiv.append(ul);
+
+        for (var j = 1; j <= SEARCH_RESULT_MAX_COL; j++) {
+          var idx = (i - 1) * SEARCH_RESULT_MAX_COL + j;  // 1（≠0）～カウント
+          var course = courses[idx - 1];
+          if (!course) { break; }
+
+          var li = $("<li id='thumbnail" + idx + "' class='span6'></li>");
+          var div1 = $("<div class='thumbnail'></div>");
+
+          // サムネイル
+          var div2 = $("<div id='course" + idx + "'></div>");
+          var firstPosition = course.firstPosition[0];
+          var imgLink = $("<a href='/play?_id=" + course._id + "'></a>");
+          var thumbnailImg = "<img src='http://maps.googleapis.com/maps/api/streetview?size=360x250&location=" + firstPosition.lat + "," + firstPosition.lng + "&heading=" + firstPosition.heading + "&pitch=" + firstPosition.pitch + "&sensor=false'\"' />";
+          imgLink.append(thumbnailImg);
+          div2.append(imgLink);
+
+          var div3 = $("<div class='caption'></div>");
+
+          // タイトル
+          var h4 = $("<h4></h4>");
+          var title = $("<a href='/play?_id=" + course._id + "'>" + course.title + "</a>");
+          h4.append(title);
+          div3.append(h4);
+
+          // 説明文
+          var p = $("<p></p>");
+          var descriptionStr = course.description;
+          //var descriptionStr = course.description.length > 22 ? course.description.substr(0, 20) + "..." : course.description;
+          p.text(descriptionStr);
+          div3.append(p);
+
+          // さんぽ回数（ラベル）
+          var span1 = $("<span class='label label-inverse' style='margin-bottom: 20px'>さんぽ回数</span>");
+          div3.append(span1);
+
+          // さんぽ回数
+          var span2 = $("<span class='badge badge-important'></span>");
+          span2.text(course.playCount);
+          div3.append(span2);
+
+          div1.append(div2);
+          div1.append(div3);
+          li.append(div1);
+          ul.append(li);
+          li.css("display", "block");
+        }
+        //searchResultDiv.append(ul);
+
+        // 検索件数
+        $("#categoryResultCount").text(courses.length);
       }
     }
   });

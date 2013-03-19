@@ -68,6 +68,10 @@ app.get('/mycourseResult', routes.mycourseResult);
 app.get('/ranking', routes.ranking);
 app.get('/ranking/select', routes.selectRanking);
 
+// カテゴリ検索画面
+app.get('/category', routes.category);
+app.get('/category/select', routes.selectCategory);
+
 // プライバシーポリシー画面
 app.get('/privacy', routes.privacy);
 

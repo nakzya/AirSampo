@@ -32,6 +32,7 @@ var Course = new mongoose.Schema({
   position      : {type: [Position]},
   firstPosition : {type: [Position]},  // Modelをネストする場合は配列にする必要あり
   tag           : {type: [String]},
+  category      : {type: [String]},
   link          : {type: [String]},
   playCount     : {type: Number, min: 0, default: 0},
   privateFlg    : {type: Boolean, default: false},

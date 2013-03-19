@@ -5,19 +5,18 @@
     <link rel="stylesheet" href="stylesheets/jquery-ui-1.10.1.custom.min.css" />
     <link rel="stylesheet" href="stylesheets/bootstrap.min.css" />
     <link rel="stylesheet" href="stylesheets/bootstrap-responsive.min.css" />
-    <link rel="stylesheet" href="stylesheets/modernizr-2.6.2-respond-1.1.0.min.css" />
     <link rel="stylesheet" href="stylesheets/airsampo.css" />
     <script src="http://www.google.com/jsapi"></script>
     <script src="javascripts/jquery-1.9.1.js"></script>
     <script src="javascripts/jquery-ui-1.10.1.custom.min.js"></script>
     <script src="javascripts/bootstrap.min.js"></script>
     <script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDoj7QWz-XTSo2QhYnj9IMWRXkrlMjYqIU&libraries=geometry&sensor=false"></script>
+    <script src="javascripts/modernizr-2.6.2-respond-1.1.0.min.js"></script>
     <script src="javascripts/airsampo.js"></script>
     <script>
       $(document).ready(function() {
         initialize("top", "<%= userName %>");
       });
-
     </script>
     <title>エアーさんぽ。</title>
   </head>
@@ -57,7 +56,7 @@
               <h4 calss="text-info"><blockquote>エアーさんぽ（仮）とは</blockquote></h4>
               <p>エアーさんぽ（仮）は見るだけで<strong>散歩した気になれる</strong>サイトです。
               未だ見ぬ土地を散歩してみましょう。<br><br>
-              また、あなたオリジナルのさんぽコースを作ることも可能です。（要ユーザー登録）<br>
+              また、あなたオリジナルのさんぽコースを<strong>簡単に作ることが可能</strong>です。（要ユーザー登録）<br>
               作ったさんぽコースは即座に公開できます。
               <br><br>
               詳しくは<a href="/about">『このサイトについて』</a>をご覧ください。
@@ -91,10 +90,60 @@
                     </ul>
                   </div>
                   <div class="tab-pane" id="tabCategory">
-                    <ul>
-                      <li>世界遺産</li>
-                      <li>～～～</li>
-                    </ul>
+                    <div class="pull-left span3">
+                      <h5>国内</h5>
+                      <ul>
+                        <li><a href="/category?category=北海道">北海道</a></li>
+                        <li><a href="/category?category=東北">東北</a></li>
+                        <li><a href="/category?category=関東">関東</a></li>
+                        <li><a href="/category?category=北陸">北陸</a></li>
+                        <li><a href="/category?category=甲信越">甲信越</a></li>
+                        <li><a href="/category?category=東海">東海</a></li>
+                        <li><a href="/category?category=近畿">近畿</a></li>
+                        <li><a href="/category?category=中国">中国</a></li>
+                        <li><a href="/category?category=四国">四国</a></li>
+                        <li><a href="/category?category=九州">九州</a></li>
+                        <li><a href="/category?category=沖縄">沖縄</a></li>
+                      </ul>
+                    </div>
+                    <div class="span3">
+                      <h5>海外</h5>
+                      <ul>
+                        <li><a href="/category?category=アジア">アジア</a></li>
+                        <li><a href="/category?category=北アメリカ">北アメリカ</a></li>
+                        <li><a href="/category?category=中南米">中南米</a></li>
+                        <li><a href="/category?category=ヨーロッパ">ヨーロッパ</a></li>
+                        <li><a href="/category?category=ロシア">ロシア</a></li>
+                        <li><a href="/category?category=アフリカ">アフリカ</a></li>
+                        <li><a href="/category?category=南極">南極</a></li>
+                      </ul>
+                    </div>
+                    <div class="span3">
+                      <h5>自然</h5>
+                      <ul>
+                        <li><a href="/category?category=海"> 海</a></li>
+                        <li><a href="/category?category=山"> 山</a></li>
+                        <li><a href="/category?category=滝"> 滝</a></li>
+                        <li><a href="/category?category=川"> 川</a></li>
+                        <li><a href="/category?category=湖"> 湖</a></li>
+                        <li><a href="/category?category=自然公園"> 自然公園</a></li>
+                      </ul>
+                    </div>
+                    <div class="span3">
+                      <h5>人工物</h5>
+                      <ul>
+                        <li><a href="/category?category=信者・お寺"> 神社・お寺</a></li>
+                        <li><a href="/category?category=遺跡"> 遺跡</a></li>
+                        <li><a href="/category?category=城"> 城</a></li>
+                        <li><a href="/category?category=博物館"> 博物館</a></li>
+                        <li><a href="/category?category=水族館"> 水族館</a></li>
+                        <li><a href="/category?category=動物園"> 動物園</a></li>
+                        <li><a href="/category?category=植物園"> 植物園</a></li>
+                        <li><a href="/category?category=学校"> 学校</a></li>
+                        <li><a href="/category?category=店内"> 店内</a></li>
+                      </ul>
+                    </div>
+
                   </div>
                 </div>
               </div>

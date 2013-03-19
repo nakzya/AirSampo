@@ -105,7 +105,7 @@
               <div class="control-group">
                 <label class="control-label">説明文とか</label>
                 <div class="controls">
-                  <textarea id="txtDescription" name="txtDescription" class="span10" rows="3" placeholder="感想、説明、何でもご自由にどうぞ♪"><%= description %></textarea>
+                  <textarea id="txtDescription" name="txtDescription" class="span10" rows="3" placeholder="感想、説明、何でもご自由にどうぞ"><%= description %></textarea>
                 </div>
               </div>
               <div class="control-group">
@@ -120,10 +120,11 @@
                 <label class="control-label">カテゴリ</label>
 
                 <div class="controls">
-                  <div class="btn-group dropup">
-                    <a id="catPlace" class="btn" href="javascript:void(0)">　場所　</a>
+                  <div class="btn-group dropup pull-left">
+                    <a id="catPlace" class="btn" href="javascript:void(0)"><strong>　場所　</strong></a>
                     <a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><span class="caret"></span></a>
                     <ul class="dropdown-menu">
+                      <li><a id="catSpace" href="javascript:void(0)">&nbsp;</a></li>
                       <li class="dropdown-submenu">
                         <a id="catDomestic" href="javascript:void(0)">国内</a>
                         <ul class="dropdown-menu">
@@ -154,24 +155,41 @@
                       </li>
                     </ul>
                   </div>
-                  <!--
-                  <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
-                    <li><a tabindex="-1" href="#">Action</a></li>
-                    <li><a tabindex="-1" href="#">Another action</a></li>
-                    <li><a tabindex="-1" href="#">Something else here</a></li>
-                    <li class="divider"></li>
-                    <li class="dropdown-submenu">
-                      <a tabindex="-1" href="#">More options</a>
-                      <ul class="dropdown-menu">
-                        <li><a tabindex="-1" href="#">Second level link</a></li>
-                        <li><a tabindex="-1" href="#">Second level link</a></li>
-                        <li><a tabindex="-1" href="#">Second level link</a></li>
-                        <li><a tabindex="-1" href="#">Second level link</a></li>
-                        <li><a tabindex="-1" href="#">Second level link</a></li>
-                      </ul>
-                    </li>
-                  </ul>
-                -->
+
+                  <div class="btn-group dropup" style="margin-left: 20px">
+                    <a id="catKind" class="btn" href="javascript:void(0)"><strong>　種類　</strong></a>
+                    <a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><span class="caret"></span></a>
+                    <ul id="catKindUl" class="dropdown-menu">
+                      <li><a id="catSpace2" href="javascript:void(0)">&nbsp;</a></li>
+                      <li><a id="catSampo" href="javascript:void(0)"> さんぽ</a></li>
+                      <li><a id="catGuide" href="javascript:void(0)"> 道案内</a></li>
+                      <li class="dropdown-submenu">
+                        <a id="catNature" href="javascript:void(0)">自然</a>
+                        <ul class="dropdown-menu">
+                          <li><a href="javascript:void(0)"> 海</a></li>
+                          <li><a href="javascript:void(0)"> 山</a></li>
+                          <li><a href="javascript:void(0)"> 滝</a></li>
+                          <li><a href="javascript:void(0)"> 川</a></li>
+                          <li><a href="javascript:void(0)"> 湖</a></li>
+                          <li><a href="javascript:void(0)"> 自然公園</a></li>
+                        </ul>
+                      </li>
+                      <li class="dropdown-submenu">
+                        <a id="catArtificial" href="javascript:void(0)">人工物</a>
+                        <ul class="dropdown-menu">
+                          <li><a href="javascript:void(0)"> 神社・お寺</a></li>
+                          <li><a href="javascript:void(0)"> 遺跡</a></li>
+                          <li><a href="javascript:void(0)"> 城</a></li>
+                          <li><a href="javascript:void(0)"> 博物館</a></li>
+                          <li><a href="javascript:void(0)"> 水族館</a></li>
+                          <li><a href="javascript:void(0)"> 動物園</a></li>
+                          <li><a href="javascript:void(0)"> 植物園</a></li>
+                          <li><a href="javascript:void(0)"> 学校</a></li>
+                          <li><a href="javascript:void(0)"> 店内</a></li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </div>
                 </div>
               </div>
 
