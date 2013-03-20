@@ -29,7 +29,6 @@ var playSpeed = PLAY_SPEED_UNIT * PLAY_SPEDD_SLIDER_INIT_VALUE; // 再生速度(
 var distance = 0;
 var links = [];
 var currentTimer;
-var currentPage = 1;
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 // パノラマデータ構造体
@@ -174,6 +173,18 @@ function setNavigationBar(mode, userName) {
       } else {
         $("#navUserName").html("");
         $("#userDropdown").css("display", "none");
+      }
+
+      // ナビゲーションバーの名前を点滅
+      if (userName && mode == "top") {
+        userNameBlinkFlg = true;
+        setTimeout(function() {
+          $("#navUserName").appendTo($("#navUserName").parent().parent());
+          $("#blink").remove();
+        }, 3000);
+      } else {
+        $("#navUserName").appendTo($("#navUserName").parent().parent());
+        $("#blink").remove();
       }
     }
   });
@@ -1390,10 +1401,17 @@ function search(searchWord, page) {
           li.css("display", "block");
         }
         searchResultDiv.append(ul);
-
-        // 検索件数
-        $("#searchResultCount").text(courses.length);
       }
+    }
+  });
+
+  // 検索件数 ※データとは別に取らないと総件数を取得できない（まとめて取ると最大10件になってしまう）
+  $.ajax({
+    url: "/searchResult/count?searchWord=" + searchWord,
+    cache: false,
+    dataType: "json",
+    success: function(data) {
+      $("#searchResultCount").text(data.count);
     }
   });
 }
@@ -1541,10 +1559,17 @@ function showMycourse(page) {
           li.css("display", "block");
         }
         searchResultDiv.append(ul);
-
-        // 検索件数
-        $("#mycourseResultCount").text(courses.length);
       }
+    }
+  });
+
+  // 検索件数 ※データとは別に取らないと総件数を取得できない（まとめて取ると最大10件になってしまう）
+  $.ajax({
+    url: "/mycourseResult/count",
+    cache: false,
+    dataType: "json",
+    success: function(data) {
+      $("#mycourseResultCount").text(data.count);
     }
   });
 }

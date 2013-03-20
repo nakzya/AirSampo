@@ -10,14 +10,6 @@ var express = require('express')
 
 var app = express();
 
-var allowCrossDomain = function(req, res, next) {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-
-    next();
-}
-
 app.configure(function(){
   app.set('port', process.env.PORT || 3000);
   app.set('views', __dirname + '/views');
@@ -27,7 +19,6 @@ app.configure(function(){
   app.use(express.cookieParser());
   app.use(express.bodyParser());
   app.use(express.methodOverride());
-  app.use(allowCrossDomain);
   app.use(express.session({secret: 'keyboard cat'}));
   app.use(flash());
   app.use(passport.initialize());
@@ -68,11 +59,13 @@ app.post('/saveCourse', routes.saveCourse);
 // 検索画面
 app.post('/search', routes.search);
 app.get('/searchResult', routes.searchResult);
+app.get('/searchResult/count', routes.searchResultCount);
 app.get('/pagination/search', routes.paginationSearch);
 
 // マイコース画面
 app.get('/mycourse', routes.mycourse);
 app.get('/mycourseResult', routes.mycourseResult);
+app.get('/mycourseResult/count', routes.mycourseResultCount);
 
 // ランキング画面
 app.get('/ranking', routes.ranking);
@@ -127,7 +120,7 @@ passport.use(new LocalStrategy({
         }
         if(users.length == 0) {  // 認証失敗
           console.log("認証失敗");
-          return done(null, false, {message: "メールアドレスとパスワードのいずれか、または両方が間違っています。"});
+          return done(null, false, {message: "メールアドレスまたはパスワードが間違っています。"});
         }
         var user = users[0];
         return done(null, user);　　// 認証成功
