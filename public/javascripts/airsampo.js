@@ -314,13 +314,12 @@ function topInitialize() {
   })
 
   $("#btnSignup").bind("click", function(event) {
-    var form = $("<form action='/signup'></form>");
-    form.submit();
+    var form = $("<form action='/signup' method='get'></form>");
+    form.appendTo("body").submit();
   });
-
   $("#btnLogin").bind("click", function(event) {
-    var form = $("<form action='/login'></form>");
-    form.submit();
+    var form = $("<form action='/login' method='get'></form>");
+    form.appendTo("body").submit();
   });
 
   $("#btnCourse1").bind("click", function(event) {

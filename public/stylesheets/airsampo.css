@@ -21,16 +21,25 @@ div.hero-unit p { padding: 15px 0 0 30px; }
   position: absolute;
   top: 8px;
   width: 40px;
+  border: none !important;    /* FireFox対応 */
+  max-width: none !important; /* FireFox対応 */
 }
 #startingCourseContainer img:hover {
   cursor: pointer;
 }
 
 #searchMap { height: 450px; }
-#searchMap img{ max-width: none; }  // こうしないと表示が崩れる、「#startingCourse」より後に記述しないといけない
+#searchMap img{ max-width: none; }  /* こうしないと表示が崩れる、「#startingCourse」より後に記述しないといけない */
 
 ul.thumbnails li { display: none; }
-.thumbnail_course { width: 100%; height: 250px; }
+.thumbnail_course {
+  width: 100%;
+  height: 250px;
+}
+.thumbnail_course img {
+  border: none !important;    /* FireFox対応 */
+  max-width: none !important; /* FireFox対応 */
+}
 
 #title { color: #555; text-align: left; }
 
@@ -60,6 +69,10 @@ ul.thumbnails li { display: none; }
 
 #view { margin-top: 5px; }
 #streetview { height: 350px; position: relative; }
+#streetview img {
+  border: none !important;    /* FireFox対応 */
+  max-width: none !important; /* FireFox対応 */
+}
 #map_canvas { height: 350px; }
 
 div.recording {
