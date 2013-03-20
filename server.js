@@ -43,6 +43,7 @@ app.post('/login/auth', passport.authenticate('local', {successRedirect: '/',
 
 // トップ画面
 app.get('/', routes.index);
+app.get('/mapSearch', routes.mapSearch);
 app.get('/random', routes.randomCourse);
 app.get('/courseThumbnail', routes.courseThumbnail);
 

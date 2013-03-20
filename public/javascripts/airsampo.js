@@ -108,9 +108,9 @@ function setTopPagination(page) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-// 検索結果画面のページネーションの設定
+// 画面共通ページネーションの設定
 //////////////////////////////////////////////////////////////////////////////////////////////
-function setSearchPagination(page, url, searchWord) {
+function setCommonPagination(page, url, searchWord) {
   $.ajax({
     url: url,   // 件数を引数として受け取るようにすると、再帰的に呼び出す際に不都合がある（件数の増減に対応できない）
     cache: false,
@@ -118,9 +118,10 @@ function setSearchPagination(page, url, searchWord) {
     success: function(data) {
       var count = data.count;
 
-      $("#pagination ul *").remove();  // 一旦ページネーションを全て削除
+      $("#pagination *").remove();  // 一旦ページネーションを全て削除
 
-      var ul = $("#pagination ul");
+      var ul = $("<ul></ul>");
+      $("#pagination").append(ul);
 
       // Prev
       var prevLi = $("<li><a href='javascript:void(0)'>Prev</a></li>");
@@ -128,7 +129,7 @@ function setSearchPagination(page, url, searchWord) {
         prevLi.addClass("disabled");
         prevLi.removeAttr("onclick");
       } else {
-        prevLi.attr("onclick", "search('" + searchWord + "', " + (page - 1) + "); setSearchPagination(" + (page - 1) + ", '" + url + "', '" + searchWord + "')");
+        prevLi.attr("onclick", "search('" + searchWord + "', " + (page - 1) + "); setCommonPagination(" + (page - 1) + ", '" + url + "', '" + searchWord + "')");
       }
       ul.append(prevLi);
 
@@ -139,7 +140,7 @@ function setSearchPagination(page, url, searchWord) {
           li.addClass("active");
           li.removeAttr("onclick");
         } else {
-          li.attr("onclick", "search('" + searchWord + "', " + String(i) + "); setSearchPagination(" + String(i) + ", '" + url + "', '" + searchWord + "')");
+          li.attr("onclick", "search('" + searchWord + "', " + String(i) + "); setCommonPagination(" + String(i) + ", '" + url + "', '" + searchWord + "')");
         }
         ul.append(li);
       }
@@ -150,7 +151,7 @@ function setSearchPagination(page, url, searchWord) {
         nextLi.addClass("disabled");
         nextLi.removeAttr("onclick");
       } else {
-        nextLi.attr("onclick", "search('" + searchWord + "', " + (page + 1) + "); setSearchPagination(" + (page + 1) + ", '" + url + "', '" + searchWord + "')");
+        nextLi.attr("onclick", "search('" + searchWord + "', " + (page + 1) + "); setCommonPagination(" + (page + 1) + ", '" + url + "', '" + searchWord + "')");
       }
       ul.append(nextLi);
     }
@@ -263,6 +264,54 @@ function topInitialize() {
   } else {
     $("#loginBox").css("display", "block");
   }
+
+  // 検索用マップ
+  $("div.tabbable ul li a[href='#tabMap']").bind("shown", function(event) {
+    var startPosition = new google.maps.LatLng(INIT_LAT, INIT_LNG);
+    var mapOptions = {
+      center: startPosition,
+      zoom: 2,
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+    var searchMap = new google.maps.Map(document.getElementById("searchMap"), mapOptions);
+
+    // さんぽコースを示すmarkerを設置
+    $.ajax({
+      url: "/mapSearch",   // 全件のカウント
+      cache: true,
+      dataType: "json",
+      success: function(courses) {
+        var openInfoWindow = null;
+        var mcMarkers = [];
+        var infoWindow = new google.maps.InfoWindow();
+        for (var i = 0; i < courses.length; i++) {
+          var course = courses[i];
+          var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(course.firstPosition[0].lat, course.firstPosition[0].lng),
+            map: searchMap,
+            animation: google.maps.Animation.DROP,
+            title: course.title
+          });
+
+          google.maps.event.addListener(marker, 'click', (function(thisMarker, course) {
+            return function() {
+              if (openInfoWindow != null) {
+                openInfoWindow.close();
+              }
+              var content = "<div><a href='/play?_id=" + course._id + "'><img src='http://maps.googleapis.com/maps/api/streetview?size=200x150&location=" + course.firstPosition[0].lat + "," + course.firstPosition[0].lng + "&heading=" + course.firstPosition[0].heading + "&pitch=" + course.firstPosition[0].pitch + "&sensor=false' /></div></a><h5>" + course.title + "</h5><p>" + course.description + "</p><span style='margin-bottom: 20px'>さんぽ回数： </span><span>" + course.playCount + "回</span>";
+              infoWindow.setContent(content);
+              infoWindow.open(searchMap, thisMarker);
+              openInfoWindow = infoWindow;
+            };
+          })(marker, course));
+          mcMarkers.push(marker);
+        }
+        var mcOptions = {gridSize: 50, maxZoom: 20};
+        var markerCluster = new MarkerClusterer(searchMap, mcMarkers, mcOptions);
+      }
+    });
+    event.preventDefault();
+  })
 
   $("#btnSignup").bind("click", function(event) {
     var form = $("<form action='/signup'></form>");
@@ -724,7 +773,7 @@ function searchResultInitialize() {
   $(".loading").css("display", "none");
 
   // ページネーションの設定
-  setSearchPagination(1, "/pagination/search?searchWord=" + searchWord, searchWord);
+  setCommonPagination(1, "/pagination/search?searchWord=" + searchWord, searchWord);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -746,7 +795,7 @@ function mycourseResultInitialize() {
 function categoryResultInitialize() {
   var category = arguments[0][2];
 
-  categorySearch(category, 1);
+  categorySearch(1, category);
 
   $(".loading").css("display", "none");
 
@@ -1283,8 +1332,8 @@ function loadCourse(_id) {
 // 検索結果を表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 function search(searchWord, page) {
-  // 一旦全て非表示に
-  $("ul.thumbnails li").css("display", "none");
+  // 一旦全てremove
+  $("ul.thumbnails").remove();
 
   $.ajax({
     url: "/searchResult?searchWord=" + searchWord + "&page=" + page,
@@ -1355,7 +1404,7 @@ function search(searchWord, page) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 function setRanking(page, back) {
   // 一旦全て非表示に
-  $("ul.thumbnails li").css("display", "none");
+  $("ul.thumbnails").remove();
 
   $.ajax({
     url: "/ranking/select?page=" + page + "&back=" + back,
@@ -1435,7 +1484,7 @@ function setRanking(page, back) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 function showMycourse(page) {
   // 一旦全て非表示に
-  $("ul.thumbnails li").css("display", "none");
+  $("ul.thumbnails").remove();
 
   $.ajax({
     url: "/mycourseResult?page=" + page,
@@ -1504,9 +1553,9 @@ function showMycourse(page) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 // カテゴリ検索結果を表示
 //////////////////////////////////////////////////////////////////////////////////////////////
-function categorySearch(category, page) {
+function categorySearch(page, category) {
   // 一旦全て非表示に
-  $("ul.thumbnails li").css("display", "none");
+  $("ul.thumbnails").remove();
 
   $.ajax({
     url: "/category/select?page=" + page +"&category=" + category,

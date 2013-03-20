@@ -15,7 +15,7 @@ div.hero-unit { padding: 40px; }
 div.hero-unit h1 { padding: 15px 0 0 30px; font-size: 60px; }
 div.hero-unit p { padding: 15px 0 0 30px; }
 
-#startingCourse { height: 350px; }
+#startingCourse { height: 300px; }
 #startingCourseContainer { margin-bottom:30px; }
 #startingCourseContainer img {
   position: absolute;
@@ -25,6 +25,9 @@ div.hero-unit p { padding: 15px 0 0 30px; }
 #startingCourseContainer img:hover {
   cursor: pointer;
 }
+
+#searchMap { height: 450px; }
+#searchMap img{ max-width: none; }  // こうしないと表示が崩れる、「#startingCourse」より後に記述しないといけない
 
 ul.thumbnails li { display: none; }
 .thumbnail_course { width: 100%; height: 250px; }

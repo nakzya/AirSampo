@@ -11,6 +11,7 @@
     <script src="javascripts/jquery-ui-1.10.1.custom.min.js"></script>
     <script src="javascripts/bootstrap.min.js"></script>
     <script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDoj7QWz-XTSo2QhYnj9IMWRXkrlMjYqIU&libraries=geometry&sensor=false"></script>
+    <script src="javascripts/markerclusterer_compiled.js"></script>
     <script src="javascripts/modernizr-2.6.2-respond-1.1.0.min.js"></script>
     <script src="javascripts/airsampo.js"></script>
     <script>
@@ -68,6 +69,7 @@
                   <li class="active"><a href="#tabSearch" data-toggle="tab">検索</a></li>
                   <li><a href="#tabRanking" data-toggle="tab">ランキング</a></li>
                   <li><a href="#tabCategory" data-toggle="tab">カテゴリ</a></li>
+                  <li><a href="#tabMap" data-toggle="tab">マップ</a></li>
                   <li><a href="/random" id="tabRandom">ランダム</a>
                 </ul>
                 <div class="tab-content" style="padding-bottom: 9px; border-bottom: 1px solid #ddd;">
@@ -143,8 +145,12 @@
                         <li><a href="/category?category=店内"> 店内</a></li>
                       </ul>
                     </div>
-
                   </div>
+
+                  <div class="tab-pane" id="tabMap">
+                    <div id="searchMap" class="span12">&nbsp;</div>
+                  </div>
+
                 </div>
               </div>
             </div>

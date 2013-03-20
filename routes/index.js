@@ -117,6 +117,25 @@ exports.record = function(req, res) {
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
+// トップ画面 - マップ検索用のコースを修得
+//////////////////////////////////////////////////////////////////////////////////////////////
+exports.mapSearch = function(req, res) {
+  Course.find(
+    {},  // とりあえず全件、ただし件数が多い場合は要検討
+    getCourseWithoutPositions(),  // positions以外
+    {},
+    function(err, courses) {
+      if (err) {
+        console.log(err);
+        res.redirect('back');
+      } else {
+        res.json(courses);
+      }
+    }
+  );
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 // トップ画面 - ランダムなコースの再生画面を表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.randomCourse = function(req, res) {
@@ -627,6 +646,7 @@ exports.selectCategory = function(req, res) {
   var category = req.query.category;
   var page = req.query.page;
   var skip = (page - 1) * 10;
+
   if (category) {
     Course.find(
       {category: {$all: category}},
