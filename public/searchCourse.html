@@ -1,0 +1,90 @@
+              <h4 calss="text-info"><blockquote>さんぽコースを探す</blockquote></h4>
+              <div class="tabbable" style="margin-bottom: 18px;">
+                <ul class="nav nav-tabs">
+                  <li class="active"><a href="#tabSearch" data-toggle="tab">検索</a></li>
+                  <li><a href="#tabRanking" data-toggle="tab">ランキング</a></li>
+                  <li><a href="#tabCategory" data-toggle="tab">カテゴリ</a></li>
+                  <li><a href="#tabMap" data-toggle="tab">マップ</a></li>
+                  <li><a href="/random" id="tabRandom">ランダム</a>
+                </ul>
+                <div class="tab-content" style="padding-bottom: 9px; border-bottom: 1px solid #ddd;">
+                  <div class="tab-pane active" id="tabSearch">
+                    <form method="post" action="/search" id="navSearchForm" class="form-search navbar-form">
+                      <p><strong>地名</strong>や<strong>観光名所</strong>などのキーワードを入力して検索してください。おもしろいさんぽコースが見つかもしれません！</p>
+                      <p>入力例： 世界遺産、南極、グランドキャニオン・・・</p>
+                      <div class="input-append">
+                        <input type="text" id="txtNavSearch" name="txtNavSearch" class="input-medium search-query span12" placeholder="地名、観光名所・・・">
+                        <button id="btnNavSearch" class="btn"><i class="icon-search"></i></button>
+                      </div>
+                    </form>
+                  </div>
+                  <div class="tab-pane" id="tabRanking">
+                    <ul class="nav nav-pills">
+                      <li><a href="/ranking?back=today"><strong>今日</strong>のさんぽ回数ランキング</a></li>
+                      <li><a href="/ranking?back=week"><strong>最近1週間</strong>のさんぽ回数ランキング</a></li>
+                      <li><a href="/ranking?back=month"><strong>最近１ヶ月</strong>のさんぽ回数ランキング</a></li>
+                      <li><a href="/ranking?back=all"><strong>総合</strong>さんぽ回数ランキング</a></li>
+                    </ul>
+                  </div>
+                  <div class="tab-pane" id="tabCategory">
+                    <div class="pull-left span3">
+                      <h5>国内</h5>
+                      <ul>
+                        <li><a href="/category?category=北海道">北海道</a></li>
+                        <li><a href="/category?category=東北">東北</a></li>
+                        <li><a href="/category?category=関東">関東</a></li>
+                        <li><a href="/category?category=北陸">北陸</a></li>
+                        <li><a href="/category?category=甲信越">甲信越</a></li>
+                        <li><a href="/category?category=東海">東海</a></li>
+                        <li><a href="/category?category=近畿">近畿</a></li>
+                        <li><a href="/category?category=中国">中国</a></li>
+                        <li><a href="/category?category=四国">四国</a></li>
+                        <li><a href="/category?category=九州">九州</a></li>
+                        <li><a href="/category?category=沖縄">沖縄</a></li>
+                      </ul>
+                    </div>
+                    <div class="span3">
+                      <h5>海外</h5>
+                      <ul>
+                        <li><a href="/category?category=アジア">アジア</a></li>
+                        <li><a href="/category?category=北アメリカ">北アメリカ</a></li>
+                        <li><a href="/category?category=中南米">中南米</a></li>
+                        <li><a href="/category?category=ヨーロッパ">ヨーロッパ</a></li>
+                        <li><a href="/category?category=ロシア">ロシア</a></li>
+                        <li><a href="/category?category=アフリカ">アフリカ</a></li>
+                        <li><a href="/category?category=南極">南極</a></li>
+                      </ul>
+                    </div>
+                    <div class="span3">
+                      <h5>自然</h5>
+                      <ul>
+                        <li><a href="/category?category=海"> 海</a></li>
+                        <li><a href="/category?category=山"> 山</a></li>
+                        <li><a href="/category?category=滝"> 滝</a></li>
+                        <li><a href="/category?category=川"> 川</a></li>
+                        <li><a href="/category?category=湖"> 湖</a></li>
+                        <li><a href="/category?category=自然公園"> 自然公園</a></li>
+                      </ul>
+                    </div>
+                    <div class="span3">
+                      <h5>人工物</h5>
+                      <ul>
+                        <li><a href="/category?category=信者・お寺"> 神社・お寺</a></li>
+                        <li><a href="/category?category=遺跡"> 遺跡</a></li>
+                        <li><a href="/category?category=城"> 城</a></li>
+                        <li><a href="/category?category=博物館"> 博物館</a></li>
+                        <li><a href="/category?category=水族館"> 水族館</a></li>
+                        <li><a href="/category?category=動物園"> 動物園</a></li>
+                        <li><a href="/category?category=植物園"> 植物園</a></li>
+                        <li><a href="/category?category=学校"> 学校</a></li>
+                        <li><a href="/category?category=店内"> 店内</a></li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div class="tab-pane" id="tabMap">
+                    <div id="searchMap" class="span12">&nbsp;</div>
+                  </div>
+
+                </div>
+              </div>

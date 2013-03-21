@@ -64,7 +64,6 @@ app.post('/saveCourse', routes.saveCourse);
 app.post('/search', routes.search);
 app.get('/searchResult', routes.searchResult);
 app.get('/searchResult/count', routes.searchResultCount);
-app.get('/pagination/search', routes.paginationSearch);
 
 // マイコース画面
 app.get('/mycourse', routes.mycourse);

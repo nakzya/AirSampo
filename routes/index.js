@@ -563,7 +563,6 @@ exports.mycourse = function(req, res) {
   if (!userName) {  // ログインせずにURL直叩きで記録画面を開こうとした場合
     res.redirect("/");
   }
-
   res.render("mycourse", {userName: getUserNameFromSession(req)});
 }
 
@@ -589,6 +588,8 @@ exports.mycourseResult = function(req, res) {
         }
       }
     );
+  } else {
+    res.redirect('/');
   }
 }
 
@@ -609,6 +610,8 @@ exports.mycourseResultCount = function(req, res) {
         }
       }
     );
+  } else {
+    res.redirect('/');
   }
 }
 
