@@ -183,9 +183,9 @@ exports.courseThumbnail = function(req, res) {
       return 0;
     });
 
-    for (var i = 0; i < data.length; i++) {
-      console.log("courseThumbnail_" + i + " : " + data[i]._id + " : " + data[i].value.count);
-    }
+    //for (var i = 0; i < data.length; i++) {
+    //  console.log("courseThumbnail_" + i + " : " + data[i]._id + " : " + data[i].value.count);
+    //}
 
     var page = req.query.page;
     var skip = (page - 1) * 4;
@@ -706,6 +706,26 @@ exports.selectCategory = function(req, res) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
+// カテゴリ件数取得
+//////////////////////////////////////////////////////////////////////////////////////////////
+exports.categoryCount = function(req, res) {
+  var category = req.query.category;
+  if (category) {
+    Course.count(
+      {category: {$all: category}},
+      function(err, count) {
+        if (err) {
+          console.log(err);
+          res.redirect('back');
+        } else {
+          res.json({"count": count});
+        }
+      }
+    );
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 // プライバシーポリシー画面表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.privacy = function(req, res) {
@@ -756,7 +776,7 @@ function playHistoryCount(back, func) {
   }
 
   var options = {out: {inline: 1}, query: conditions};
-console.log(options);
+
   // 直近N日間のcourse_idごとの再生回数の合計を取得
   PlayHistory.collection.mapReduce(map.toString(),
                                    reduce.toString(),

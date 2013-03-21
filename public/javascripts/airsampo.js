@@ -616,19 +616,19 @@ function recordInitialize() {
     event.preventDefault();
   });
   $("#catDomestic").bind("click", function(event) {
-    $("#catPlace").text(this.text);
+    $("#catPlace").text($("#catDomestic").text());  // this.textだとIEがundefined
     event.preventDefault();
   });
   $("#catDomestic+ul li a").bind("click", function(event) {
-    $("#catPlace").text(this.text);
+    $("#catPlace").text($(this).parent().text());
     event.preventDefault();
   });
   $("#catAbroad").bind("click", function(event) {
-    $("#catPlace").text(this.text);
+    $("#catPlace").text($("#catAbroad").text());  // this.textだとIEがundefined
     event.preventDefault();
   });
   $("#catAbroad+ul li a").bind("click", function(event) {
-    $("#catPlace").text(this.text);
+    $("#catPlace").text($(this).parent().text());
     event.preventDefault();
   });
   $("#catSpace2").bind("click", function(event) {
@@ -636,27 +636,27 @@ function recordInitialize() {
     event.preventDefault();
   });
   $("#catSampo").bind("click", function(event) {
-    $("#catKind").text(this.text);
+    $("#catKind").text($("#catSampo").text());  // this.textだとIEがundefined
     event.preventDefault();
   });
   $("#catGuide").bind("click", function(event) {
-    $("#catKind").text(this.text);
+    $("#catKind").text($("#catGuide").text());  // this.textだとIEがundefined
     event.preventDefault();
   });
   $("#catNature").bind("click", function(event) {
-    $("#catKind").text(this.text);
+    $("#catKind").text($("#catNature").text());  // this.textだとIEがundefined
     event.preventDefault();
   });
   $("#catNature+ul li a").bind("click", function(event) {
-    $("#catKind").text(this.text);
+    $("#catKind").text($(this).parent().text());
     event.preventDefault();
   });
   $("#catArtificial").bind("click", function(event) {
-    $("#catKind").text(this.text);
+    $("#catKind").text($("#catArtificial").text());  // this.textだとIEがundefined
     event.preventDefault();
   });
   $("#catArtificial+ul li a").bind("click", function(event) {
-    $("#catKind").text(this.text);
+    $("#catKind").text($(this).parent().text());
     event.preventDefault();
   });
 
@@ -1589,8 +1589,6 @@ function categorySearch(page, category) {
       var searchResultDiv = $("#categorySearchResult");
       for (var i = 1; i <= SEARCH_RESULT_MAX_ROW; i++) {
         var ul = $("<ul class='thumbnails'>");
-        searchResultDiv.append(ul);
-
         for (var j = 1; j <= SEARCH_RESULT_MAX_COL; j++) {
           var idx = (i - 1) * SEARCH_RESULT_MAX_COL + j;  // 1（≠0）～カウント
           var course = courses[idx - 1];
@@ -1637,11 +1635,18 @@ function categorySearch(page, category) {
           ul.append(li);
           li.css("display", "block");
         }
-        //searchResultDiv.append(ul);
-
-        // 検索件数
-        $("#categoryResultCount").text(courses.length);
+        searchResultDiv.append(ul);
       }
+    }
+  });
+
+  // 検索件数 ※データとは別に取らないと総件数を取得できない（まとめて取ると最大10件になってしまう）
+  $.ajax({
+    url: "/category/count?category=" + category,
+    cache: false,
+    dataType: "json",
+    success: function(data) {
+      $("#categoryResultCount").text(data.count);
     }
   });
 }

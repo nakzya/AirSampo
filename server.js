@@ -25,6 +25,10 @@ app.configure(function(){
   app.use(passport.session());
   app.use(app.router);
   app.use(express.static(path.join(__dirname, 'public')));
+  app.use(function(req, res, next){
+    res.status(404);
+    res.render('index', {userName: ""});
+  });
 });
 
 app.configure('development', function(){
@@ -74,6 +78,7 @@ app.get('/ranking/select', routes.selectRanking);
 // カテゴリ検索画面
 app.get('/category', routes.category);
 app.get('/category/select', routes.selectCategory);
+app.get('/category/count', routes.categoryCount);
 
 // プライバシーポリシー画面
 app.get('/privacy', routes.privacy);
