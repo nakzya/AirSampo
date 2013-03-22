@@ -115,8 +115,8 @@ a[id^="btnCourse"]:hover {
 
 #controlRecord { height: 90px; overflow: hidden; background-color: black; }
 
-.controlBtnRecord { margin: 12px 0px 5px 5px; }
-.controlBtnLarge { margin: 5px 0px 5px 5px; }
+.controlBtnRecord { margin: 12px 0px 0 3px; }
+.controlBtnLarge { margin: 5px 0px 1px 1px; }
 .controlBtnLarge:hover {
   -webkit-transform:scale(1.05);
   -moz-transform:scale(1.05);
@@ -125,13 +125,14 @@ a[id^="btnCourse"]:hover {
   transform:scale(1.05);
 }
 
-#playSpeedSliderRecord {
-  margin-left: 5px;
-  margin-top: 19px;
-  width: 110px;
-}
+#playSpeedSliderRecord { margin-left: 5px; margin-top: 3px; width: 150px; position: relative; }
+#playSpeedSliderValue { color: #BBBBBB; margin-left: 160px; position: absolute; margin-top: -5px;}
 
-#btnSave:hover {
+#distance { margin: 16px; color: #BBBBBB;}
+
+#chkEdit { margin: 3px 5px 0 20px; }
+
+#btnSave:hover, btnDelete:hover {
   -webkit-transform:scale(1.05);
   -moz-transform:scale(1.05);
   -ms-transform:scale(1.05);
@@ -140,7 +141,6 @@ a[id^="btnCourse"]:hover {
 }
 
 #panoramaSlider { margin: 10px 25px 0 25px; }
-#distance { margin: 10px; }
 #saveForm { margin-top: 30px; }
 #saveForm input:text { width: 200px; }
 
@@ -163,7 +163,7 @@ span[class="help-inline"] { font-size: 12px; color: #888888; }
   NavigationBar
 ----------------------------------------------------*/
 #userDropdown { display: none; }
-#navUserName { font-size: 18px; color: #09F; margin-top: 3px }
+#navUserName { font-size: 18px; color: #09F; }
 
 /*----------------------------------------------------
   Footer

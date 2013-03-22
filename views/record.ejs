@@ -25,7 +25,6 @@
 
   <body>
     <input type="hidden" id="_id" value="<%= _id %>"></input>
-
     <!-- Navigation Bar -->
     <div id="navigationBar"></div>
 
@@ -33,7 +32,7 @@
       <div class="row-fluid">
         <div class="span1"></div>
 
-        <div class="span8" style="margin-top: 50px;">
+        <div class="span8" style="margin-top: 40px;">
           <div class="page-header">
             <h3 style="margin-top: 20px">散歩コースを記録 <small>あなたオリジナルの素敵なさんぽコースを記録しよう！</small></h3>
           </div>
@@ -67,11 +66,9 @@
           </div>
 
           <!-- Map & StreetView -->
-          <div id="view">
-            <div class="row-fluid">
-              <div id="streetview" class="span8"></div>
-              <div id="map_canvas" class="span4"></div>
-            </div>
+          <div id="view" class="row-fluid">
+            <div id="streetview" class="span8"></div>
+            <div id="map_canvas" class="span4"></div>
           </div>
 
           <!-- Control Button -->
@@ -79,12 +76,12 @@
             <div style="margin-left: 18%; margin-top: 5px">
               <!-- <div style="float: left;"><img src="images/right_arrow.gif" id="arrowRecordBtn"/></div> -->
               <div class="pull-left"><button name="btnRecord" id="btnRecord" class="btn btn-large btn-danger controlBtnLarge" data-original-title="記録"><i class="icon-facetime-video icon-white"></i></button></div>
-              <div class="pull-left"><button name="btnPlay" id="btnPlay" class="btn btn-info controlBtnRecord" disabled data-original-title="再生" disabled><i class="icon-play icon-white"></i></button></div>
-              <div class="pull-left"><button name="btnStop" id="btnStop" class="btn btn-primary controlBtnRecord" disabled data-original-title="停止" disabled><i class="icon-stop icon-white"></i></button></div>
-              <span style="margin-top: 17px; float:left">　再生速度: </span>
-              <div class="pull-left"><div id="playSpeedSliderRecord"></div></div>
-              <div id="distance" class="pull-left"></div>
-              <div><img src="images/running.gif" id="running" style="display: none;"></img></div>
+              <div class="pull-left"><button name="btnPlay" id="btnPlay" class="btn btn-info controlBtnRecord" data-original-title="再生" disabled><i class="icon-play icon-white"></i></button></div>
+              <div class="pull-left"><button name="btnStop" id="btnStop" class="btn btn-primary controlBtnRecord" data-original-title="停止" disabled><i class="icon-stop icon-white"></i></button></div>
+              <span style="margin: 17px 0 0 5px; float:left">　再生速度: </span>
+              <div class="pull-left"><div id="playSpeedSliderRecord" style="margin-top: 20px"></div></div>
+              <div id="distance" class="pull-left">0m</div>
+              <div class="pull-left" style="margin-top: 17px; display: none"><label class="checkbox" style="color: red"><input type="checkbox" id="chkEdit" name="chkEdit">編集する</input></lable></div>
               <div style="clear: left"></div>
             </div>
             <div id="panoramaSlider"></div>
@@ -192,10 +189,11 @@
                   </div>
                 </div>
               </div>
-
+              <span style="height: 20px">&nbsp;</span>
               <div class="control-group">
                 <div class="controls">
-                  <button id="btnSave" id="btnSave" class="btn-large btn-inverse" data-original-title="確定"><i class="icon-thumbs-up icon-white"></i>&nbsp;確定</button>
+                  <a href="#" id="btnSave" class="btn btn-large btn-inverse">確定</a>
+                  <a href="javascript:void(0)" id="btnDelete" class="btn btn-large btn-danger">削除</a>
                 </div>
               </div>
             </form>
