@@ -233,8 +233,10 @@ exports.count = function(req, res) {
       }
       if (!data || data.length == 0) return;
 
-      var count = data.length;
-      res.json({"count": count});
+      //for (var i = 0; i < data.length; i++) {
+      //  console.log("ranking_" + i + " : " + data[i]._id + " : " + data[i].value.count);
+      //}
+      res.json({"count": data.length});
     });
 
   // ランキング画面で表示する特定期間の再生回数
@@ -443,7 +445,7 @@ exports.saveCourse = function(req, res) {
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-// コース削除
+// コース削除（再生履歴を含む）
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.removeCourse = function(req, res) {
   var _id = req.query._id;
@@ -462,13 +464,20 @@ exports.removeCourse = function(req, res) {
         } else if (courses.length == 0) {  // コースのownerとログインユーザIDが一致しない → 不正アクセス
           res.redirect('/');
         } else {
-          Course.remove({_id: _id}, function(err) {
+          // TODO トランザクション
+
+          // Course削除
+          Course.remove({_id: new ObjectId(_id)}, function(err) {
             if (err) {
               console.log(err);
             }
-            res.json({userName: getUserNameFromSession(req), result: "success"});
-            //res.redirect("back");
-            //res.render('record', {userName: userName, _id: "", title: "", description: ""});
+            // 再生履歴削除
+            PlayHistory.remove({course_id: _id}, function(err) {
+              if (err) {
+                console.log(err);
+              }
+              res.json({userName: getUserNameFromSession(req), result: "success"});
+            });
           });
         }
       }
@@ -819,7 +828,7 @@ function playHistoryCount(back, func) {
     var targetDate = computeDate(today.getFullYear(), (today.getMonth() + 1), today.getDate(), Number(back) * -1);
     conditions = {playedDate: {$gte: targetDate}};
   }
-
+console.log("targetDate : " + targetDate);
   var options = {out: {inline: 1}, query: conditions};
 
   // 直近N日間のcourse_idごとの再生回数の合計を取得

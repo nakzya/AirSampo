@@ -58,12 +58,12 @@ function PanoramaData(panorama) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 function setTopPagination(page) {
   $.ajax({
-    url: "/count?mode=top&back=7",   // 件数を引数として受け取るようにすると、再帰的に呼び出す際に不都合がある（件数の増減に対応できない）
+    url: "/count?mode=top&back=30",   // 件数を引数として受け取るようにすると、再帰的に呼び出す際に不都合がある（件数の増減に対応できない）
     cache: false,
     dataType: "json",
     success: function(data) {
       var count = data.count;
-      if (data.count > 4 * 10) {   // 最大10ページ
+      if (count > (4 * 10)) {   // 最大10ページ
         count = 4 * 10;
       }
 
@@ -919,10 +919,12 @@ function recordInitialize() {
       resizable: false,
       buttons: {
         "OK": function() {
+alert("OK");
           $.ajax({
             url: "/removeCourse?_id=" + _id,
             dataType: "json",
             success: function(data) {
+alert(data);
               if (data.result = "success") {
                 alert("削除しました。");
                 var form = $("<form action='/record' method='get'></form>");
