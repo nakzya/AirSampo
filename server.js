@@ -59,6 +59,7 @@ app.get('/playHistory', routes.playHistory);
 // 記録画面
 app.get('/record', routes.record);
 app.post('/saveCourse', routes.saveCourse);
+app.get('/removeCourse', routes.removeCourse);
 
 // 検索画面
 app.post('/search', routes.search);

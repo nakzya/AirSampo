@@ -428,6 +428,7 @@ function initialize() {
 //////////////////////////////////////////////////////////////////////////////////////////////
 function topInitialize() {
   var startingCourseIdx = 1;  //初期再生動画のナンバー
+  var userName = arguments[0][1];
 
   // 初期表示コースの設定
   setStartingCourse();
@@ -447,18 +448,34 @@ function topInitialize() {
   showNewArrival();
 
   // ログイン済みかどうか
-  if (arguments[0][1]) {
+  if (userName) {
     $("#loginBox").css("display", "none");
+    $("#recordBox").css("display", "block");
+    $("#recordBox h2").text(userName + " さん");
   } else {
     $("#loginBox").css("display", "block");
+    $("#recordBox").css("display", "none");
   }
 
+  // 新規ユーザー登録ボタン
   $("#btnSignup").bind("click", function(event) {
     var form = $("<form action='/signup' method='get'></form>");
     form.appendTo("body").submit();
   });
+  // ログインボタン
   $("#btnLogin").bind("click", function(event) {
     var form = $("<form action='/login' method='get'></form>");
+    form.appendTo("body").submit();
+  });
+
+  // 記録するボタン
+  $("#btnTopRecord").bind("click", function(event) {
+    var form = $("<form action='/record' method='get'></form>");
+    form.appendTo("body").submit();
+  });
+  // マイコースボタン
+  $("#btnMycourse").bind("click", function(event) {
+    var form = $("<form action='/mycourse' method='get'></form>");
     form.appendTo("body").submit();
   });
 
@@ -656,7 +673,6 @@ function recordInitialize() {
 
     // 再生可
     $("#btnPlay").removeAttr("disabled");
-    $("#btnStop").removeAttr("disabled");
     setCenterPlayBtn();  // display: block だと座標位置がずれる
 
   } else {
@@ -894,7 +910,37 @@ function recordInitialize() {
 
   // 「削除」ボタン クリックイベント
   $("#btnDelete").bind("click", function(event) {
-    alert("未実装だよん。");
+    $("body").append("<div id='dialog'>本当に削除してもよろしいですか？</div>");
+    $("#dialog").dialog({
+      autoOpen: false,
+      width: 300,
+      title: "Confirm",
+      modal: true,
+      resizable: false,
+      buttons: {
+        "OK": function() {
+          $.ajax({
+            url: "/removeCourse?_id=" + _id,
+            dataType: "json",
+            success: function(data) {
+              if (data.result = "success") {
+                alert("削除しました。");
+                var form = $("<form action='/record' method='get'></form>");
+                form.appendTo("body").submit();
+              }
+            }
+          });
+          $(this).dialog("close");
+          $("#dialog").remove();
+        },
+        "Cancel": function() {
+          $(this).dialog("close");
+          $("#dialog").remove();
+          return;
+        }
+      }
+    });
+    $("#dialog").dialog("open");
   });
 }
 
@@ -1972,6 +2018,8 @@ function toggleRecord() {
       */
       $("#btnPlay").attr("disabled", "disabled");
       $("#btnStop").attr("disabled", "disabled");
+      $("#btnSave").attr("disabled", "disabled");
+      $("#btnDelete").attr("disabled", "disabled");
       $("#btnPlayCenter").remove();
 
       //$("#view").addClass("recording");
@@ -2076,6 +2124,7 @@ function toggleRecord() {
 
     if (panoramaDataArray.length != 1) {
       $("#btnPlay").removeAttr("disabled");
+      $("#btnSave").removeAttr("disabled");
       setCenterPlayBtn();  // display: block だと座標位置がずれる
     }
     $("#btnPlay").tooltip("hide").attr("data-original-title", "再生").tooltip("fixTitle");
@@ -2442,7 +2491,6 @@ function stop() {
     panorama.setZoom(panoData.zoom);
   }
 
-  $("#btnRecord").removeAttr("disabled");
   $("#btnPlay i").addClass("icon-play");
   $("#btnPlay i").removeClass("icon-pause");
   $("#btnStop").attr("disabled", "disabled");

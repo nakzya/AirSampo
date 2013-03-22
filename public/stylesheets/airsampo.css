@@ -21,6 +21,7 @@ div.hero-unit p { padding: 15px 0 0 30px; }
   position: absolute;
   top: 8px;
   width: 40px;
+  z-index: 2;
   border: none !important;    /* FireFox対応 */
   max-width: none !important; /* FireFox対応 */
 }
@@ -102,7 +103,7 @@ a[id^="btnCourse"]:hover {
 }
 
 #control { height: 75px; overflow: hidden; background-color: black; }
-.controlBtn { margin: 5px 0px 5px 5px; }
+.controlBtn { margin: 5px 0 5px 5px; }
 .controlBtn:hover {
   -webkit-transform:scale(1.05);
   -moz-transform:scale(1.05);
@@ -110,11 +111,10 @@ a[id^="btnCourse"]:hover {
   -o-transform:scale(1.05);
   transform:scale(1.05);
 }
-
 #playSpeedSlider { margin-left: 5px; margin-top: 13px; width: 110px; }
+#distance { margin: 10px; color: #BBBBBB;}
 
 #controlRecord { height: 90px; overflow: hidden; background-color: black; }
-
 .controlBtnRecord { margin: 12px 0px 0 3px; }
 .controlBtnLarge { margin: 5px 0px 1px 1px; }
 .controlBtnLarge:hover {
@@ -124,11 +124,9 @@ a[id^="btnCourse"]:hover {
   -o-transform:scale(1.05);
   transform:scale(1.05);
 }
-
 #playSpeedSliderRecord { margin-left: 5px; margin-top: 3px; width: 150px; position: relative; }
 #playSpeedSliderValue { color: #BBBBBB; margin-left: 160px; position: absolute; margin-top: -5px;}
-
-#distance { margin: 16px; color: #BBBBBB;}
+#distanceRecord { margin: 16px; color: #BBBBBB;}
 
 #chkEdit { margin: 3px 5px 0 20px; }
 

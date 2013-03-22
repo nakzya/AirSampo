@@ -443,6 +443,42 @@ exports.saveCourse = function(req, res) {
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
+// コース削除
+//////////////////////////////////////////////////////////////////////////////////////////////
+exports.removeCourse = function(req, res) {
+  var _id = req.query._id;
+  var userName = getUserNameFromSession(req);
+
+  // コースのownerとログインユーザIDが一致するかどうか確認
+  if (userName) {
+    Course.find(
+      {_id: new ObjectId(_id), owner: userName},
+      getCourseWithoutPositions(),  // positions以外
+      {},
+      function(err, courses) {
+        if (err) {
+          console.log(err);
+          res.redirect('/');
+        } else if (courses.length == 0) {  // コースのownerとログインユーザIDが一致しない → 不正アクセス
+          res.redirect('/');
+        } else {
+          Course.remove({_id: _id}, function(err) {
+            if (err) {
+              console.log(err);
+            }
+            res.json({userName: getUserNameFromSession(req), result: "success"});
+            //res.redirect("back");
+            //res.render('record', {userName: userName, _id: "", title: "", description: ""});
+          });
+        }
+      }
+    );
+  } else {
+    res.redirect('/');
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 // 新着
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.newArrival = function (req, res) {
@@ -570,7 +606,10 @@ exports.mycourse = function(req, res) {
 // マイコース結果表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.mycourseResult = function(req, res) {
-  var userName = req.user.name;
+  var userName = getUserNameFromSession(req);
+  if (!userName) {  // ログインせずにURL直叩きで記録画面を開こうとした場合
+    res.redirect("/");
+  }
   var page = req.query.page;
   var skip = (page - 1) * 10;
 
@@ -597,7 +636,10 @@ exports.mycourseResult = function(req, res) {
 // マイコース件数取得
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.mycourseResultCount = function(req, res) {
-  var userName = req.user.name;
+  var userName = getUserNameFromSession(req);
+  if (!userName) {  // ログインせずにURL直叩きで記録画面を開こうとした場合
+    res.redirect("/");
+  }
   if (userName) {
     Course.count(
       {owner: userName},
