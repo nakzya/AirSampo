@@ -121,7 +121,7 @@ exports.record = function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.mapSearch = function(req, res) {
   Course.find(
-    {},  // とりあえず全件、ただし件数が多い場合は要検討
+    {privateFlg: false},  // private以外の全件、ただし件数が多い場合は要検討
     getCourseWithoutPositions(),  // positions以外
     {},
     function(err, courses) {
@@ -139,8 +139,8 @@ exports.mapSearch = function(req, res) {
 // トップ画面 - ランダムなコースの再生画面を表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.randomCourse = function(req, res) {
-  Course.count(  // 全件の件数を取得
-    {},
+  Course.count(  // private以外の全件の件数を取得
+    {privateFlg: false},
     function(err, count) {
       if (err) {
         console.log(err);
@@ -150,7 +150,7 @@ exports.randomCourse = function(req, res) {
         var randomIdx = Math.floor(Math.random() * Number(count) + 1);
         var options = {skip: randomIdx, limit: 1};
         Course.find(
-          {}, {"_id": 1}, options, function(err, courses) {
+          {privateFlg: false}, {"_id": 1}, options, function(err, courses) {
             if (err) {
               console.log(err);
               res.redirect('back');
@@ -187,22 +187,21 @@ exports.courseThumbnail = function(req, res) {
     //  console.log("courseThumbnail_" + i + " : " + data[i]._id + " : " + data[i].value.count);
     //}
 
-    var page = req.query.page;
-    var skip = (page - 1) * 4;
-
-    // 再生回数上位4つ（skip考慮）を取得するようconditionsを生成
-    var idx;
     var conditions = '{"$or": [';
-    for (var idx = skip; idx < skip + 3 && idx < data.length - 1; idx++) {
-      conditions += '{"_id": "' + data[idx]._id + '"},';
+    for (var i = 0; i < data.length - 1; i++) {
+      conditions += '{"_id": "' + data[i]._id + '"},';
     }
-    conditions += '{"_id": "' + data[idx]._id + '"}]}';
+    conditions += '{"_id": "' + data[data.length - 1]._id + '"}], "privateFlg": false}';  // privateFlgはBooleanのためfalseを""で囲ってはいけない
     conditions = JSON.parse(conditions);
+
+    var page = req.query.page;
+    if (!page) page = 1;
+    var skip = (page - 1) * 4;
 
     Course.find(
       conditions,
       getCourseWithoutPositions(),  // positions以外
-      {},
+      {skip: skip, limit: 4},
       function(err, courses) {
         if (err) {
           console.log(err);
@@ -236,7 +235,23 @@ exports.count = function(req, res) {
       //for (var i = 0; i < data.length; i++) {
       //  console.log("ranking_" + i + " : " + data[i]._id + " : " + data[i].value.count);
       //}
-      res.json({"count": data.length});
+
+      // privateをremoveしてcount
+      var conditions = '{"$or": [';
+      for (var i = 0; i < data.length - 1; i++) {
+        conditions += '{"_id": "' + data[i]._id + '"},';
+      }
+      conditions += '{"_id": "' + data[data.length - 1]._id + '"}], "privateFlg": false}';  // privateFlgはBooleanのためfalseを""で囲ってはいけない
+      conditions = JSON.parse(conditions);
+
+      Course.count(conditions, function(err, count) {
+        if (err) {
+          console.log(err);
+          res.redirect('back');
+        } else {
+          res.json({"count": count});
+        }
+      })
     });
 
   // ランキング画面で表示する特定期間の再生回数
@@ -258,19 +273,25 @@ exports.count = function(req, res) {
       }
     });
 
-  } else if (mode = "all") {
-    var conditions = {};
-    Course.count(
-      conditions,
-      function(err, count) {
-        if (err) {
-          console.log(err);
-          res.redirect('back');
-        } else {
-          res.json({"count": count});
-        }
+  } else if (mode == "all") {
+    Course.count({}, function(err, count) {
+      if (err) {
+        console.log(err);
+        res.redirect('back');
+      } else {
+        res.json({"count": count});
       }
-    );
+    });
+
+  } else if (mode == "allWithoutPrivate") {
+    Course.count({privateFlg: false}, function(err, count) {
+      if (err) {
+        console.log(err);
+        res.redirect('back');
+      } else {
+        res.json({"count": count});
+      }
+    });
   }
 }
 
@@ -308,7 +329,7 @@ function loadCourseWithSkip(skip, res) {
   var options = {skip: skip, limit: 1};
 
   Course.find(
-    {}, null, options, function(err, courses) {
+    {privateFlg: false}, null, options, function(err, courses) {
       if (err) {
         console.log(err);
         res.redirect('back');
@@ -369,9 +390,10 @@ exports.playHistory = function(req, res) {
 exports.saveCourse = function(req, res) {
   // 登録者
   var userName = req.user.name;
+  var recordMode = req.body.recordMode;
 
   // タグ情報を配列に分解
-  var tagArray
+  var tagArray;
   if (!req.body.tags || req.body.tags.length == 0) {
     tagArray = [];
   } else {
@@ -383,6 +405,12 @@ exports.saveCourse = function(req, res) {
   var place = req.body.catPlace;
   var kind = req.body.catKind;
   var categoryArray = [place, kind];
+
+  // 非公開
+  var privateFlg = false;
+  if (req.body.chkPrivate =="on") {
+    privateFlg = true;
+  }
 
   // 移動位置情報を配列に分解
   var positionArray = [];
@@ -423,25 +451,54 @@ exports.saveCourse = function(req, res) {
   // link情報
   var linkArray = req.body.links.split(",");
 
-  var course = new Course({
-    owner        : userName,
-    title        : req.body.txtTitle,
-    description  : req.body.txtDescription,
-    position     : positionArray,
-    firstPosition: firstPositionArray,
-    tag          : tagArray,
-    category     : categoryArray,
-    link         : linkArray,
-    playCount    : 0
-  });
-  course.save(function(err, saveCourse) {
-    if (err) {
-      console.log(err);
-      res.redirect('back');
-    } else {
-      res.redirect('/record?_id=' + saveCourse._id + "&title=" + saveCourse.title + "&description=" + saveCourse.description);
-    }
-  });
+  // 新規登録の場合
+  if (recordMode == "save") {
+    var course = new Course({
+      owner        : userName,
+      title        : req.body.txtTitle,
+      description  : req.body.txtDescription,
+      position     : positionArray,
+      firstPosition: firstPositionArray,
+      tag          : tagArray,
+      category     : categoryArray,
+      link         : linkArray,
+      playCount    : 0,
+      privateFlg   : privateFlg
+    });
+    course.save(function(err, saveCourse) {
+      if (err) {
+        console.log(err);
+        res.redirect('back');
+      } else {
+        res.redirect('/record?_id=' + saveCourse._id + "&title=" + saveCourse.title + "&description=" + saveCourse.description);
+      }
+    });
+
+  // 既存編集の場合
+  } else if (recordMode == "edit") {
+    var _id = req.body._id;
+    Course.update(
+      {'_id': new ObjectId(_id)},
+      {$set: {title        : req.body.txtTitle,
+              description  : req.body.txtDescription,
+              position     : positionArray,
+              firstPosition: firstPositionArray,
+              tag          : tagArray,
+              category     : categoryArray,
+              link         : linkArray,
+              privateFlg   : privateFlg,
+              updated      : new Date().toISOString()}},
+      {upsert: false},
+      function (err, updateCnt) {
+        if (err){
+          console.log('err : ' + err);
+          res.redirect('back');
+        }
+console.log("edit success");
+        res.redirect('/record?_id=' + _id + "&title=" + req.body.txtTitle + "&description=" + req.body.txtDescription);
+      }
+    );
+  }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -492,7 +549,7 @@ exports.removeCourse = function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.newArrival = function (req, res) {
   Course.find(
-    {},
+    {privateFlg: false},
     getCourseWithoutPositions(),  // positions以外
     {"sort": {"created": -1}, "limit": 5},
     function(err, courses) {
@@ -511,7 +568,7 @@ exports.newArrival = function (req, res) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.recommend = function(req, res) {
   Course.find(
-    {},
+    {privateFlg: false},
     getCourseWithoutPositions(),  // positions以外
     {"sort": {"playCount": -1}, "limit": 5},
     function(err, courses) {
@@ -544,7 +601,8 @@ exports.searchResult = function(req, res) {
                      {tag        : {$all: searchWord}},                         // タグに含まれる、または
                      {link       : {$all: searchWord}},                         // リンクに含まれる
                      {category   : {$all: searchWord}}                          // カテゴリに含まれる
-                    ]},
+                    ],
+               privateFlg: false},
               getCourseWithoutPositions(),  // positions以外
               {sort: {playCount: -1}, skip: skip, limit: 10},
               function(err, courses) {
@@ -567,7 +625,8 @@ exports.searchResultCount = function(req, res) {
                      {tag        : {$all: searchWord}},                         // タグに含まれる、または
                      {link       : {$all: searchWord}},                         // リンクに含まれる
                      {category   : {$all: searchWord}}                          // カテゴリに含まれる
-                    ]},
+                    ],
+                privateFlg: false},
               function(err, count) {
     if (err) {
       console.log(err);
@@ -588,7 +647,8 @@ exports.paginationSearch = function(req, res) {
                       {tag        : {$all: searchWord}},                         // タグに含まれる、または
                       {link       : {$all: searchWord}},                         // リンクに含まれる
                       {category   : {$all: searchWord}}                          // カテゴリに含まれる
-                     ]},
+                     ],
+                privateFlg: false},
     function(err, count) {
       if (err) {
         console.log(err);
@@ -698,23 +758,21 @@ exports.selectRanking = function(req, res) {
     //  console.log("ranking_" + i + " : " + data[i]._id + " : " + data[i].value.count);
     //}
 
+    var conditions = '{"$or": [';
+    for (var i = 0; i < data.length - 1; i++) {
+      conditions += '{"_id": "' + data[i]._id + '"},';
+    }
+    conditions += '{"_id": "' + data[data.length - 1]._id + '"}], "privateFlg": false}';  // privateFlgはBooleanのためfalseを""で囲ってはいけない
+    conditions = JSON.parse(conditions);
+
     var page = req.query.page;
     if (!page) page = 1;
     var skip = (page - 1) * 10;
 
-    // 再生回数上位10コース（skip考慮）を取得するようconditionsを生成
-    var idx;
-    var conditions = '{"$or": [';
-    for (var idx = skip; idx < skip + 9 && idx < data.length - 1; idx++) {
-      conditions += '{"_id": "' + data[idx]._id + '"},';
-    }
-    conditions += '{"_id": "' + data[idx]._id + '"}]}';
-    conditions = JSON.parse(conditions);
-
     Course.find(
       conditions,
       getCourseWithoutPositions(),  // positions以外
-      {},
+      {skip: skip, limit: 10},
       function(err, courses) {
         if (err) {
           console.log(err);
@@ -744,7 +802,7 @@ exports.selectCategory = function(req, res) {
 
   if (category) {
     Course.find(
-      {category: {$all: category}},
+      {category: {$all: category}, privateFlg: false},
       getCourseWithoutPositions(),  // positions以外
       {sort: {created: -1}, skip: skip, limit: 10},
       function(err, courses) {
@@ -766,7 +824,7 @@ exports.categoryCount = function(req, res) {
   var category = req.query.category;
   if (category) {
     Course.count(
-      {category: {$all: category}},
+      {category: {$all: category}, privateFlg: false},
       function(err, count) {
         if (err) {
           console.log(err);
@@ -803,6 +861,7 @@ exports.about = function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 // 直近N日間の再生回数を集計しカウントを取得する
 // その結果を引数のcallback関数に渡す
+// Course collectionのprivateFlgは考慮しない
 // @param back 直近何日間の集計をとるか
 // @param func callback関数
 //////////////////////////////////////////////////////////////////////////////////////////////

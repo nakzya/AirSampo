@@ -22,7 +22,8 @@ var geocoder;
 var panoramaDataArray = [];
 var panoramaDataArrayIdx = 0;
 var playMode = 0;  // 0:初期状態、停止  1:再生中  2:一時停止中
-var recordMode = 0;  // 0:記録していない  1:記録中  2:編集中
+var recordMode = 0;  // 0:記録していない  1:記録中
+var recordEditFlg = false;  // true:既存編集  false:新規登録
 var lines = [];
 var markers = [];
 var InfoWindows = [];
@@ -283,19 +284,6 @@ function setNavigationBar(mode, userName) {
         $("#navUserName").html("");
         $("#userDropdown").css("display", "none");
       }
-/*
-      // ナビゲーションバーの名前を点滅
-      if (userName && mode == "top") {
-        userNameBlinkFlg = true;
-        setTimeout(function() {
-          $("#navUserName").appendTo($("#navUserName").parent().parent());
-          $("#blink").remove();
-        }, 3000);
-      } else {
-        $("#navUserName").appendTo($("#navUserName").parent().parent());
-        $("#blink").remove();
-      }
-*/
     }
   });
 }
@@ -658,8 +646,6 @@ function recordInitialize() {
 
   // 記録確定後、再表示する場合
   if (_id != "") {
-    recordMode = 2;  // 編集中
-
     // 移動位置情報をDBからロード
     loadCourse(_id);
 
@@ -688,12 +674,15 @@ function recordInitialize() {
   links = [];
 
   // 「編集する」チェックボックス
+  recordEditFlg = false;
   $("#chkEdit").bind("change", function(event) {
     if ($(this).is(":checked")) {
+      recordEditFlg = true;  // 編集中
       $("#btnRecord").removeAttr("disabled");
       $("#btnSave").removeAttr("disabled");
       $("#btnDelete").removeAttr("disabled");
     } else {
+      recordMode = false;
       $("#btnRecord").attr("disabled", "disabled");
       $("#btnSave").attr("disabled", "disabled");
       $("#btnDelete").attr("disabled", "disabled");
@@ -787,18 +776,18 @@ function recordInitialize() {
     $("#catPlace").html("<strong>　場所　</strong>");
     event.preventDefault();
   });
-  $("#catDomestic").bind("click", function(event) {
-    $("#catPlace").text($("#catDomestic").text());  // this.textだとIEがundefined
-    event.preventDefault();
-  });
+  //$("#catDomestic").bind("click", function(event) {
+  //  $("#catPlace").text($("#catDomestic").text());  // this.textだとIEがundefined
+  //  event.preventDefault();
+  //});
   $("#catDomestic+ul li a").bind("click", function(event) {
     $("#catPlace").text($(this).parent().text());
     event.preventDefault();
   });
-  $("#catAbroad").bind("click", function(event) {
-    $("#catPlace").text($("#catAbroad").text());  // this.textだとIEがundefined
-    event.preventDefault();
-  });
+  //$("#catAbroad").bind("click", function(event) {
+  //  $("#catPlace").text($("#catAbroad").text());  // this.textだとIEがundefined
+  //  event.preventDefault();
+  //});
   $("#catAbroad+ul li a").bind("click", function(event) {
     $("#catPlace").text($(this).parent().text());
     event.preventDefault();
@@ -815,18 +804,18 @@ function recordInitialize() {
     $("#catKind").text($("#catGuide").text());  // this.textだとIEがundefined
     event.preventDefault();
   });
-  $("#catNature").bind("click", function(event) {
-    $("#catKind").text($("#catNature").text());  // this.textだとIEがundefined
-    event.preventDefault();
-  });
+  //$("#catNature").bind("click", function(event) {
+  //  $("#catKind").text($("#catNature").text());  // this.textだとIEがundefined
+  //  event.preventDefault();
+  //});
   $("#catNature+ul li a").bind("click", function(event) {
     $("#catKind").text($(this).parent().text());
     event.preventDefault();
   });
-  $("#catArtificial").bind("click", function(event) {
-    $("#catKind").text($("#catArtificial").text());  // this.textだとIEがundefined
-    event.preventDefault();
-  });
+  //$("#catArtificial").bind("click", function(event) {
+  //  $("#catKind").text($("#catArtificial").text());  // this.textだとIEがundefined
+  //  event.preventDefault();
+  //});
   $("#catArtificial+ul li a").bind("click", function(event) {
     $("#catKind").text($(this).parent().text());
     event.preventDefault();
@@ -888,6 +877,15 @@ function recordInitialize() {
     }
     $("#saveForm").append("<input type='hidden' name='links' value='" + str + "'></input>");
 
+    // 新規登録 or 既存編集
+    var recordModeStr = "save";
+    if (recordEditFlg) {
+      recordModeStr = "edit";
+      // 既存編集の場合、対象の_idもrequestに含める
+      $("#saveForm").append("<input type='hidden' name='_id' value='" + _id + "'></input>");
+    }
+    $("#saveForm").append("<input type='hidden' name='recordMode' value='" + recordModeStr + "'></input>");
+
     // DBに書き込み
     $("#saveForm").submit();
 
@@ -919,12 +917,10 @@ function recordInitialize() {
       resizable: false,
       buttons: {
         "OK": function() {
-alert("OK");
           $.ajax({
             url: "/removeCourse?_id=" + _id,
             dataType: "json",
             success: function(data) {
-alert(data);
               if (data.result = "success") {
                 alert("削除しました。");
                 var form = $("<form action='/record' method='get'></form>");
@@ -1309,7 +1305,7 @@ function checkPassword(password) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 function setStartingCourse() {
   $.ajax({
-    url: "/count?mode=all",   // 全件のカウント
+    url: "/count?mode=allWithoutPrivate",   // pirvate以外の全件のカウント
     cache: false,
     dataType: "json",
     success: function(data) {
@@ -1499,12 +1495,10 @@ function loadCourse(_id) {
       if (course.title) {
         $("#title").text(course.title);
       }
-
       // 説明
       if (course.description) {
         $("#description").text(course.description);
       }
-
       // タグ
       if (course.tag) {
         var ul = $("#tagList");
@@ -1514,7 +1508,6 @@ function loadCourse(_id) {
           }
         }
       }
-
       // カテゴリ
       if (course.category) {
         var catPlace = $("#catPlace");
@@ -1524,7 +1517,10 @@ function loadCourse(_id) {
           catKind.text(course.category[1]);
         }
       }
-
+      // 非公開フラグ
+      if (course.privateFlg) {
+        $("#chkPrivate").attr("checked", true);
+      }
       // 位置情報
       if (course.position) {
         var retArry = [];
@@ -1622,16 +1618,16 @@ function search(searchWord, page) {
         }
         searchResultDiv.append(ul);
       }
-    }
-  });
 
-  // 検索件数 ※データとは別に取らないと総件数を取得できない（まとめて取ると最大10件になってしまう）
-  $.ajax({
-    url: "/searchResult/count?searchWord=" + searchWord,
-    cache: false,
-    dataType: "json",
-    success: function(data) {
-      $("#searchResultCount").text(coursesNum + " / " + data.count);
+      // 検索件数 ※データとは別に取らないと総件数を取得できない（まとめて取ると最大10件になってしまう）
+      $.ajax({
+        url: "/searchResult/count?searchWord=" + searchWord,
+        cache: false,
+        dataType: "json",
+        success: function(data) {
+          $("#searchResultCount").text(coursesNum + " / " + data.count);
+        }
+      });
     }
   });
 }
@@ -1782,16 +1778,16 @@ function showMycourse(page) {
         }
         searchResultDiv.append(ul);
       }
-    }
-  });
 
-  // 検索件数 ※データとは別に取らないと総件数を取得できない（まとめて取ると最大10件になってしまう）
-  $.ajax({
-    url: "/mycourseResult/count",
-    cache: false,
-    dataType: "json",
-    success: function(data) {
-      $("#mycourseResultCount").text(coursesNum + " / " + data.count);
+      // 検索件数 ※データとは別に取らないと総件数を取得できない（まとめて取ると最大10件になってしまう）
+      $.ajax({
+        url: "/mycourseResult/count",
+        cache: false,
+        dataType: "json",
+        success: function(data) {
+          $("#mycourseResultCount").text(coursesNum + " / " + data.count);
+        }
+      });
     }
   });
 }
@@ -1861,16 +1857,16 @@ function categorySearch(page, category) {
         }
         searchResultDiv.append(ul);
       }
-    }
-  });
 
-  // 検索件数 ※データとは別に取らないと総件数を取得できない（まとめて取ると最大10件になってしまう）
-  $.ajax({
-    url: "/category/count?category=" + category,
-    cache: false,
-    dataType: "json",
-    success: function(data) {
-      $("#categoryResultCount").text(coursesNum + " / " + data.count);
+      // 検索件数 ※データとは別に取らないと総件数を取得できない（まとめて取ると最大10件になってしまう）
+      $.ajax({
+        url: "/category/count?category=" + category,
+        cache: false,
+        dataType: "json",
+        success: function(data) {
+          $("#categoryResultCount").text(coursesNum + " / " + data.count);
+        }
+      });
     }
   });
 }
@@ -2008,21 +2004,16 @@ function toggleRecord() {
   // 記録開始
   /////////////////////////////////////////////
   if (recordMode == 0) {
+    $("#btnPlayCenter").remove();
+
     if (panoramaDataArrayIdx == 0) {  // 初めての記録、または最初から記録し直す場合
       recordMode = 1;
 
       $("#btnRecord").tooltip("hide").attr("data-original-title", "記録終了").tooltip("fixTitle");
-      /*
-      $("#btnRecord").popover({
-        content: "もう一度押すと記録を終了します。",
-        placement: "bottom"
-      }).popover("show");
-      */
       $("#btnPlay").attr("disabled", "disabled");
       $("#btnStop").attr("disabled", "disabled");
       $("#btnSave").attr("disabled", "disabled");
       $("#btnDelete").attr("disabled", "disabled");
-      $("#btnPlayCenter").remove();
 
       //$("#view").addClass("recording");
       //$("#control").addClass("recording");
@@ -2087,13 +2078,10 @@ function toggleRecord() {
             recordMode = 1;
 
             $("#btnRecord").tooltip("hide").attr("data-original-title", "記録終了").tooltip("fixTitle");
-            $("#btnRecord").popover({
-              content: "もう一度押すと記録を終了します。",
-              placement: "bottom"
-            }).popover("show");
             $("#btnPlay").attr("disabled", "disabled");
             $("#btnStop").attr("disabled", "disabled");
-            $("#btnPlayCenter").remove();
+            $("#btnSave").attr("disabled", "disabled");
+            $("#btnDelete").attr("disabled", "disabled");
 
             // 現在の次の地点以降を削除
             panoramaDataArray.splice(panoramaDataArrayIdx + 1, panoramaDataArray.length - 1);
@@ -2107,6 +2095,8 @@ function toggleRecord() {
             $("#btnRecord").popover("hide");
             $("#btnPlay").removeAttr("disabled");
             $("#btnStop").removeAttr("disabled");
+            $("#btnSave").removeAttr("disabled");
+            $("#btnDelete").removeAttr("disabled");
             setCenterPlayBtn();
 
             return;
@@ -2127,6 +2117,7 @@ function toggleRecord() {
     if (panoramaDataArray.length != 1) {
       $("#btnPlay").removeAttr("disabled");
       $("#btnSave").removeAttr("disabled");
+      $("#btnDelete").removeAttr("disabled");
       setCenterPlayBtn();  // display: block だと座標位置がずれる
     }
     $("#btnPlay").tooltip("hide").attr("data-original-title", "再生").tooltip("fixTitle");
@@ -2495,6 +2486,7 @@ function stop() {
 
   $("#btnPlay i").addClass("icon-play");
   $("#btnPlay i").removeClass("icon-pause");
+  if ($("#chkEdit").is(":checked")) $("#btnRecord").removeAttr("disabled");
   $("#btnStop").attr("disabled", "disabled");
   $("#panoramaSlider").slider("enable");
   $("#panoramaSlider").slider("value", 0);
