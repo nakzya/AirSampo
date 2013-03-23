@@ -878,16 +878,41 @@ function recordInitialize() {
     $("#saveForm").append("<input type='hidden' name='links' value='" + str + "'></input>");
 
     // 新規登録 or 既存編集
-    var recordModeStr = "save";
-    if (recordEditFlg) {
+    var recordModeStr, confirmStr;
+    if (recordEditFlg) {  // 既存編集の場合
       recordModeStr = "edit";
+      confirmStr = "元のデータを上書きします。よろしいですか？";
+
       // 既存編集の場合、対象の_idもrequestに含める
       $("#saveForm").append("<input type='hidden' name='_id' value='" + _id + "'></input>");
-    }
-    $("#saveForm").append("<input type='hidden' name='recordMode' value='" + recordModeStr + "'></input>");
 
-    // DBに書き込み
-    $("#saveForm").submit();
+    } else {
+      recordModeStr = "save";
+      confirmStr = "確定してもよろしいですか？";
+    }
+
+    $("body").append("<div id='dialog'>" + confirmStr + "</div>");
+    $("#dialog").dialog({
+      autoOpen: false,
+      width: 300,
+      title: "Confirm",
+      modal: true,
+      resizable: false,
+      buttons: {
+        "OK": function() {
+          $(this).dialog("close");
+          $("#dialog").remove();
+          $("#saveForm").append("<input type='hidden' name='recordMode' value='" + recordModeStr + "'></input>");
+          $("#saveForm").submit();
+        },
+        "Cancel": function() {
+          $(this).dialog("close");
+          $("#dialog").remove();
+          return;
+        }
+      }
+    });
+    $("#dialog").dialog("open");
 
     // 初期位置に戻す
     var firstPosition = panoramaDataArray[0];
@@ -900,9 +925,6 @@ function recordInitialize() {
       pitch: firstPosition.pitch,
       zoom: firstPosition.zoom
     });
-
-    alert("記録しました！");
-
     event.preventDefault();
   });
 
@@ -922,7 +944,6 @@ function recordInitialize() {
             dataType: "json",
             success: function(data) {
               if (data.result = "success") {
-                alert("削除しました。");
                 var form = $("<form action='/record' method='get'></form>");
                 form.appendTo("body").submit();
               }
@@ -2098,7 +2119,6 @@ function toggleRecord() {
             $("#btnSave").removeAttr("disabled");
             $("#btnDelete").removeAttr("disabled");
             setCenterPlayBtn();
-
             return;
           }
         }
