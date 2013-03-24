@@ -1067,6 +1067,7 @@ function signupInitialize() {
     if (!checkResult) {
       return false;
     }
+
     // ユーザー名重複チェック
     $.ajax({
       url: "/user?name=" + $("#txtUserName").val(),
@@ -1079,8 +1080,8 @@ function signupInitialize() {
           if (!$("#txtUserName").parent().parent().hasClass("error")) {
             $("#txtUserName").parent().parent().addClass("error");
           }
-          $("#message").html($("#txtUserName").val() + " は既に登録されています。");
-          $("#message").css("display", "block");
+          $("#signupMessage").html($("#txtUserName").val() + " は既に登録されています。");
+          $("#signupMessage").css("display", "block");
           return false;
         }
       }
@@ -1096,13 +1097,6 @@ function signupInitialize() {
 function checkInputSignup(userName, email, password, passConfirm) {
   var message = "";
 
-  // ■■■■■■■■■■ TODO ■■■■■■■■■■
-  //
-  // チェック追加
-  //
-  // ■■■■■■■■■■■■■■■■■■■■■■■■■■
-
-
   /////////////////////////
   // ユーザー名
   /////////////////////////
@@ -1112,6 +1106,9 @@ function checkInputSignup(userName, email, password, passConfirm) {
     errorFlgUser = true;
   } else if (userName.length < 3) {
     message += "ユーザー名は3文字以上で入力してください。";
+    errorFlgUser = true;
+  } else if (userName.match(/[^0-9a-z]+/)) {
+    message += "ユーザー名は半角英数字（小文字のみ）で入力してください。";
     errorFlgUser = true;
   }
 
@@ -1137,8 +1134,9 @@ function checkInputSignup(userName, email, password, passConfirm) {
       $("#txtEmail").parent().parent().addClass("error");
     }
     if (message.length != 0) {  // 既にエラーが発生している場合
-      message += "<br>" + emailMsg;
+      message += "<br>";
     }
+    message += emailMsg;
   } else {
     $("#txtEmail").parent().parent().removeClass("error")
   }
@@ -1157,8 +1155,9 @@ function checkInputSignup(userName, email, password, passConfirm) {
       $("#txtPassword").parent().parent().addClass("error");
     }
     if (message.length != 0) {  // 既にエラーが発生している場合
-      message += "<br>" + passwordMsg;
+      message += "<br>";
     }
+    message += passwordMsg
   } else {
     $("#txtPassword").parent().parent().removeClass("error")
   }
@@ -1176,10 +1175,8 @@ function checkInputSignup(userName, email, password, passConfirm) {
     errorFlgPassConfirm = true;
   }
 
+  // パスワードとパスワード（確認）が一致するかどうかチェック
   if (password != passConfirm) {
-    if (message.length != 0) {  // 既にエラーが発生している場合
-      passConfirmMsg += "<br>";
-    }
     passConfirmMsg += "パスワードが一致しません。"
     errorFlgPassConfirm = true;
   }
@@ -1193,18 +1190,19 @@ function checkInputSignup(userName, email, password, passConfirm) {
       $("#txtPasswordConfirm").parent().parent().addClass("error");
     }
     if (message.length != 0) {  // 既にエラーが発生している場合
-      message += "<br>" + passConfirmMsg;
+      message += "<br>";
     }
+    message += passConfirmMsg;
   } else {
     $("#txtPasswordConfirm").parent().parent().removeClass("error")
   }
 
   if (message.length == 0) {
-    $("#message").css("display", "none");
+    $("#signupMessage").css("display", "none");
     return true;
   } else {
-    $("#message").html(message);
-    $("#message").css("display", "block");
+    $("#signupMessage").html(message);
+    $("#signupMessage").css("display", "block");
     return false;
   }
 }
@@ -1269,18 +1267,19 @@ function checkInputLogin(email, password) {
       $("#txtPassword").parent().parent().addClass("error");
     }
     if (message.length != 0) {  // 既にエラーが発生している場合
-      message += "<br>" + passwordMsg;
+      message += "<br>";
     }
+    message += passwordMsg;
   } else {
     $("#txtPassword").parent().parent().removeClass("error")
   }
 
   if (message.length == 0) {
-    $("#message").css("display", "none");
+    $("#authMessage").css("display", "none");
     return true;
   } else {
-    $("#message").html(message);
-    $("#message").css("display", "block");
+    $("#authMessage").html(message);
+    $("#authMessage").css("display", "block");
     return false;
   }
 }
@@ -1289,15 +1288,11 @@ function checkInputLogin(email, password) {
 // 入力Emailのチェック
 //////////////////////////////////////////////////////////////////////////////////////////////
 function checkEmail(email) {
-  // ■■■■■■■■■■ TODO ■■■■■■■■■■
-  //
-  // チェック追加
-  //
-  // ■■■■■■■■■■■■■■■■■■■■■■■■■■
-
   var message = "";
   if (!email || email.length == 0) {
-    message += "メールアドレスは必須です。"
+    message += "メールアドレスは必須です。";
+  } else if (!email.match(/.+@.+\..+/)) {
+    message += "メールアドレスを正しい形式で入力してください。";
   }
   return message;
 }
@@ -1306,17 +1301,13 @@ function checkEmail(email) {
 // 入力パスワードのチェック
 //////////////////////////////////////////////////////////////////////////////////////////////
 function checkPassword(password) {
-  // ■■■■■■■■■■ TODO ■■■■■■■■■■
-  //
-  // チェック追加
-  //
-  // ■■■■■■■■■■■■■■■■■■■■■■■■■■
-
   var message = "";
   if (!password || password.length == 0) {
-    message += "パスワードは必須です。"
+    message += "パスワードは必須です。";
   } else if(password.length < 6) {
-    message += "パスワードは6文字以上で入力してください。"
+    message += "パスワードは6文字以上で入力してください。";
+  } else if (password.match(/[^0-9A-Za-z]+/)) {
+    message += "パスワードは半角英数字で入力してください。";
   }
   return message;
 }

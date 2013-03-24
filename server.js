@@ -5,6 +5,7 @@ var express = require('express')
   , flash = require('connect-flash')
   , passport = require('passport')
   , LocalStrategy = require('passport-local').Strategy
+  , crypto = require('crypto')
   , model = require("./model")
   , User = model.User;
 
@@ -19,7 +20,7 @@ app.configure(function(){
   app.use(express.cookieParser());
   app.use(express.bodyParser());
   app.use(express.methodOverride());
-  app.use(express.session({secret: 'keyboard cat'}));
+  app.use(express.session({secret: 'airsampo secret'}));
   app.use(flash());
   app.use(passport.initialize());
   app.use(passport.session());
