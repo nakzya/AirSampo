@@ -469,22 +469,22 @@ function topInitialize() {
 
   $("#btnCourse1").bind("click", function(event) {
     stop();  // 念のため停止処理
-    event.preventDefault();
+    //event.preventDefault();
   });
 
   $("#btnCourse2").bind("click", function(event) {
     stop();  // 念のため停止処理
-    event.preventDefault();
+    //event.preventDefault();
   });
 
   $("#btnCourse3").bind("click", function(event) {
     stop();  // 念のため停止処理
-    event.preventDefault();
+    //event.preventDefault();
   });
 
   $("#btnCourse4").bind("click", function(event) {
     stop();  // 念のため停止処理
-    event.preventDefault();
+    //event.preventDefault();
   });
 }
 
@@ -1482,6 +1482,7 @@ function setCourseThumbnail(page) {
           var panorama_thumbnail =
             new google.maps.StreetViewPanorama(document.getElementById("course" + String(i + 1)), panoramaOptions);
         }
+
         // データを特定するために_idを飛ばす
         $("#btnCourse" + String(i + 1)).attr("href", "/play?_id=" + course._id);
       }

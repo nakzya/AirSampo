@@ -306,38 +306,36 @@ exports.loadCourse = function(req, res) {
   } else if (idx) {
     loadCourseWithSkip(idx - 1, res);
   }
-}
 
-//////////////////////////////////////////////////////////////////////////////////////////////
-// _idでCourseを取得
-//////////////////////////////////////////////////////////////////////////////////////////////
-function loadCourseById(_id, res) {
-  Course.findOne({_id: new ObjectId(_id)}, function(err, course) {
-    if (err) {
-      console.log(err);
-      res.redirect('back');
-    } else {
-      res.json(course);
-    }
-  });
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-// skip指定でCourseを取得
-//////////////////////////////////////////////////////////////////////////////////////////////
-function loadCourseWithSkip(skip, res) {
-  var options = {skip: skip, limit: 1};
-
-  Course.find(
-    {privateFlg: false}, null, options, function(err, courses) {
+  /////////////////////////////////////////////////
+  // _idでCourseを取得
+  /////////////////////////////////////////////////
+  function loadCourseById(_id, res) {
+    Course.findOne({_id: new ObjectId(_id)}, function(err, course) {
       if (err) {
         console.log(err);
         res.redirect('back');
       } else {
-        res.json(courses);
+        res.json(course);
       }
-    }
-  );
+    });
+  }
+
+  /////////////////////////////////////////////////
+  // skip指定でCourseを取得
+  /////////////////////////////////////////////////
+  function loadCourseWithSkip(skip, res) {
+    Course.find(
+      {privateFlg: false}, null, {skip: skip, limit: 1}, function(err, courses) {
+        if (err) {
+          console.log(err);
+          res.redirect('back');
+        } else {
+          res.json(courses);
+        }
+      }
+    );
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -494,7 +492,6 @@ exports.saveCourse = function(req, res) {
           console.log('err : ' + err);
           res.redirect('back');
         }
-console.log("edit success");
         res.redirect('/record?_id=' + _id + "&title=" + req.body.txtTitle + "&description=" + req.body.txtDescription);
       }
     );
