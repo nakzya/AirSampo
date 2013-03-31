@@ -5,6 +5,7 @@ var model = require("../model");
 var User = model.User;
 var Course = model.Course;
 var Position = model.Position;
+var Category = model.Category;
 var PlayHistory = model.PlayHistory;
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -38,6 +39,7 @@ exports.saveUser = function(req, res) {
       res.redirect("/signup?message=ユーザー登録に失敗しました。管理者にお問い合わせください。");
     }
     res.redirect("/signup?message=ユーザー登録が完了しました、" + user.name + "さん。トップページからログインしてください。");
+    //res.redirect("/login/auth?email=" + email + "&password=" + password);
   });
 }
 
@@ -215,7 +217,7 @@ exports.courseThumbnail = function(req, res) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-// 表示件数取得
+// カウント
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.count = function(req, res) {
   var mode = req.query.mode;
@@ -223,6 +225,7 @@ exports.count = function(req, res) {
 
   // modeによってカウントを取得する条件を変更
   if (mode == "top") {
+    if (!req.query.back) return;
     var back = req.query.back;  // 直近何日間の件数を取得するか
 
     // 過去N日間の再生回数を集計し、その結果を以下のcallback関数に渡す
@@ -254,6 +257,43 @@ exports.count = function(req, res) {
       })
     });
 
+  // 検索結果件数を取得
+  } else if (mode == "search") {
+    if (!req.query.searchWord) return;
+    var searchWord = req.query.searchWord;
+    Course.count({$or: [{title           : new RegExp('.*' + searchWord + '.*', "i")},  // タイトルと中間一致、または
+                       {description      : new RegExp('.*' + searchWord + '.*', "i")},  // 説明文と中間一致、または
+                       {tag              : {$all: searchWord}},                         // タグに含まれる、または
+                       {link             : {$all: searchWord}},                         // リンクに含まれる
+                       {"category.place" : new RegExp('.*' + searchWord + '.*', "i")},  // カテゴリ（場所）に含まれる
+                       {"category.kind"  : new RegExp('.*' + searchWord + '.*', "i")}   // カテゴリ（種類）に含まれる
+                      ],
+                  privateFlg: false},
+                function(err, count) {
+      if (err) {
+        console.log(err);
+        res.redirect('back');
+      } else {
+        res.json({"count": count});
+      }
+    });
+
+  // トップ画面の新着件数表示
+  } else if (mode == "newArrival") {
+    // 直近1週間で登録されたコース
+    var today = new Date();
+    var targetDate = computeDate(today.getFullYear(), (today.getMonth() + 1), today.getDate(), -7);
+    conditions = {created: {$gte: targetDate}, privateFlg: false};
+
+    Course.count(conditions, function(err, count) {
+        if (err) {
+          console.log(err);
+          res.redirect('back');
+        } else {
+          res.json({"count": count});
+        }
+    })
+
   // ランキング画面で表示する特定期間の再生回数
   } else if (mode == "ranking") {
     var _id = req.query._id;
@@ -272,6 +312,45 @@ exports.count = function(req, res) {
         res.json({no: no, count: count});
       }
     });
+
+  // カテゴリーの件数取得
+  } else if (mode == "category") {
+    var categoryStr = req.query.category;
+    if (categoryStr) {
+      Course.count(
+        {$or: [{"category.place": categoryStr}, {"category.kind": categoryStr}], privateFlg: false},
+        function(err, count) {
+          if (err) {
+            console.log(err);
+            res.redirect('back');
+          } else {
+            res.json({"count": count});
+          }
+        }
+      );
+    }
+
+  // マイコースの件数取得
+  } else if (mode == "myCourse") {
+    var userName = getUserNameFromSession(req);
+    if (!userName) {  // ログインせずにURL直叩きで記録画面を開こうとした場合
+      res.redirect("/");
+    }
+    if (userName) {
+      Course.count(
+        {owner: userName},
+        function(err, count) {
+          if (err) {
+            console.log(err);
+            res.redirect('back');
+          } else {
+            res.json({"count": count});
+          }
+        }
+      );
+    } else {
+      res.redirect('/');
+    }
 
   } else if (mode == "all") {
     Course.count({}, function(err, count) {
@@ -400,9 +479,16 @@ exports.saveCourse = function(req, res) {
   }
 
   // カテゴリ情報
-  var place = req.body.catPlace;
-  var kind = req.body.catKind;
-  var categoryArray = [place, kind];
+  var categoryPlace = req.body.catPlace.replace(" ", "");
+  var categoryKind = req.body.catKind.replace(" ", "");
+  /*
+  var category = new Category({
+    place: place,
+    kind : kind
+  });
+  var categoryArray = [category];
+  */
+  var category = {"place": categoryPlace, "kind": categoryKind};
 
   // 非公開
   var privateFlg = false;
@@ -458,7 +544,9 @@ exports.saveCourse = function(req, res) {
       position     : positionArray,
       firstPosition: firstPositionArray,
       tag          : tagArray,
-      category     : categoryArray,
+      //categoryPlace: categoryPlace,
+      //categoryKind : categoryKind,
+      category     : category,
       link         : linkArray,
       playCount    : 0,
       privateFlg   : privateFlg
@@ -482,7 +570,9 @@ exports.saveCourse = function(req, res) {
               position     : positionArray,
               firstPosition: firstPositionArray,
               tag          : tagArray,
-              category     : categoryArray,
+              //categoryPlace: categoryPlace,
+              //categoryKind : categoryKind,
+              category     : category,
               link         : linkArray,
               privateFlg   : privateFlg,
               updated      : new Date().toISOString()}},
@@ -542,13 +632,18 @@ exports.removeCourse = function(req, res) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-// 新着
+// 新着（トップ画面のサイドバー）
 //////////////////////////////////////////////////////////////////////////////////////////////
-exports.newArrival = function (req, res) {
+exports.newArrivalSB = function (req, res) {
+  // 直近1週間で登録されたコース
+  var today = new Date();
+  var targetDate = computeDate(today.getFullYear(), (today.getMonth() + 1), today.getDate(), -7);
+  conditions = {created: {$gte: targetDate}, privateFlg: false};
+
   Course.find(
-    {privateFlg: false},
+    conditions,
     getCourseWithoutPositions(),  // positions以外
-    {"sort": {"created": -1}, "limit": 5},
+    {sort: {"created": -1}, limit: 5},
     function(err, courses) {
       if (err) {
         console.log(err);
@@ -561,9 +656,45 @@ exports.newArrival = function (req, res) {
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
+// 新着結果画面
+//////////////////////////////////////////////////////////////////////////////////////////////
+exports.newArrival = function(req, res) {
+  res.render('newArrivalResult', {userName: getUserNameFromSession(req)});
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// 新着結果取得
+//////////////////////////////////////////////////////////////////////////////////////////////
+exports.newArrivalResult = function(req, res) {
+  var skip = 0;
+  if (req.query.page) {
+    skip = (req.query.page - 1) * 10;
+  }
+
+  // 直近1週間で登録されたコース
+  var today = new Date();
+  var targetDate = computeDate(today.getFullYear(), (today.getMonth() + 1), today.getDate(), -7);
+  conditions = {created: {$gte: targetDate}, privateFlg: false};
+
+  Course.find(
+    conditions,
+    getCourseWithoutPositions(),  // positions以外
+    {sort: {"created": -1}, skip: skip, limit: 10},
+    function(err, courses) {
+      if (err) {
+        console.log(err);
+        res.redirect('back');
+      } else {
+        res.json(courses);
+      }
+    }
+  );
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 // おすすめを表示
 //////////////////////////////////////////////////////////////////////////////////////////////
-exports.recommend = function(req, res) {
+exports.recommendSB = function(req, res) {
   Course.find(
     {privateFlg: false},
     getCourseWithoutPositions(),  // positions以外
@@ -593,11 +724,12 @@ exports.searchResult = function(req, res) {
   var searchWord = req.query.searchWord;
   var page = req.query.page;
   var skip = (page - 1) * 10;
-  Course.find({$or: [{title      : new RegExp('.*' + searchWord + '.*', "i")},  // タイトルと中間一致、または
-                     {description: new RegExp('.*' + searchWord + '.*', "i")},  // 説明文と中間一致、または
-                     {tag        : {$all: searchWord}},                         // タグに含まれる、または
-                     {link       : {$all: searchWord}},                         // リンクに含まれる
-                     {category   : {$all: searchWord}}                          // カテゴリに含まれる
+  Course.find({$or: [{title            : new RegExp('.*' + searchWord + '.*', "i")},  // タイトルと中間一致、または
+                     {description      : new RegExp('.*' + searchWord + '.*', "i")},  // 説明文と中間一致、または
+                     {tag              : {$all: searchWord}},                         // タグに含まれる、または
+                     {link             : {$all: searchWord}},                         // リンクに含まれる
+                     {"category.place" : new RegExp('.*' + searchWord + '.*', "i")},  // カテゴリ（場所）に含まれる
+                     {"category.kind"  : new RegExp('.*' + searchWord + '.*', "i")}   // カテゴリ（種類）に含まれる
                     ],
                privateFlg: false},
               getCourseWithoutPositions(),  // positions以外
@@ -610,51 +742,6 @@ exports.searchResult = function(req, res) {
       res.json(courses);
     }
   });
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-// 検索結果件数取得
-//////////////////////////////////////////////////////////////////////////////////////////////
-exports.searchResultCount = function(req, res) {
-  var searchWord = req.query.searchWord;
-  Course.count({$or: [{title      : new RegExp('.*' + searchWord + '.*', "i")},  // タイトルと中間一致、または
-                     {description: new RegExp('.*' + searchWord + '.*', "i")},  // 説明文と中間一致、または
-                     {tag        : {$all: searchWord}},                         // タグに含まれる、または
-                     {link       : {$all: searchWord}},                         // リンクに含まれる
-                     {category   : {$all: searchWord}}                          // カテゴリに含まれる
-                    ],
-                privateFlg: false},
-              function(err, count) {
-    if (err) {
-      console.log(err);
-      res.redirect('back');
-    } else {
-      res.json({"count": count});
-    }
-  });
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-// 検索結果画面 - ページネーションのための件数取得
-//////////////////////////////////////////////////////////////////////////////////////////////
-exports.paginationSearch = function(req, res) {
-  var searchWord = req.query.searchWord;
-  Course.count({$or: [{title      : new RegExp('.*' + searchWord + '.*', "i")},  // タイトルと中間一致、または
-                      {description: new RegExp('.*' + searchWord + '.*', "i")},  // 説明文と中間一致、または
-                      {tag        : {$all: searchWord}},                         // タグに含まれる、または
-                      {link       : {$all: searchWord}},                         // リンクに含まれる
-                      {category   : {$all: searchWord}}                          // カテゴリに含まれる
-                     ],
-                privateFlg: false},
-    function(err, count) {
-      if (err) {
-        console.log(err);
-        res.redirect("back");
-      } else {
-        res.json({"count": count});
-      }
-    }
-  );
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -699,31 +786,6 @@ exports.mycourseResult = function(req, res) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-// マイコース件数取得
-//////////////////////////////////////////////////////////////////////////////////////////////
-exports.mycourseResultCount = function(req, res) {
-  var userName = getUserNameFromSession(req);
-  if (!userName) {  // ログインせずにURL直叩きで記録画面を開こうとした場合
-    res.redirect("/");
-  }
-  if (userName) {
-    Course.count(
-      {owner: userName},
-      function(err, count) {
-        if (err) {
-          console.log(err);
-          res.redirect('back');
-        } else {
-          res.json({"count": count});
-        }
-      }
-    );
-  } else {
-    res.redirect('/');
-  }
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////
 // ランキング画面表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 exports.ranking = function(req, res) {
@@ -734,7 +796,7 @@ exports.ranking = function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 // ランキング画面 - ランキングデータ取得
 //////////////////////////////////////////////////////////////////////////////////////////////
-exports.selectRanking = function(req, res) {
+exports.rankingResult = function(req, res) {
   var back = req.query.back;
 
   // 過去back日間の再生回数を集計し、その結果を以下のcallback関数に渡す
@@ -792,14 +854,14 @@ exports.category = function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 // カテゴリ検索結果画面
 //////////////////////////////////////////////////////////////////////////////////////////////
-exports.selectCategory = function(req, res) {
-  var category = req.query.category;
+exports.categoryResult = function(req, res) {
+  var categoryStr = req.query.category;
   var page = req.query.page;
   var skip = (page - 1) * 10;
 
-  if (category) {
+  if (categoryStr) {
     Course.find(
-      {category: {$all: category}, privateFlg: false},
+      {$or: [{"category.place": categoryStr}, {"category.kind": categoryStr}], privateFlg: false},
       getCourseWithoutPositions(),  // positions以外
       {sort: {created: -1}, skip: skip, limit: 10},
       function(err, courses) {
@@ -808,26 +870,6 @@ exports.selectCategory = function(req, res) {
           res.redirect('back');
         } else {
           res.json(courses);
-        }
-      }
-    );
-  }
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-// カテゴリ件数取得
-//////////////////////////////////////////////////////////////////////////////////////////////
-exports.categoryCount = function(req, res) {
-  var category = req.query.category;
-  if (category) {
-    Course.count(
-      {category: {$all: category}, privateFlg: false},
-      function(err, count) {
-        if (err) {
-          console.log(err);
-          res.redirect('back');
-        } else {
-          res.json({"count": count});
         }
       }
     );

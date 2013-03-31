@@ -9,7 +9,7 @@ var INIT_LNG = 139.765491;
 
 var INIT_HEADING = 127.70307765233667;
 var INIT_PITCH = 1.9147722283955624;
-var PLAY_SPEED_UNIT = 40;
+var PLAY_SPEED_UNIT = 50;
 var PLAY_SPEDD_SLIDER_INIT_VALUE = 50;
 
 var SEARCH_RESULT_MAX_ROW = 5;
@@ -73,7 +73,7 @@ function setTopPagination(page) {
       var ul = $("#pagination ul");
 
       // Prev
-      var prevLi = $("<li><a href='javascript:void(0)'>\<\<</a></li>");
+      var prevLi = $("<li><a href='javascript:void(0)'>&laquo</a></li>");
       if (page == 1) {   // 最初のページの場合、disabled
         prevLi.addClass("disabled");
         prevLi.removeAttr("onclick");
@@ -96,7 +96,7 @@ function setTopPagination(page) {
       }
 
       // Next
-      var nextLi = $("<li><a href='javascript:void(0)'>\>\></a></li>");
+      var nextLi = $("<li><a href='javascript:void(0)'>&raquo</a></li>");
       if (page == lastPage) {  // 最終ページの場合、disabled
         nextLi.addClass("disabled");
         nextLi.removeAttr("onclick");
@@ -112,7 +112,7 @@ function setTopPagination(page) {
 // 検索結果画面のページネーションの設定
 //////////////////////////////////////////////////////////////////////////////////////////////
 function setSearchPagination(page, searchWord) {
-  var url = "/searchResult/count?searchWord=" + searchWord;
+  var url = "/count?mode=search&searchWord=" + searchWord;
 
   $.ajax({
     url: url,   // 件数を引数として受け取るようにすると、再帰的に呼び出す際に不都合がある（件数の増減に対応できない）
@@ -127,7 +127,7 @@ function setSearchPagination(page, searchWord) {
       $("#pagination").append(ul);
 
       // Prev
-      var prevLi = $("<li><a href='#header'>\<\<</a></li>");
+      var prevLi = $("<li><a href='#header'>&laquo</a></li>");
       if (page == 1) {   // 最初のページの場合、disabled
         prevLi.addClass("disabled");
         prevLi.removeAttr("onclick");
@@ -149,7 +149,7 @@ function setSearchPagination(page, searchWord) {
       }
 
       // Next
-      var nextLi = $("<li><a href='#header'>\>\></a></li>");
+      var nextLi = $("<li><a href='#header'>&raquo</a></li>");
       if (page == lastPage || count == 0) {  // 最終ページの場合、disabled
         nextLi.addClass("disabled");
         nextLi.removeAttr("onclick");
@@ -165,7 +165,7 @@ function setSearchPagination(page, searchWord) {
 // カテゴリ検索結果画面のページネーションの設定
 //////////////////////////////////////////////////////////////////////////////////////////////
 function setCategorySearchPagination(page, category) {
-  var url = "/category/count?category=" + category;
+  var url = "/count?mode=category&category=" + category;
 
   $.ajax({
     url: url,   // 件数を引数として受け取るようにすると、再帰的に呼び出す際に不都合がある（件数の増減に対応できない）
@@ -180,7 +180,7 @@ function setCategorySearchPagination(page, category) {
       $("#pagination").append(ul);
 
       // Prev
-      var prevLi = $("<li><a href='#header'>\<\<</a></li>");
+      var prevLi = $("<li><a href='#header'>&laquo</a></li>");
       if (page == 1) {   // 最初のページの場合、disabled
         prevLi.addClass("disabled");
         prevLi.removeAttr("onclick");
@@ -202,7 +202,7 @@ function setCategorySearchPagination(page, category) {
       }
 
       // Next
-      var nextLi = $("<li><a href='#header'>\>\></a></li>");
+      var nextLi = $("<li><a href='#header'>&raquo</a></li>");
       if (page == lastPage || count == 0) {  // 最終ページの場合、disabled
         nextLi.addClass("disabled");
         nextLi.removeAttr("onclick");
@@ -218,7 +218,7 @@ function setCategorySearchPagination(page, category) {
 // マイコース画面のページネーションの設定
 //////////////////////////////////////////////////////////////////////////////////////////////
 function setMycoursePagination(page) {
-  var url = "/mycourseResult/count";
+  var url = "/count?mode=myCourse";
 
   $.ajax({
     url: url,   // 件数を引数として受け取るようにすると、再帰的に呼び出す際に不都合がある（件数の増減に対応できない）
@@ -233,7 +233,7 @@ function setMycoursePagination(page) {
       $("#pagination").append(ul);
 
       // Prev
-      var prevLi = $("<li><a href='#header'>\<\<</a></li>");
+      var prevLi = $("<li><a href='#header'>&laquo</a></li>");
       if (page == 1) {   // 最初のページの場合、disabled
         prevLi.addClass("disabled");
         prevLi.removeAttr("onclick");
@@ -255,12 +255,65 @@ function setMycoursePagination(page) {
       }
 
       // Next
-      var nextLi = $("<li><a href='#header'>\>\></a></li>");
+      var nextLi = $("<li><a href='#header'>&raquo</a></li>");
       if (page == lastPage || count == 0) {  // 最終ページの場合、disabled
         nextLi.addClass("disabled");
         nextLi.removeAttr("onclick");
       } else {
         nextLi.attr("onclick", "showMycourse(" + (page + 1) + "); setMycoursePagination(" + (page + 1) + ")");
+      }
+      ul.append(nextLi);
+    }
+  });
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// 新着結果画面のページネーションの設定
+//////////////////////////////////////////////////////////////////////////////////////////////
+function setNewArrivalPagination(page) {
+  var url = "/count?mode=newArrival";
+
+  $.ajax({
+    url: url,   // 件数を引数として受け取るようにすると、再帰的に呼び出す際に不都合がある（件数の増減に対応できない）
+    cache: false,
+    dataType: "json",
+    success: function(data) {
+      var count = data.count;
+
+      $("#pagination *").remove();  // 一旦ページネーションを全て削除
+
+      var ul = $("<ul></ul>");
+      $("#pagination").append(ul);
+
+      // Prev
+      var prevLi = $("<li><a href='#header'>&laquo</a></li>");
+      if (page == 1) {   // 最初のページの場合、disabled
+        prevLi.addClass("disabled");
+        prevLi.removeAttr("onclick");
+      } else {
+        prevLi.attr("onclick", "showNewArrival(" + (page - 1) + "); setNewArrivalPagination(" + (page - 1) + ")");
+      }
+      ul.append(prevLi);
+
+      var lastPage = Math.floor((count - 1) / (SEARCH_RESULT_MAX_ROW * SEARCH_RESULT_MAX_COL)) + 1;
+      for (var i = 1; i <= lastPage; i++) {
+        var li = $("<li><a href='#header'>" + String(i) + "</a></li>");
+        if (i == page) {
+          li.addClass("active");
+          li.removeAttr("onclick");
+        } else {
+          li.attr("onclick", "showNewArrival(" + String(i) + "); setNewArrivalPagination(" + String(i) + ")");
+        }
+        ul.append(li);
+      }
+
+      // Next
+      var nextLi = $("<li><a href='#header'>&raquo</a></li>");
+      if (page == lastPage || count == 0) {  // 最終ページの場合、disabled
+        nextLi.addClass("disabled");
+        nextLi.removeAttr("onclick");
+      } else {
+        nextLi.attr("onclick", "showNewArrival(" + (page + 1) + "); setNewArrivalPagination(" + (page + 1) + ")");
       }
       ul.append(nextLi);
     }
@@ -294,9 +347,19 @@ function setNavigationBar(mode, userName) {
 function setSearchCourseDiv(activeTab) {
   $.ajax({
     url: "./searchCourse.html",
-    cache: false, //TODO
+    cache: true,
     success: function(html) {
       $("#searchCourse").html(html);
+
+      $("#searchCourseTitle").bind("click", function(event) {
+        event.preventDefault();
+        var isDisplay = $("div.tabbable").css("display") == "block" ? true : false;
+        if (isDisplay) {
+          $("div.tabbable").css("display", "none");
+        } else {
+          $("div.tabbable").css("display", "block");
+        }
+      });
 
       $("a[href='" + activeTab + "']").click();
       $("a:not([href='" + activeTab + "'])").parent().removeClass("active");
@@ -393,6 +456,9 @@ function initialize() {
     case "category":
       categoryResultInitialize(arguments);
       break;
+    case "newArrival":
+      newArrivalResultInitialize(arguments);
+      break;
     case "mycourse":
       mycourseResultInitialize(arguments);
       break;
@@ -432,8 +498,8 @@ function topInitialize() {
   // ページネーションの設定
   setTopPagination(1);
 
-  // 新着情報表示
-  showNewArrival();
+  // 新着サイドバー表示
+  showNewArrivalSB();
 
   // ログイン済みかどうか
   if (userName) {
@@ -469,22 +535,18 @@ function topInitialize() {
 
   $("#btnCourse1").bind("click", function(event) {
     stop();  // 念のため停止処理
-    //event.preventDefault();
   });
 
   $("#btnCourse2").bind("click", function(event) {
     stop();  // 念のため停止処理
-    //event.preventDefault();
   });
 
   $("#btnCourse3").bind("click", function(event) {
     stop();  // 念のため停止処理
-    //event.preventDefault();
   });
 
   $("#btnCourse4").bind("click", function(event) {
     stop();  // 念のため停止処理
-    //event.preventDefault();
   });
 }
 
@@ -588,6 +650,9 @@ function playInitialize() {
 
   // 移動位置情報をDBからロード
   loadCourse(_id);
+
+  // 「さんぽコースを探す」を表示
+  setSearchCourseDiv("#tabSearch");
 
   // StreetViewイベントハンドラ追加 "position_changed"
   google.maps.event.addListener(panorama, "position_changed", function() {
@@ -994,7 +1059,7 @@ function rankingInitialize() {
      break;
   }
   // ランキングデータを表示
-  setRanking(1, back);
+  showRanking(1, back);
 
   // 「さんぽコースを探す」を表示
   setSearchCourseDiv("#tabRanking");
@@ -1046,6 +1111,19 @@ function categoryResultInitialize() {
 
   // 「さんぽコースを探す」を表示
   setSearchCourseDiv("#tabCategory");
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// 新着結果画面 初期処理
+//////////////////////////////////////////////////////////////////////////////////////////////
+function newArrivalResultInitialize() {
+  // 新着コースを表示
+  showNewArrival(1);
+
+  $(".loading").css("display", "none");
+
+  // ページネーションの設定
+  setNewArrivalPagination(1);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -1634,11 +1712,11 @@ function search(searchWord, page) {
 
       // 検索件数 ※データとは別に取らないと総件数を取得できない（まとめて取ると最大10件になってしまう）
       $.ajax({
-        url: "/searchResult/count?searchWord=" + searchWord,
+        url: "count?mode=search&searchWord=" + searchWord,
         cache: false,
         dataType: "json",
         success: function(data) {
-          $("#searchResultCount").text(coursesNum + " / " + data.count);
+          $("#searchResultCount").text(((page - 1) * 10 + coursesNum) + " / " + data.count);
         }
       });
     }
@@ -1648,12 +1726,12 @@ function search(searchWord, page) {
 //////////////////////////////////////////////////////////////////////////////////////////////
 // ランキングを表示
 //////////////////////////////////////////////////////////////////////////////////////////////
-function setRanking(page, back) {
+function showRanking(page, back) {
   // 一旦全て非表示に
   $("ul.thumbnails").remove();
 
   $.ajax({
-    url: "/ranking/select?page=" + page + "&back=" + back,
+    url: "/rankingResult?page=" + page + "&back=" + back,
     cache: false,
     dataType: "json",
     success: function(courses) {
@@ -1794,11 +1872,91 @@ function showMycourse(page) {
 
       // 検索件数 ※データとは別に取らないと総件数を取得できない（まとめて取ると最大10件になってしまう）
       $.ajax({
-        url: "/mycourseResult/count",
+        url: "/count?mode=myCourse",
         cache: false,
         dataType: "json",
         success: function(data) {
-          $("#mycourseResultCount").text(coursesNum + " / " + data.count);
+          $("#mycourseResultCount").text(((page - 1) * 10 + coursesNum) + " / " + data.count);
+        }
+      });
+    }
+  });
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// 新着結果を表示
+//////////////////////////////////////////////////////////////////////////////////////////////
+function showNewArrival(page) {
+  // 一旦全てremove
+  $("ul.thumbnails").remove();
+
+  var coursesNum = 0;
+  $.ajax({
+    url: "/newArrivalResult?page=" + page,
+    cache: false,
+    dataType: "json",
+    success: function(courses) {
+      coursesNum = courses.length;
+      var newArrivalResultDiv = $("#newArrivalResult");
+      for (var i = 1; i <= SEARCH_RESULT_MAX_ROW; i++) {
+        var ul = $("<ul class='thumbnails'>");
+
+        for (var j = 1; j <= SEARCH_RESULT_MAX_COL; j++) {
+          var idx = (i - 1) * SEARCH_RESULT_MAX_COL + j;  // 1（≠0）～カウント
+          var course = courses[idx - 1];
+          if (!course) { break; }
+
+          var li = $("<li id='thumbnail" + idx + "' class='span6'></li>");
+          var div1 = $("<div class='thumbnail'></div>");
+
+          // サムネイル
+          var div2 = $("<div id='course" + idx + "'></div>");
+          var firstPosition = course.firstPosition[0];
+          var imgLink = $("<a href='/play?_id=" + course._id + "'></a>");
+          var thumbnailImg = "<img src='http://maps.googleapis.com/maps/api/streetview?size=360x250&location=" + firstPosition.lat + "," + firstPosition.lng + "&heading=" + firstPosition.heading + "&pitch=" + firstPosition.pitch + "&sensor=false'\"' />";
+          imgLink.append(thumbnailImg);
+          div2.append(imgLink);
+
+          var div3 = $("<div class='caption'></div>");
+
+          // タイトル
+          var h4 = $("<h4></h4>");
+          var title = $("<a href='/play?_id=" + course._id + "'>" + course.title + "</a>");
+          h4.append(title);
+          div3.append(h4);
+
+          // 説明文
+          var p = $("<p></p>");
+          var descriptionStr = course.description;
+          //var descriptionStr = course.description.length > 22 ? course.description.substr(0, 20) + "..." : course.description;
+          p.text(descriptionStr);
+          div3.append(p);
+
+          // さんぽ回数（ラベル）
+          var span1 = $("<span class='label label-inverse' style='margin-bottom: 20px'>さんぽ回数</span>");
+          div3.append(span1);
+
+          // さんぽ回数
+          var span2 = $("<span class='badge badge-important'></span>");
+          span2.text(course.playCount);
+          div3.append(span2);
+
+          div1.append(div2);
+          div1.append(div3);
+          li.append(div1);
+          ul.append(li);
+          li.css("display", "block");
+        }
+        newArrivalResultDiv.append(ul);
+      }
+
+      // 検索件数 ※データとは別に取らないと総件数を取得できない（まとめて取ると最大10件になってしまう）
+      $.ajax({
+        url: "/count?mode=newArrival",
+        cache: false,
+        dataType: "json",
+        success: function(data) {
+          $("#newArrivalResultCount").text(((page - 1) * 10 + coursesNum) + " / " + data.count);
         }
       });
     }
@@ -1814,7 +1972,7 @@ function categorySearch(page, category) {
 
   var coursesNum = 0;
   $.ajax({
-    url: "/category/select?page=" + page +"&category=" + category,
+    url: "/categoryResult?page=" + page +"&category=" + category,
     cache: false,
     dataType: "json",
     success: function(courses) {
@@ -1873,11 +2031,11 @@ function categorySearch(page, category) {
 
       // 検索件数 ※データとは別に取らないと総件数を取得できない（まとめて取ると最大10件になってしまう）
       $.ajax({
-        url: "/category/count?category=" + category,
+        url: "/count?mode=category&category=" + category,
         cache: false,
         dataType: "json",
         success: function(data) {
-          $("#categoryResultCount").text(coursesNum + " / " + data.count);
+          $("#categoryResultCount").text(((page - 1) * 10 + coursesNum) + " / " + data.count);
         }
       });
     }
@@ -1885,26 +2043,43 @@ function categorySearch(page, category) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-// 新着情報を表示
+// 新着サイドバーを表示
 //////////////////////////////////////////////////////////////////////////////////////////////
-function showNewArrival() {
+function showNewArrivalSB() {
   $.ajax({
-    url: "/newArrival",
+    url: "/newArrivalSB",
     cache: false,
     dataType: "json",
     success: function(courses) {
       var ul = $("#newArrivalList");
       setSideBarCourse(ul, courses);
+
+      // 新着が5件より多い場合、「もっと見る」リンク＋件数を表示
+      $.ajax({
+        url: "/count?mode=newArrival",
+        cache: false,
+        dataType: "json",
+        success: function(count) {
+          if (count.count > 5) {
+            $("#moreLink").text($("#moreLink").text() + " もっと見る (" + count.count + ")");
+            $("#moreLink").attr("href", "/newArrival");
+            $("#moreCourse").css("text-align", "right");
+            $("#moreCourse").css("display", "block");
+          } else {
+            $("#moreCourse").css("display", "none");
+          }
+        }
+      });
     }
   });
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-// おすすめを表示
+// おすすめサイドバーを表示
 //////////////////////////////////////////////////////////////////////////////////////////////
 function showRecommend() {
   $.ajax({
-    url: "/recommend",
+    url: "/recommendSB",
     cache: false,
     dataType: "json",
     success: function(courses) {
@@ -2439,7 +2614,7 @@ function actionInterval(arryIdx, targetPanorama, increment, loop) {
         });
 
         actionInterval(arryIdx, targetPanorama, increment, loop);
-      }, 160);
+      }, 400 * (playSpeed / PLAY_SPEED_UNIT / 100));
 
     // ズームの変更
     } else if (panoData.zoom != panoDataNext.zoom) {

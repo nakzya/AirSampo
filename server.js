@@ -3,6 +3,7 @@ var express = require('express')
   , http = require('http')
   , path = require('path')
   , flash = require('connect-flash')
+  , MongoStore = require( 'connect-mongo')(express)
   , passport = require('passport')
   , LocalStrategy = require('passport-local').Strategy
   , crypto = require('crypto')
@@ -20,7 +21,11 @@ app.configure(function(){
   app.use(express.cookieParser());
   app.use(express.bodyParser());
   app.use(express.methodOverride());
-  app.use(express.session({secret: 'airsampo secret'}));
+  app.use(express.session({
+    secret: 'airsampo secret',
+    cookie: {maxAge: 3600000},
+    store: new MongoStore({db: 'airsampo'})
+  }));
   app.use(flash());
   app.use(passport.initialize());
   app.use(passport.session());
@@ -65,21 +70,18 @@ app.get('/removeCourse', routes.removeCourse);
 // 検索画面
 app.post('/search', routes.search);
 app.get('/searchResult', routes.searchResult);
-app.get('/searchResult/count', routes.searchResultCount);
 
 // マイコース画面
 app.get('/mycourse', routes.mycourse);
 app.get('/mycourseResult', routes.mycourseResult);
-app.get('/mycourseResult/count', routes.mycourseResultCount);
 
 // ランキング画面
 app.get('/ranking', routes.ranking);
-app.get('/ranking/select', routes.selectRanking);
+app.get('/rankingResult', routes.rankingResult);
 
 // カテゴリ検索画面
 app.get('/category', routes.category);
-app.get('/category/select', routes.selectCategory);
-app.get('/category/count', routes.categoryCount);
+app.get('/categoryResult', routes.categoryResult);
 
 // プライバシーポリシー画面
 app.get('/privacy', routes.privacy);
@@ -92,9 +94,11 @@ app.get('/about', routes.about);
 
 // 新着
 app.get('/newArrival', routes.newArrival);
+app.get('/newArrivalSB', routes.newArrivalSB);
+app.get('/newArrivalResult', routes.newArrivalResult);
 
 // おすすめ
-app.get('/recommend', routes.recommend);
+app.get('/recommendSB', routes.recommendSB);
 
 // 共通
 app.get('/count', routes.count);
@@ -137,6 +141,9 @@ passport.use(new LocalStrategy({
 
 // passportのセッションを使うので
 // シリアライズ、デシリアライズのための関数を追記
+
+// TODO userオブジェクトごとシリアライズしてしまうと、パスワードを含んだままになり問題あり？
+
 passport.serializeUser(function(user, done){
 //console.log("serializeUser : " + user.name);
   done(null, user);
