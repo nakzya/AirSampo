@@ -48,7 +48,7 @@
               </form>
             </div>
 
-            <div class="span6" style="margin-top: 15px">
+            <div class="span6" style="margin-top: 10px">
               <div class="btn-group pull-right">
                 <button class="btn dropdown-toggle" data-toggle="dropdown">
                   表示サイズ変更
@@ -104,14 +104,6 @@
                 <div class="controls">
                   <textarea id="txtDescription" name="txtDescription" class="span10" rows="3" placeholder="感想、説明、何でもご自由にどうぞ"><%= description %></textarea>
                 </div>
-              </div>
-              <div class="control-group">
-                <label class="control-label">タグ</label>
-                <div class="controls">
-                  <ul id="tagList" class="span10"></ul>
-                </div>
-                  <br><br>
-                  <span class="help-inline offset3">※タグは動画の説明、検索に使用されるキーワードです。</span>
               </div>
               <div class="control-group">
                 <label class="control-label">カテゴリ</label>
@@ -189,10 +181,18 @@
                   </div>
                 </div>
               </div>
-             <div class="control-group">
+              <div class="control-group">
+                <label class="control-label">タグ</label>
+                <div class="controls">
+                  <ul id="tagList" class="span10"></ul>
+                </div>
+                  <br><br>
+                  <span class="help-inline offset3">※タグは動画の説明、検索に使用されるキーワードです。</span>
+              </div>
+              <div class="control-group">
                 <label class="control-label">非公開</label>
                 <div class="controls">
-                  <label class="checkbox"><input type="checkbox" id="chkPrivate" name="chkPrivate"><spna style="font-size: small"> 公開したくない場合はチェックを付けてください。</span></input></label>
+                  <label class="checkbox"><input type="checkbox" id="chkPrivate" name="chkPrivate"><spna style="font-size: small">　公開したくない場合はチェックを付けてください。</span></input></label>
                 </div>
               </div>
               <span style="height: 20px">&nbsp;</span>

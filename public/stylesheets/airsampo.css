@@ -57,11 +57,11 @@ ul.thumbnails li { display: none; }
 #map img { max-width: inherit }
 #description { color: #555; margin-bottom: 10px; }
 #newArrivalList * { font-size: 12px; line-height: 1.8em; }
-#searchDiv{ margin-top: 15px; }
+#searchDiv{ margin-top: 10px; }
 #searchResult { margin-top: 40px; }
 
 #btnHere {
-  margin-top: 15px;
+  margin-top: 10px;
   margin-left: 10px;
   border-radius:         15px;
   -webkit-border-radius: 15px;

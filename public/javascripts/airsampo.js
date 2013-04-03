@@ -600,32 +600,6 @@ function commonInitialize() {
   $("#btnPlay").tooltip();
   $("#btnStop").tooltip();
 
-  // 「Search」ボタン クリックイベント
-  $("#btnSearch").bind("click", function(event) {
-    if (!geocoder) {
-      geocoder = new google.maps.Geocoder();
-    }
-
-    var address = $("#txtSearch").val();
-    geocoder.geocode({'address': address}, function(results, status) {
-      if (status == google.maps.GeocoderStatus.OK) {
-        var position = results[0].geometry.location;
-        map.setCenter(position);
-        movePanorama(position);
-      } else {
-        alert(address + "は見つかりませんでした。");
-      }
-    });
-
-    event.preventDefault();
-  });
-
-  // 「現在地」ボタン クリックイベント
-  $("#btnHere").bind("click", function(event) {
-    getCurrentPosition(true);
-    event.preventDefault();
-  });
-
   // 「再生」ボタン クリックイベント
   $("#btnPlay").bind("click", function(event) {
     play(panorama, true, false);
@@ -714,6 +688,9 @@ function recordInitialize() {
     // 移動位置情報をDBからロード
     loadCourse(_id);
 
+    // 検索ボタン、現在地ボタンを非表示にする
+    $("#searchDiv").parent().css("display", "none");
+
     // 「編集する」チェックボックスを表示
     $("#chkEdit").parent().parent().css("display", "block");
 
@@ -738,6 +715,32 @@ function recordInitialize() {
 
   links = [];
 
+  // 検索ボタン
+  $("#btnSearch").bind("click", function(event) {
+    if (!geocoder) {
+      geocoder = new google.maps.Geocoder();
+    }
+
+    var address = $("#txtSearch").val();
+    geocoder.geocode({'address': address}, function(results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+        var position = results[0].geometry.location;
+        map.setCenter(position);
+        movePanorama(position);
+      } else {
+        alert(address + " は見つかりませんでした。");
+      }
+    });
+
+    event.preventDefault();
+  });
+
+  // 「現在地」ボタン
+  $("#btnHere").bind("click", function(event) {
+    getCurrentPosition(true);
+    event.preventDefault();
+  });
+
   // 「編集する」チェックボックス
   recordEditFlg = false;
   $("#chkEdit").bind("change", function(event) {
@@ -746,11 +749,13 @@ function recordInitialize() {
       $("#btnRecord").removeAttr("disabled");
       $("#btnSave").removeAttr("disabled");
       $("#btnDelete").removeAttr("disabled");
+          $("#searchDiv").parent().css("display", "block");
     } else {
       recordMode = false;
       $("#btnRecord").attr("disabled", "disabled");
       $("#btnSave").attr("disabled", "disabled");
       $("#btnDelete").attr("disabled", "disabled");
+      $("#searchDiv").parent().css("display", "none");
     }
     event.preventDefault();
   });
@@ -1515,24 +1520,6 @@ function setCourseThumbnail(page) {
     success: function(courses) {
       for (var i = 0; i < courses.length; i++) {
         var course = courses[i];
-        var selectorStr = "#course" + String(i + 1) + "+div h3";
-
-        // タイトル
-        if (course.title) {
-          $(selectorStr).removeAttr("text");
-          $(selectorStr).text(course.title);
-        }
-
-        // 説明
-        if (course.description) {
-          selectorStr += "+p";
-          $(selectorStr).text(course.description);
-        }
-
-        // 再生回数
-        if (course.playCount == 0 || course.playCount) {
-          $("#playCount" + String(i + 1)).text(course.playCount);
-        }
 
         // サムネイル
         if (course.firstPosition) {
@@ -1554,11 +1541,56 @@ function setCourseThumbnail(page) {
             imageDateControl: false,
             scrollwheel: false
           };
-
           $("#thumbnail" + String(i + 1)).css("display", "block");
 
           var panorama_thumbnail =
             new google.maps.StreetViewPanorama(document.getElementById("course" + String(i + 1)), panoramaOptions);
+        }
+
+        // タイトル
+        if (course.title) {
+          $("#course" + String(i + 1) + "+div h3").text(course.title);
+        }
+
+        // 説明
+        if (course.description) {
+          $("#course" + String(i + 1) + "+div h3+p").text(course.description);
+        }
+
+        // カテゴリ
+        var pCategory = $("#course" + String(i + 1) + "+div h3+p+p");
+        if (course.category && course.category.place != "　場所　" && course.category.kind != "　種類　") {
+          pCategory.text("カテゴリ： ");
+          if (course.category.place && course.category.place != "　場所　") {
+            pCategory.text(pCategory.text() + course.category.place);
+          }
+          if (pCategory.text() != "カテゴリ： ") {
+            pCategory.text(pCategory.text() + "、");
+          }
+          if (course.category.kind && course.category.kind != "　種類　") {
+            pCategory.text(pCategory.text() + course.category.kind);
+          }
+        } else {
+          pCategory.text("");
+        }
+
+        // タグ
+        var pTag = $("#course" + String(i + 1) + "+div h3+p+p+p");
+        if (course.tag && course.tag[0]) {
+          pTag.text("タグ： ");
+          if (course.tag[0]) {
+            pTag.text(pTag.text() + course.tag[0]);
+          }
+          for (var j = 1; j < course.tag.length; j++) {
+            pTag.text(pTag.text() + "、" + course.tag[j]);
+          }
+        } else {
+          pTag.text("");
+        }
+
+        // 再生回数
+        if (course.playCount == 0 || course.playCount) {
+          $("#playCount" + String(i + 1)).text(course.playCount);
         }
 
         // データを特定するために_idを飛ばす
@@ -1603,9 +1635,9 @@ function loadCourse(_id) {
       if (course.category) {
         var catPlace = $("#catPlace");
         var catKind = $("#catKind");
-        if (catPlace && catKind) {
-          catPlace.text(course.category[0]);
-          catKind.text(course.category[1]);
+        if (catPlace && catKind) {  // 記録画面のみ
+          catPlace.text(course.category.place);
+          catKind.text(course.category.kind);
         }
       }
       // 非公開フラグ
@@ -1692,6 +1724,12 @@ function search(searchWord, page) {
           p.text(descriptionStr);
           div3.append(p);
 
+          // カテゴリ
+          div3.append(createCategoryP(course.category));
+
+          // タグ
+          div3.append(createTagP(course.tag));
+
           // さんぽ回数（ラベル）
           var span1 = $("<span class='label label-inverse' style='margin-bottom: 20px'>さんぽ回数</span>");
           div3.append(span1);
@@ -1776,6 +1814,12 @@ function showRanking(page, back) {
         p.text(course.description);
         div3.append(p);
 
+        // カテゴリ
+        div3.append(createCategoryP(course.category));
+
+        // タグ
+        div3.append(createTagP(course.tag));
+
         // さんぽ回数（ラベル）
         var span1 = $("<span class='label label-inverse' style='margin-bottom: 20px'>さんぽ回数</span>");
         div3.append(span1);
@@ -1846,11 +1890,17 @@ function showMycourse(page) {
           div3.append(h4);
 
           // 説明文
-          var p = $("<p></p>");
+          var pDescription= $("<p></p>");
           var descriptionStr = course.description;
           //var descriptionStr = course.description.length > 22 ? course.description.substr(0, 20) + "..." : course.description;
-          p.text(descriptionStr);
-          div3.append(p);
+          pDescription.text(descriptionStr);
+          div3.append(pDescription);
+
+          // カテゴリ
+          div3.append(createCategoryP(course.category));
+
+          // タグ
+          div3.append(createTagP(course.tag));
 
           // さんぽ回数（ラベル）
           var span1 = $("<span class='label label-inverse' style='margin-bottom: 20px'>さんぽ回数</span>");
@@ -1932,6 +1982,12 @@ function showNewArrival(page) {
           p.text(descriptionStr);
           div3.append(p);
 
+          // カテゴリ
+          div3.append(createCategoryP(course.category));
+
+          // タグ
+          div3.append(createTagP(course.tag));
+
           // さんぽ回数（ラベル）
           var span1 = $("<span class='label label-inverse' style='margin-bottom: 20px'>さんぽ回数</span>");
           div3.append(span1);
@@ -2011,6 +2067,12 @@ function categorySearch(page, category) {
           p.text(descriptionStr);
           div3.append(p);
 
+          // カテゴリ
+          div3.append(createCategoryP(course.category));
+
+          // タグ
+          div3.append(createTagP(course.tag));
+
           // さんぽ回数（ラベル）
           var span1 = $("<span class='label label-inverse' style='margin-bottom: 20px'>さんぽ回数</span>");
           div3.append(span1);
@@ -2040,6 +2102,47 @@ function categorySearch(page, category) {
       });
     }
   });
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// サムネイル表示カテゴリのPタグ生成
+//////////////////////////////////////////////////////////////////////////////////////////////
+function createCategoryP(category) {
+  var pCategory = $("<p></p>");
+  if (category && category.place != "　場所　" && category.kind != "　種類　") {
+    pCategory.text("カテゴリ： ");
+    if (category.place && category.place != "　場所　") {
+      pCategory.text(pCategory.text() + category.place);
+    }
+    if (pCategory.text() != "カテゴリ： ") {
+      pCategory.text(pCategory.text() + "、");
+    }
+    if (category.kind && category.kind != "　種類　") {
+      pCategory.text(pCategory.text() + category.kind);
+    }
+  } else {
+    pCategory.text("");
+  }
+  return pCategory;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// サムネイル表示タグのPタグ生成
+//////////////////////////////////////////////////////////////////////////////////////////////
+function createTagP(tag) {
+  var pTag = $("<p></p>");
+  if (tag && tag[0]) {
+    pTag.text("タグ： ");
+    if (tag[0]) {
+      pTag.text(pTag.text() + tag[0]);
+    }
+    for (var j = 1; j < tag.length; j++) {
+      pTag.text(pTag.text() + "、" + tag[j]);
+    }
+  } else {
+    pTag.text("");
+  }
+  return pTag;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -2225,20 +2328,7 @@ function toggleRecord() {
         title: "スタート地点"
       });
       markers.push(startMarker);
-/*
-      // パノラマ表示用スタート地点マーカー
-      var startMarker2 = new google.maps.Marker({
-        position: panorama.getPosition(),
-        map: panorama,
-        title: "スタート地点"
-      });
-      markers.push(startMarker2);
-      var infowindow = new google.maps.InfoWindow({
-        content: "<p style='font-weight: bold'>スタート地点　<img src='../images/running.gif'/></p><p>張り切って行きましょう!</p>"
-      });
-      infowindow.open(panorama, startMarker2);
-      InfoWindows.push(infowindow);
-*/
+
       links = [];
 
       panoramaDataArray = [];
@@ -2309,10 +2399,6 @@ function toggleRecord() {
     }
     $("#btnPlay").tooltip("hide").attr("data-original-title", "再生").tooltip("fixTitle");
 
-    //$("#view").removeClass("recording");
-    //$("#control").removeClass("recording");
-    $("#recording").remove();
-
     // ゴールマーカー
     var goalMarker = new google.maps.Marker({
       position: panorama.getPosition(),
@@ -2322,20 +2408,7 @@ function toggleRecord() {
       title: "記録終了地点"
     });
     markers.push(goalMarker);
-/*
-    // パノラマ表示用スゴールマーカー
-    var goalMarker2 = new google.maps.Marker({
-      position: panorama.getPosition(),
-      map: panorama,
-      title: "ゴール地点"
-    });
-    markers.push(goalMarker2);
-    var infowindow = new google.maps.InfoWindow({
-      content: "<p style='font-weight: bold'>ゴール地点</p><p>お疲れ様でした。</p>"
-    });
-    infowindow.open(panorama, goalMarker2);
-    InfoWindows.push(infowindow);
-*/
+
     // 再生スライダーを設定
     setPanoramaSlider();
   }
@@ -2600,7 +2673,7 @@ function actionInterval(arryIdx, targetPanorama, increment, loop) {
         drawPlayLine(fromLatLng, toLatLng);
 
         // 距離を表示
-        $("#distance").html(panoDataNext.distance + "m");
+        $("#distanceRecord").html(panoDataNext.distance + "m");
 
         actionInterval(arryIdx, targetPanorama, increment, loop);
       }, playSpeed);
