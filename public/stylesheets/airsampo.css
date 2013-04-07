@@ -68,11 +68,14 @@ ul.thumbnails li { display: none; }
   -moz-border-radius:    15px;
 }
 
-#view { margin-top: 5px; }
-#streetview { height: 350px; position: relative; }
+#view { margin-top: 5px; height: 350px; position: relative; overflow: hidden; }
+
+#streetview { height: 350px; position: relative; overflow: hidden; margin: 0 auto;}
+.streetview { height: 350px; width: 100%; position: relative;}
 #streetview img {
   border: none !important;    /* FireFox対応 */
   max-width: none !important; /* FireFox対応 */
+  position: absolute;
 }
 #map_canvas { height: 350px; }
 

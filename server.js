@@ -1,5 +1,10 @@
 var express = require('express')
-  , routes = require('./routes')
+  , routesUser = require('./routes/user')
+  , routesIndex = require('./routes/index')
+  , routesPlay = require('./routes/play')
+  , routesRecord = require('./routes/record')
+  , routesSearch = require('./routes/search')
+  , routesCommon = require('./routes/common')
   , http = require('http')
   , path = require('path')
   , flash = require('connect-flash')
@@ -42,69 +47,69 @@ app.configure('development', function(){
 });
 
 // 新規ユーザー登録画面
-app.get('/signup', routes.signup);
-app.post('/saveUser', routes.saveUser);
+app.get('/signup', routesUser.signup);
+app.post('/saveUser', routesUser.saveUser);
 
 // ログイン画面
-app.get('/login', routes.login);
+app.get('/login', routesUser.login);
 app.post('/login/auth', passport.authenticate('local', {successRedirect: '/',
                                                         failureRedirect: '/login',
                                                         failureFlash: true }));
 
 // トップ画面
-app.get('/', routes.index);
-app.get('/mapSearch', routes.mapSearch);
-app.get('/random', routes.randomCourse);
-app.get('/courseThumbnail', routes.courseThumbnail);
+app.get('/', routesIndex.index);
+app.get('/mapSearch', routesIndex.mapSearch);
+app.get('/random', routesIndex.randomCourse);
+app.get('/courseThumbnail', routesIndex.courseThumbnail);
 
 // 再生・記録画面共通
-app.get('/play', routes.play);
-app.get('/incrementPlayCount', routes.incrementPlayCount);
-app.get('/playHistory', routes.playHistory);
+app.get('/play', routesPlay.play);
+app.get('/incrementPlayCount', routesPlay.incrementPlayCount);
+app.get('/playHistory', routesPlay.playHistory);
 
 // 記録画面
-app.get('/record', routes.record);
-app.post('/saveCourse', routes.saveCourse);
-app.get('/removeCourse', routes.removeCourse);
+app.get('/record', routesRecord.record);
+app.post('/saveCourse', routesRecord.saveCourse);
+app.get('/removeCourse', routesRecord.removeCourse);
 
 // 検索画面
-app.post('/search', routes.search);
-app.get('/searchResult', routes.searchResult);
+app.post('/search', routesSearch.search);
+app.get('/searchResult', routesSearch.searchResult);
 
 // マイコース画面
-app.get('/mycourse', routes.mycourse);
-app.get('/mycourseResult', routes.mycourseResult);
+app.get('/mycourse', routesSearch.mycourse);
+app.get('/mycourseResult', routesSearch.mycourseResult);
 
 // ランキング画面
-app.get('/ranking', routes.ranking);
-app.get('/rankingResult', routes.rankingResult);
+app.get('/ranking', routesSearch.ranking);
+app.get('/rankingResult', routesSearch.rankingResult);
 
 // カテゴリ検索画面
-app.get('/category', routes.category);
-app.get('/categoryResult', routes.categoryResult);
+app.get('/category', routesSearch.category);
+app.get('/categoryResult', routesSearch.categoryResult);
 
 // プライバシーポリシー画面
-app.get('/privacy', routes.privacy);
+app.get('/privacy', routesIndex.privacy);
 
 // 利用規約画面
-app.get('/rules', routes.rules);
+app.get('/rules', routesIndex.rules);
 
 // 「このサイトについて」画面
-app.get('/about', routes.about);
+app.get('/about', routesIndex.about);
 
 // 新着
-app.get('/newArrival', routes.newArrival);
-app.get('/newArrivalSB', routes.newArrivalSB);
-app.get('/newArrivalResult', routes.newArrivalResult);
+app.get('/newArrival', routesSearch.newArrival);
+app.get('/newArrivalSB', routesIndex.newArrivalSB);
+app.get('/newArrivalResult', routesSearch.newArrivalResult);
 
 // おすすめ
-app.get('/recommendSB', routes.recommendSB);
+app.get('/recommendSB', routesIndex.recommendSB);
 
 // 共通
-app.get('/count', routes.count);
-app.get('/loadCourse', routes.loadCourse);
-app.get('/user', routes.getUser);
-app.get('/logout', routes.logout);
+app.get('/count', routesCommon.count);
+app.get('/loadCourse', routesCommon.loadCourse);
+app.get('/user', routesUser.getUser);
+app.get('/logout', routesUser.logout);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));

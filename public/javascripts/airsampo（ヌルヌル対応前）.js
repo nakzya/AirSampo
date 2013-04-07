@@ -17,7 +17,7 @@ var SEARCH_RESULT_MAX_COL = 2;
 
 var sv = new google.maps.StreetViewService();
 var map;
-var panorama, panoramaSub;
+var panorama;
 var geocoder;
 var panoramaDataArray = [];
 var panoramaDataArrayIdx = 0;
@@ -31,7 +31,6 @@ var playSpeed = PLAY_SPEED_UNIT * PLAY_SPEDD_SLIDER_INIT_VALUE; // 再生速度(
 var distance = 0;
 var links = [];
 var currentTimer;
-var svFlg = true;  // メインpanoramaを表示中か、それともサブpanoramaを表示中か
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 // パノラマデータ構造体
@@ -589,7 +588,6 @@ function commonInitialize() {
     }
   };
   panorama = new  google.maps.StreetViewPanorama(document.getElementById("streetview"), panoramaOptions);
-  //panoramaSub = new  google.maps.StreetViewPanorama(document.getElementById("streetview2"), panoramaOptions);
   map.setStreetView(panorama);
   setTimeout(function() {
     google.maps.event.trigger(panorama, "resize");
@@ -604,7 +602,7 @@ function commonInitialize() {
 
   // 「再生」ボタン クリックイベント
   $("#btnPlay").bind("click", function(event) {
-    play(null, true, false);
+    play(panorama, true, false);
     event.preventDefault();
   });
 
@@ -673,7 +671,7 @@ function setCenterPlayBtn() {
 
   btnPlayCenter.css("width", "100px").css("height", "100px");
   btnPlayCenter.bind("click", function() {   // クリックしたら再生
-    play(null, true, false);
+    play(panorama, true, false);
     btnPlayCenter.remove();
   });
   streetview.append(btnPlayCenter);
@@ -2308,7 +2306,8 @@ function toggleRecord() {
       $("#btnSave").attr("disabled", "disabled");
       $("#btnDelete").attr("disabled", "disabled");
 
-      // 記録中ラベル
+      //$("#view").addClass("recording");
+      //$("#control").addClass("recording");
       createRecordingLable();
 
       map.setZoom(15);
@@ -2356,9 +2355,6 @@ function toggleRecord() {
 
             recordMode = 1;
 
-            // 記録中ラベル
-            createRecordingLable();
-
             $("#btnRecord").tooltip("hide").attr("data-original-title", "記録終了").tooltip("fixTitle");
             $("#btnPlay").attr("disabled", "disabled");
             $("#btnStop").attr("disabled", "disabled");
@@ -2402,7 +2398,6 @@ function toggleRecord() {
       setCenterPlayBtn();  // display: block だと座標位置がずれる
     }
     $("#btnPlay").tooltip("hide").attr("data-original-title", "再生").tooltip("fixTitle");
-    $("#recording").remove();
 
     // ゴールマーカー
     var goalMarker = new google.maps.Marker({
@@ -2483,11 +2478,6 @@ function play(targetPanorama, increment, loop) {
 
     $("#btnPlayCenter").remove();
 
-    // 再生中ラベル
-    if (!loop) {
-      createPlayingLabel();
-    }
-
     // 通常の再生以外は再生回数のインクリメント、再生履歴の登録を行わない
     if (increment) {
       // 再生回数をインクリメント
@@ -2548,32 +2538,13 @@ function play(targetPanorama, increment, loop) {
     infowindow.open(targetPanorama, startMarker2);
     InfoWindows.push(infowindow);
 */
-
     // 位置・向き・角度・ズームを初期化
-    if (targetPanorama) {
-      targetPanorama.setPosition(panoData2LatLng(panoDataFirst));
-      targetPanorama.setPov({
-        heading: panoDataFirst.heading,
-        pitch: panoDataFirst.pitch
-      });
-      targetPanorama.setZoom(panoDataFirst.zoom);
-    } else {
-      /*
-      panorama.setPosition(panoData2LatLng(panoDataFirst));
-      panorama.setPov({
-        heading: panoDataFirst.heading,
-        pitch: panoDataFirst.pitch
-      });
-      panorama.setZoom(panoDataFirst.zoom);
-
-      panoramaSub.setPosition(panoData2LatLng(panoDataFirst));
-      panoramaSub.setPov({
-        heading: panoDataFirst.heading,
-        pitch: panoDataFirst.pitch
-      });
-      panoramaSub.setZoom(panoDataFirst.zoom);
-      */
-    }
+    targetPanorama.setPosition(panoData2LatLng(panoDataFirst));
+    targetPanorama.setPov({
+      heading: panoDataFirst.heading,
+      pitch: panoDataFirst.pitch
+    });
+    targetPanorama.setZoom(panoDataFirst.zoom);
 
     $("#panoramaSlider").slider("value", 1);
 
@@ -2592,8 +2563,6 @@ function play(targetPanorama, increment, loop) {
     $("#btnPlay i").removeClass("icon-pause");
     $("#btnPlay").tooltip("hide").attr("data-original-title", "再生").tooltip("fixTitle");
 
-    $("#playing").css("display", "none");
-
     $("#running").css("display", "none");
 
     $("#panoramaSlider").slider("enable");
@@ -2611,8 +2580,6 @@ function play(targetPanorama, increment, loop) {
     $("#btnPlay i").addClass("icon-pause");
     $("#btnPlay i").removeClass("icon-play");
     $("#btnPlay").tooltip("hide").attr("data-original-title", "一時停止").tooltip("fixTitle");
-
-    $("#playing").css("display", "block");
 
     $("#running").css("display", "block");
 
@@ -2645,8 +2612,6 @@ function actionInterval(arryIdx, targetPanorama, increment, loop) {
     // 終了処理
     if (arryIdx >= panoramaDataArray.length) {
       playMode = 0;
-
-      $("#playing").remove();
 
       if (loop) {
         play(targetPanorama, increment, loop);
@@ -2695,58 +2660,34 @@ function actionInterval(arryIdx, targetPanorama, increment, loop) {
     if (panoData.lat != panoDataNext.lat || panoData.lng != panoDataNext.lng) {
       currentTimer = setTimeout(function() {
         /* 移動アニメーション 失敗作
-        var div1 = $("#streetview1");
-        var div2 = $("#streetview2");
-
-        var div, divSub;
-        if (svFlg) {
-          div = div1;
-          divSub = div2;
-        } else {
-          div = div2;
-          divSub = div1;
-        }
+        var div = $("#streetview");
+        var canvas = $("#streetview canvas");
+        var canvasTop = canvas.offset().top;
+        canvas.css("position", "relative");
 
         var blur = 0;
+        var canvasHeight = 350;
         var move = function() {
-          div.stop();
-          div.animate(
-            {"top": div.height() * -1},
-            {duration: 500,
-             easing: "swing",
+          canvas.stop();
+          canvas.animate(
+            {height: canvas.height() + 200,
+             width: canvas.width(),
+             "top": canvas.offset().top - 400 + "px"},
+            {duration: 1000,
+             easing: "easeOutQuad",
              step: function(now) {
-               blur += 0.25;
+               blur += 0.05;
                div.css("-webkit-filter", "blur(" + blur + "px)");
-               divSub.css("-webkit-filter", "blur(" + blur + "px)");
-
-               divSub.css("top", div.offset().top - 190);
              },
              complete: function() {
-               panorama.setPosition(new google.maps.LatLng(panoDataNext.lat, panoDataNext.lng));
-               panorama.setPov({  // POVも一時停止中などに変更されている可能性があるため、設定しておく
-                 heading: panoDataNext.heading,
-                 pitch: panoDataNext.pitch
-               });
-               panorama.setZoom(panoDataNext.zoom);
-
-               panoramaSub.setPosition(new google.maps.LatLng(panoDataNext.lat, panoDataNext.lng));
-               panoramaSub.setPov({  // POVも一時停止中などに変更されている可能性があるため、設定しておく
-                 heading: panoDataNext.heading,
-                 pitch: panoDataNext.pitch
-               });
-               panoramaSub.setZoom(panoDataNext.zoom);
-
                div.css("-webkit-filter", "blur(0px)");
-               divSub.css("-webkit-filter", "blur(0px)");
-
-               div.before(divSub);
-               divSub.css("top", 185);
-
-               svFlg = !svFlg;
+               canvas.css("height", "350px").css("top", "0");
+               targetPanorama.setPosition(new google.maps.LatLng(panoDataNext.lat, panoDataNext.lng));
              }
             }
           );
-        }();
+        };
+        move();
         */
 
         targetPanorama.setPosition(new google.maps.LatLng(panoDataNext.lat, panoDataNext.lng));
@@ -2811,38 +2752,6 @@ function actionInterval(arryIdx, targetPanorama, increment, loop) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-// 再生中ラベル生成
-//////////////////////////////////////////////////////////////////////////////////////////////
-function createPlayingLabel() {
-  // 左上のDescriptionラベル作成
-  var playingLabelDiv = $("<div id='playing'></div>");
-  var playingLabel = new PlayingLabel(playingLabelDiv);
-  playingLabelDiv.attr("index", "1");
-  panorama.controls[google.maps.ControlPosition.TOP_RIGHT].push(playingLabelDiv[0]);
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-// 再生中ラベル
-//////////////////////////////////////////////////////////////////////////////////////////////
-function PlayingLabel(labelDiv) {
-  labelDiv.css("padding", "5px");
-
-  var labelUI = $("<div></div>");
-  labelUI.css("backgroundColor", "#33FFFF");
-  labelUI.css("textAlign", "left");
-  labelUI.css("opacity", "0.5");
-  labelUI.attr("title", "記録中");
-  labelDiv.append(labelUI);
-
-  var labelText = $("<div></div>");
-  labelText.css("fontFamily", "Arial,sans-serif");
-  labelText.css("fontSize", "16px");
-  labelText.css("padding", "2px 7px 2px 7px");
-  labelText.html("<strong>再生中...</strong>");
-  labelUI.append(labelText);
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////
 // 「停止」ボタン
 //////////////////////////////////////////////////////////////////////////////////////////////
 function stop() {
@@ -2854,9 +2763,6 @@ function stop() {
   }
 
   playMode = 0;
-
-  $("#recording").remove();
-  $("#playing").remove();
 
   // 開始地点に戻る
   var panoData = panoramaDataArray[0];
